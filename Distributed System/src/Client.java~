@@ -25,13 +25,12 @@ public class Client{
 				String input = in.nextLine();
 
 				switch(input){
-          case("deal"):
-            randomCardNumber = rand.nextInt(52) + 1;
-            System.out.println("Dealt card number: " +randomCardNumber);
-            String deal = String.valueOf(randomCardNumber);
-            out.write("deal " + deal + '\n');
-
-            break;
+				case("deal"):
+					randomCardNumber = rand.nextInt(52) + 1;
+					System.out.println("Dealt card number: " +randomCardNumber);
+					String deal = String.valueOf(randomCardNumber);
+					out.write("deal " + deal + '\n');
+					break;
 					case("message"):
 						System.out.print("Enter message: ");
 						String message = in.nextLine();

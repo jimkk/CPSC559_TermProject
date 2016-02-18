@@ -34,10 +34,10 @@ public class ServerThread implements Runnable{
 				}
 
 				switch(messageType){
-          case("deal"):
-            String deal = buffer.substring(buffer.indexOf(" "));
-            System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
-            break;
+					case("deal"):
+						String deal = buffer.substring(buffer.indexOf(" "));
+						System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
+						break;
 					case("message"):
 						String message = buffer.substring(buffer.indexOf(" "));
 						System.out.printf("Message from %s: %s\n", socket.getInetAddress(), message);
