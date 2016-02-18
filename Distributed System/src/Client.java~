@@ -30,6 +30,7 @@ public class Client{
             System.out.println("Dealt card number: " +randomCardNumber);
             String deal = String.valueOf(randomCardNumber);
             out.write("deal " + deal + '\n');
+
             break;
 					case("message"):
 						System.out.print("Enter message: ");
