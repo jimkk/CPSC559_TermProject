@@ -6,6 +6,12 @@ public class ServerThread implements Runnable{
 
 	private Socket socket;
 	private boolean isDone = false;
+	public static int playerCount = 0;
+	private boolean turn = false;
+	private boolean folded = false;
+	
+	Card hand;
+	LinkedPlayerList playerList = new LinkedPlayerList();
 
 	public ServerThread(Socket socket){
 		this.socket = socket;
@@ -13,7 +19,10 @@ public class ServerThread implements Runnable{
 
 	public void run(){
 		System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
-
+		playerCount++;
+		playerList.addPlayers(playerCount, turn, folded, hand);
+		playerList.print();
+		
 		try{
 			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
 			InputStreamReader in = new InputStreamReader(bufIn);

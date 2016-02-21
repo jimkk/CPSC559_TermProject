@@ -9,8 +9,9 @@ public class Client{
 	private int port;
 	private Socket socket;
 	private boolean isDone = false;
-  Random rand = new Random();
-  int randomCardNumber;
+	private boolean isTurn = false;
+	Random rand = new Random();
+	int randomCardNumber;
 
 
 	public void run(){
