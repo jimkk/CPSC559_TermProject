@@ -10,8 +10,8 @@ public class Client{
 	private Socket socket;
 	private boolean isDone = false;
 	private boolean isTurn = false;
-	Random rand = new Random();
-	int randomCardNumber;
+	//Random rand = new Random();
+	//int randomCardNumber;
 
 
 	public void run(){
@@ -27,10 +27,14 @@ public class Client{
 
 				switch(input){
 					case("deal"):
+						/* THis was the client side deal code
 						randomCardNumber = rand.nextInt(52) + 1;
 						System.out.println("Dealt card number: " +randomCardNumber);
 						String deal = String.valueOf(randomCardNumber);
 						out.write("deal " + deal + '\n');
+						*/
+						System.out.println("Dealing card.");
+						out.write("deal " + '\n');
 						break;
 					case("message"):
 						System.out.print("Enter message: ");

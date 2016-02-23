@@ -1,6 +1,7 @@
 import java.net.*;
 import java.lang.*;
 import java.io.*;
+import java.util.*;
 
 public class ServerThread implements Runnable{
 
@@ -9,6 +10,8 @@ public class ServerThread implements Runnable{
 	public static int playerCount = 0;
 	private boolean turn = false;
 	private boolean folded = false;
+	Random rand = new Random();
+	int randomCardNumber;
 	
 	Card hand;
 	LinkedPlayerList playerList = new LinkedPlayerList();
@@ -44,7 +47,9 @@ public class ServerThread implements Runnable{
 
 				switch(messageType){
 					case("deal"):
-						String deal = buffer.substring(buffer.indexOf(" "));
+						//String deal = buffer.substring(buffer.indexOf(" "));
+						randomCardNumber = rand.nextInt(52) + 1;
+						String deal = String.valueOf(randomCardNumber);
 						System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
 						break;
 					case("message"):
