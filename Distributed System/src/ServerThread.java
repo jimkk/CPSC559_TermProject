@@ -7,10 +7,11 @@ public class ServerThread implements Runnable{
 	private Socket socket;
 	private boolean isDone = false;
 	public static int playerCount = 0;
+	private static int playerID = 0;
 	private boolean turn = false;
 	private boolean folded = false;
 	
-	Card hand;
+	Card[] hand;
 	LinkedPlayerList playerList = new LinkedPlayerList();
 
 	public ServerThread(Socket socket){
@@ -20,7 +21,7 @@ public class ServerThread implements Runnable{
 	public void run(){
 		System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
 		playerCount++;
-		playerList.addPlayers(playerCount, turn, folded, hand);
+		playerList.addPlayers(playerCount, playerID, turn, folded, hand);
 		playerList.print();
 		
 		try{
