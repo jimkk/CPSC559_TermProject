@@ -25,7 +25,7 @@ public class ServerThread implements Runnable{
 		System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
 		playerCount++;
 		playerList.addPlayers(playerCount, playerID, turn, folded, hand);
-		playerList.print();
+		playerList.displayGameState();
 		
 		try{
 			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());

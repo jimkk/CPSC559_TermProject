@@ -1,6 +1,10 @@
 import java.util.LinkedList;
 import java.io.*;
 
+
+// Referenced the following videos on linked lists:
+// https://www.youtube.com/watch?v=pBaZl9B448g
+// https://www.youtube.com/watch?v=SMuL7ld3r5M
 public class LinkedPlayerList {
 
 	static PlayerNode currentPlayer;
@@ -70,7 +74,6 @@ public class LinkedPlayerList {
 		
 		if(playerToBeDeleted == 1){
 			
-			//rootPlayer = rootPlayer.nextPlayer;
 			temp = rootPlayer.nextPlayer;
 			
 			while(temp.nextPlayer != rootPlayer){
@@ -93,8 +96,8 @@ public class LinkedPlayerList {
 		PlayerNode.numberOfPlayers--;
 	}
 	
-	public void print() {
-		
+	public void displayGameState() {
+	// Print the game state on the Server side
 		currentPlayer = rootPlayer;
 		boolean arrow = false;
 		
