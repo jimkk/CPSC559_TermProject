@@ -33,11 +33,7 @@ public class ServerThread implements Runnable{
 
 			while(!isDone){
 
-				StringBuffer buffer = new StringBuffer();
-				int c;
-				while((c = in.read()) != (int)'\n'){
-					buffer.append((char) c);
-				}
+				StringBuffer buffer = read(in); 
 
 				String messageType;
 				if(buffer.indexOf(" ") != -1){
@@ -75,6 +71,21 @@ public class ServerThread implements Runnable{
 
 		} catch(Exception e) {e.printStackTrace();}
 
+	}
+
+	private StringBuffer read(InputStreamReader in){
+		try{
+			StringBuffer buffer = new StringBuffer();
+			int c;
+			while((c = in.read()) != -1){
+				if(c == (int) '\n'){
+					break;
+				}
+				buffer.append((char) c);
+			}
+			return buffer;
+		} catch (IOException e) {e.printStackTrace();}
+		return null;
 	}
 
 }
