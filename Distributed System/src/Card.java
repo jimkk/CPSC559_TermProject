@@ -51,7 +51,30 @@ public class Card{
 				break;
 		}
 
-		return suit.substring(0,1) + numberValue;
+		return getUnicodeChar(suit) + numberValue;
 	}
-				
+
+	private String getUnicodeChar(String suit){
+		String unicodeChar = "";
+
+		switch(suit){
+			case("Hearts"):
+				unicodeChar = "♥";
+				break;
+			case("Diamonds"):
+				unicodeChar = "♦";
+				break;
+			case("Spades"):
+				unicodeChar = "♠";
+				break;
+			case("Clubs"):
+				unicodeChar = "♣";
+				break;
+			default:
+				unicodeChar = "UNKNOWN SUIT";
+				break;
+		}
+
+		return unicodeChar;
+	}
 }
