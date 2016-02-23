@@ -99,12 +99,13 @@ public class LinkedPlayerList {
 		boolean arrow = false;
 		
 		do{
-			System.out.println((arrow) ? " --> |" + currentPlayer.playerNumber + "|" : "|" + currentPlayer.playerNumber + "|");
+			System.out.print((arrow) ? " --> |" + currentPlayer.playerNumber + "|" : "|" + currentPlayer.playerNumber + "|");
 			arrow = true;
 			
 			currentPlayer = currentPlayer.nextPlayer;
 			
 		}while(currentPlayer != rootPlayer);
+		System.out.println();
 		
 	}
 	
