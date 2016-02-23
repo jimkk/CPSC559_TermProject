@@ -7,8 +7,8 @@ public class LinkedPlayerList {
 	static PlayerNode temp;
 	static PlayerNode rootPlayer;
 	
-	public void addPlayers (int playerNumber, boolean turn, boolean folded, Card hand){
-		PlayerNode player = new PlayerNode(playerNumber, turn, folded, hand);
+	public void addPlayers (int playerNumber, int playerID, boolean turn, boolean folded, Card[] hand){
+		PlayerNode player = new PlayerNode(playerNumber, playerID, turn, folded, hand);
 		
 		if(rootPlayer == null){
 			
@@ -37,13 +37,14 @@ public class LinkedPlayerList {
 		}
 	}
 	
-	public void insertPlayer (int     playerNumber, 
+	public void insertPlayer (int     playerNumber,
+							  int     playerID,
 							  boolean turn,  
 							  boolean folded,
-							  Card    hand,
+							  Card[]    hand,
 							  int     after){
 		
-		PlayerNode player = new PlayerNode(playerNumber, turn, folded, hand);
+		PlayerNode player = new PlayerNode(playerNumber, playerID, turn, folded, hand);
 		
 		int ithPlayer = 1;
 		
@@ -104,6 +105,7 @@ public class LinkedPlayerList {
 			currentPlayer = currentPlayer.nextPlayer;
 			
 		}while(currentPlayer != rootPlayer);
+		System.out.println();
 		
 	}
 	
