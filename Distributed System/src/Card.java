@@ -34,7 +34,7 @@ public class Card{
 	public String toString(){
 		String numberValue;
 		switch(value){
-			case(1):
+			case(14):
 				numberValue = "A";
 				break;
 			case(11):
