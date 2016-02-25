@@ -65,7 +65,8 @@ public class ServerThread implements Runnable{
 
               //attempt at integrating Card class to deal command
               String randomSuit = determineCardSuit(randomCardNumber);
-              Card randCard = new Card(randomSuit, randomCardNumber);
+              int finalCardValue = determineCardValue(randomCardNumber, randomSuit);
+              Card randCard = new Card(randomSuit, finalCardValue);
               System.out.println("This is the card: " + randCard.getSuit() + randCard.getValue());
 
 							out.write("message Card dealt: " + deal + "\n");
@@ -132,8 +133,21 @@ public class ServerThread implements Runnable{
     
   }
 
-  //private int determineCardValue(int randomCardNumber){
-
-  //}  
+  private int determineCardValue(int randCard, String suit){
+    int finalCardNumber = 0;
+    if(suit == "Spades"){
+      finalCardNumber = randCard + 1;
+    }
+    if(suit == "Hearts"){
+      finalCardNumber = randCard - 12;
+    }
+    if(suit == "Clubs"){
+      finalCardNumber = randCard - 25;
+    }
+    if(suit == "Diamonds"){
+      finalCardNumber = randCard - 38;
+    }
+    return finalCardNumber;
+  }  
 
 }
