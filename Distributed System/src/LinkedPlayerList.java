@@ -98,6 +98,18 @@ public class LinkedPlayerList {
 		PlayerNode.numberOfPlayers--;
 	}
 	
+	public int findPlayerbyPort(int playerPort){
+		currentPlayer = rootPlayer;
+		do{
+			if (currentPlayer.port == playerPort){
+				break;
+			}
+			currentPlayer = currentPlayer.nextPlayer;
+		}while(currentPlayer != rootPlayer);
+		
+		return currentPlayer.playerNumber;
+	}
+	
 	public void displayGameState() {
 	// Print the game state on the Server side
 		currentPlayer = rootPlayer;

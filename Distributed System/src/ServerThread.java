@@ -46,6 +46,7 @@ public class ServerThread implements Runnable{
 			playerPort = socket.getPort();
 			playerList.addPlayers(playerCount, playerID, turn, folded, playerPort, hand);
 			playerList.displayGameState();
+			int playerNumber;  
 
 			StringBuffer buffer = new StringBuffer();
 			String messageType = "";
@@ -66,7 +67,8 @@ public class ServerThread implements Runnable{
 							randomCardNumber = rand.nextInt(52) + 1;
 							String deal = String.valueOf(randomCardNumber);
 							System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
-
+							playerNumber = playerList.findPlayerbyPort(socket.getPort());
+							System.out.printf("Assigning card to player: %s\n", playerNumber);
               //attempt at integrating Card class to deal command
               String randomSuit = determineCardSuit(randomCardNumber);
 
