@@ -9,6 +9,7 @@ public class ServerThread implements Runnable{
 	private boolean isDone = false;
 	public static int playerCount = 0;
 	private static int playerID = 0;
+	private int playerPort;
 	private boolean turn = false;
 	private boolean folded = false;
 	Random rand = new Random();
@@ -24,7 +25,9 @@ public class ServerThread implements Runnable{
 	public void run(){
 		System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
 		playerCount++;
-		playerList.addPlayers(playerCount, playerID, turn, folded, hand);
+		playerID++;
+		playerPort = socket.getPort();
+		playerList.addPlayers(playerCount, playerID, turn, folded, playerPort, hand);
 		playerList.displayGameState();
 		
 		try{

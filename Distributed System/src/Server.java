@@ -19,9 +19,11 @@ public class Server {
 		
 		while(!isDone){
 			try{
-				Socket clientSocket = serverSocket.accept();
+				//if (ServerThread.playerCount <= 6){
+					Socket clientSocket = serverSocket.accept();
 
-				new Thread(new ServerThread(clientSocket)).start();
+					new Thread(new ServerThread(clientSocket)).start();
+				//}
 			} catch (Exception e){
 				System.out.println("Error accepting client\n");
 				e.printStackTrace();
