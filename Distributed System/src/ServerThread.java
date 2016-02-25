@@ -13,6 +13,9 @@ public class ServerThread implements Runnable{
 	private boolean folded = false;
 	Random rand = new Random();
 	int randomCardNumber;
+	private static String serverMessage = "";
+	private static boolean serverMessageLock = false;
+	private static int key = -1;
 
 	Card[] hand;
 	LinkedPlayerList playerList = new LinkedPlayerList();
@@ -45,6 +48,7 @@ public class ServerThread implements Runnable{
 			String messageType = "";
 
 			while(!isDone){
+			
 				if(in.ready()){
 					buffer = read(in);
 					if(buffer.indexOf(" ") != -1){
@@ -65,6 +69,50 @@ public class ServerThread implements Runnable{
 						case("message"):
 							String message = buffer.substring(buffer.indexOf(" "));
 							System.out.printf("Message from %s: %s\n", socket.getInetAddress(), message);
+							break;
+						case("set_message_request"):
+							if(!serverMessageLock){
+								serverMessageLock = true;
+								key = rand.nextInt(10000);
+								out.write("set_message_request_granted " + Integer.toString(key) + "\n");
+								out.flush();
+							} else {
+								out.write("set_message_request_denied\n");
+								out.flush();
+							}
+							break;
+						case("set_message"):
+							String smessage = buffer.substring(buffer.indexOf(" ")+1);
+							String [] messageParts = smessage.split(" ");
+							int keyResponse = Integer.parseInt(messageParts[0]);
+							if(keyResponse == key){
+								StringBuffer smBuf = new StringBuffer();
+								for(int i = 1; i < messageParts.length; i++){
+									smBuf.append(messageParts[i]);
+									if(i != messageParts.length-1){
+										smBuf.append(" ");
+									}
+								}
+								serverMessage = smBuf.toString();
+								serverMessageLock = false;
+								key = -1;
+								out.write("message Message Set!\n");
+								out.flush();
+								System.out.printf("Server message set by %s: %s\n", socket.getInetAddress(), serverMessage);
+							} else {
+								out.write("message INVALID KEY\n");
+								out.flush();
+							}
+
+							break;
+						case("get_message"):
+							if(!serverMessage.equals("")){
+								out.write("message " + serverMessage + "\n");
+								out.flush();
+							} else {
+								out.write("message No server message is set\n");
+								out.flush();
+							}
 							break;
 						case("close"):
 							System.out.println("Socket closed at client's request");
