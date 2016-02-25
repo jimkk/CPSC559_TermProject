@@ -9,6 +9,7 @@ public class ServerThread implements Runnable{
 	private boolean isDone = false;
 	public static int playerCount = 0;
 	private static int playerID = 0;
+	private int playerPort;
 	private boolean turn = false;
 	private boolean folded = false;
 	Random rand = new Random();
@@ -41,7 +42,9 @@ public class ServerThread implements Runnable{
 
 			System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
 			playerCount++;
-			playerList.addPlayers(playerCount, playerID, turn, folded, hand);
+			playerID++;
+			playerPort = socket.getPort();
+			playerList.addPlayers(playerCount, playerID, turn, folded, playerPort, hand);
 			playerList.displayGameState();
 
 			StringBuffer buffer = new StringBuffer();
@@ -63,6 +66,12 @@ public class ServerThread implements Runnable{
 							randomCardNumber = rand.nextInt(52) + 1;
 							String deal = String.valueOf(randomCardNumber);
 							System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
+
+              //attempt at integrating Card class to deal command
+              String randomSuit = determineCardSuit(randomCardNumber);
+              Card randCard = new Card(randomSuit, randomCardNumber);
+              System.out.println("This is the card: " + randCard.getSuit() + randCard.getValue());
+
 							out.write("message Card dealt: " + deal + "\n");
 							out.flush();
 							break;
@@ -152,5 +161,27 @@ public class ServerThread implements Runnable{
 		} catch (IOException e) {e.printStackTrace();}
 		return null;
 	}
+
+  private String determineCardSuit(int randCard){
+    String foundSuit = "default suit";
+      if(randCard > 0 && randCard < 14){
+        foundSuit = "Spades";
+      }
+      if(randCard > 13 && randCard < 27){
+        foundSuit = "Hearts";
+      }
+      if(randCard > 26 && randCard < 40){
+        foundSuit = "Clubs";
+      }
+      if(randCard > 39 && randCard < 53){
+        foundSuit = "Diamonds";
+      }
+    return foundSuit;
+    
+  }
+
+  //private int determineCardValue(int randomCardNumber){
+
+  //}  
 
 }

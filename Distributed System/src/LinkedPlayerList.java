@@ -11,12 +11,13 @@ public class LinkedPlayerList {
 	static PlayerNode temp;
 	static PlayerNode rootPlayer;
 	
-	public void addPlayers (int playerNumber, int playerID, boolean turn, boolean folded, Card[] hand){
-		PlayerNode player = new PlayerNode(playerNumber, playerID, turn, folded, hand);
+	public void addPlayers (int playerNumber, int playerID, boolean turn, boolean folded, int port, Card[] hand){
+		PlayerNode player = new PlayerNode(playerNumber, playerID, turn, folded, port, hand);
 		
 		if(rootPlayer == null){
 			
 			rootPlayer = player;
+			rootPlayer.turn = true;
 			//player.nextPlayer = null;
 			rootPlayer.nextPlayer = rootPlayer;
 			
@@ -45,10 +46,11 @@ public class LinkedPlayerList {
 							  int     playerID,
 							  boolean turn,  
 							  boolean folded,
+							  int	  port,
 							  Card[]    hand,
 							  int     after){
 		
-		PlayerNode player = new PlayerNode(playerNumber, playerID, turn, folded, hand);
+		PlayerNode player = new PlayerNode(playerNumber, playerID, turn, folded, port, hand);
 		
 		int ithPlayer = 1;
 		
@@ -102,13 +104,44 @@ public class LinkedPlayerList {
 		boolean arrow = false;
 		
 		do{
-			System.out.print((arrow) ? " --> |" + currentPlayer.playerNumber + "|" : "|" + currentPlayer.playerNumber + "|");
+			//System.out.print((arrow) ? " --> |" + currentPlayer.playerNumber + "\t|" : "|" + currentPlayer.playerNumber + "\t|");
+			System.out.print((arrow) ? "\t|\n" : "");
+			System.out.print((arrow) ? "\tV\n" : "");
+			System.out.println("ID   |" + currentPlayer.playerID + "\t\t|");
+			System.out.println("#    |" + currentPlayer.playerNumber + "\t\t|");
+			System.out.println("Turn |" + currentPlayer.turn + "\t|");
+			System.out.println("Port |" + currentPlayer.port + "\t|");
+			
 			arrow = true;
 			
 			currentPlayer = currentPlayer.nextPlayer;
 			
 		}while(currentPlayer != rootPlayer);
 		System.out.println();
+		arrow = false;
+		
+		/*
+		//Print ID
+		do{
+			System.out.print((arrow) ? " --> |" + currentPlayer.playerID + "\t|" : "|" + currentPlayer.playerID + "\t|");
+			arrow = true;
+			
+			currentPlayer = currentPlayer.nextPlayer;
+			
+		}while(currentPlayer != rootPlayer);
+		System.out.println();
+		arrow = false;
+		*/
+		/*
+		//print port
+		do{
+			System.out.print((arrow) ? " --> |" + currentPlayer.port + "\t|" : "|" + currentPlayer.port + "\t|");
+			arrow = true;
+			
+			currentPlayer = currentPlayer.nextPlayer;
+			
+		}while(currentPlayer != rootPlayer);
+		System.out.println();*/
 		
 	}
 	
