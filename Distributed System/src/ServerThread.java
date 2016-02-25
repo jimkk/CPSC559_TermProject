@@ -62,6 +62,12 @@ public class ServerThread implements Runnable{
 							randomCardNumber = rand.nextInt(52) + 1;
 							String deal = String.valueOf(randomCardNumber);
 							System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
+
+              //attempt at integrating Card class to deal command
+              String randomSuit = determineCardSuit(randomCardNumber);
+              Card randCard = new Card(randomSuit, randomCardNumber);
+              System.out.println("This is the card: " + randCard.getSuit() + randCard.getValue());
+
 							out.write("message Card dealt: " + deal + "\n");
 							out.flush();
 							break;
@@ -107,5 +113,27 @@ public class ServerThread implements Runnable{
 		} catch (IOException e) {e.printStackTrace();}
 		return null;
 	}
+
+  private String determineCardSuit(int randCard){
+    String foundSuit = "default suit";
+      if(randCard > 0 && randCard < 14){
+        foundSuit = "Spades";
+      }
+      if(randCard > 13 && randCard < 27){
+        foundSuit = "Hearts";
+      }
+      if(randCard > 26 && randCard < 40){
+        foundSuit = "Clubs";
+      }
+      if(randCard > 39 && randCard < 53){
+        foundSuit = "Diamonds";
+      }
+    return foundSuit;
+    
+  }
+
+  //private int determineCardValue(int randomCardNumber){
+
+  //}  
 
 }
