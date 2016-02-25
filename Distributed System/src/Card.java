@@ -51,7 +51,7 @@ public class Card{
 				break;
 		}
 
-		return getUnicodeChar(suit) + numberValue;
+		return getUnicodeChar(suit) + " " + numberValue;
 	}
 
 	private String getUnicodeChar(String suit){
