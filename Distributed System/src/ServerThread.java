@@ -70,9 +70,10 @@ public class ServerThread implements Runnable{
               //attempt at integrating Card class to deal command
               String randomSuit = determineCardSuit(randomCardNumber);
               Card randCard = new Card(randomSuit, randomCardNumber);
-              System.out.println("This is the card: " + randCard.getSuit() + randCard.getValue());
+              //System.out.println("This is the card: " + randCard.getSuit() + randCard.getValue());
+              System.out.println("This is the card: " + randCard);
 
-							out.write("message Card dealt: " + deal + "\n");
+							out.write("message Card dealt: " + randCard + "\n");
 							out.flush();
 							break;
 						case("message"):
