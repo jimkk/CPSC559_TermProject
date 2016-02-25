@@ -28,13 +28,13 @@ public class ServerThread implements Runnable{
 			BufferedOutputStream bufOut = new BufferedOutputStream(socket.getOutputStream());
 			OutputStreamWriter out = new OutputStreamWriter(bufOut);
 
-			if(playerCount >= 2){
-				System.out.println("New client rejected due to game being full");
-				out.write("full");
-				out.flush();
-				Thread.sleep(5000);
-				return;
-			}
+			//if(playerCount >= 2){
+			//	System.out.println("New client rejected due to game being full");
+			//	out.write("full");
+			//	out.flush();
+			//	Thread.sleep(5000);
+			//	return;
+			//}
 
 			System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
 			playerCount++;
