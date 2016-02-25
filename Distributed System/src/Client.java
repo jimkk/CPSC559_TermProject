@@ -18,55 +18,111 @@ public class Client{
 		try{
 			socket = new Socket(address, port);
 			System.out.printf("Connected to %s on port %d\n", socket.getInetAddress(), socket.getPort());
+			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
+			InputStreamReader in = new InputStreamReader(bufIn);
 			BufferedOutputStream bufOut = new BufferedOutputStream(socket.getOutputStream());
 			OutputStreamWriter out = new OutputStreamWriter(bufOut);
-			Scanner in = new Scanner(System.in);
+			//Scanner userIn = new Scanner(System.in);
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+			StringBuffer buffer = new StringBuffer();
+
+			System.out.print("Enter Command: ");
+
 			while(!isDone){
-				System.out.print("Enter Command: ");
-				String input = in.nextLine();
+				if(in.ready()){
+					buffer = read(in);
+					String messageType;
+					if(buffer.indexOf(" ") != -1){
+						messageType = buffer.substring(0, buffer.indexOf(" "));
+					} else {
+						messageType = buffer.toString();
+					}
 
-				switch(input){
-					case("deal"):
-						/* THis was the client side deal code
-						randomCardNumber = rand.nextInt(52) + 1;
-						System.out.println("Dealt card number: " +randomCardNumber);
-						String deal = String.valueOf(randomCardNumber);
-						out.write("deal " + deal + '\n');
-						*/
-						System.out.println("Dealing card.");
-						out.write("deal " + '\n');
-						break;
-					case("message"):
-						System.out.print("Enter message: ");
-						String message = in.nextLine();
-						out.write("message " + message + '\n');
-						break;
-					case("close"):
-						System.out.println("Socket closed");
-						isDone = true;
-						out.write("close\n");
-						break;
-					case("destroy"):
-						//TODO
-						break;
-					default:
-						System.out.println("ERROR: Unknown Message Type");
-						break;
+					switch(messageType){
+						case("message"):
+							String message = buffer.substring(buffer.indexOf(" "));
+							System.out.printf("\rServer says: %s\n", message);
+							System.out.print("Enter Command: ");
+							break;
+						case("full"):
+							System.out.println("Server is full. Exiting.");
+							isDone = true;
+							break;
+						default:
+							System.out.printf("UNKNOWN MESSAGE: %s\n", buffer);
+							break;
+					}
 				}
-				out.flush();
 
+
+				if(br.ready()){
+					String input = br.readLine();
+
+					switch(input){
+						case("deal"):
+							/* THis was the client side deal code
+							   randomCardNumber = rand.nextInt(52) + 1;
+							   System.out.println("Dealt card number: " +randomCardNumber);
+							   String deal = String.valueOf(randomCardNumber);
+							   out.write("deal " + deal + '\n');
+							   */
+							System.out.println("Dealing card.");
+							out.write("deal " + '\n');
+							break;
+						case("message"):
+							System.out.print("Enter message: ");
+							String message = br.readLine();
+							out.write("message " + message + '\n');
+							break;
+						case("close"):
+							System.out.println("Socket closed");
+							isDone = true;
+							out.write("close\n");
+							break;
+						case("destroy"):
+							//TODO
+							break;
+						default:
+							System.out.println("ERROR: Unknown Message Type");
+							break;
+					}
+					out.flush();
+
+					if(!isDone){
+						System.out.print("Enter Command: ");
+					}
+				}
+
+				Thread.sleep(100);
 			}
 		} catch (Exception e){
 			System.out.printf("Failed to connect to server at %s on port %d\n", socket.getInetAddress(), socket.getPort());
 			e.printStackTrace();
 		}
+		return;
+	}
+
+	private StringBuffer read(InputStreamReader in){
+		try{
+			StringBuffer buffer = new StringBuffer();
+			int c;
+			while((c = in.read()) != -1){
+				if(c == (int) '\n'){
+					break;
+				}
+				buffer.append((char) c);
+			}
+			return buffer;
+		} catch (IOException e) {e.printStackTrace();}
+		return null;
 	}
 
 	public static void main(String [] args){
 		if(args.length == 2){
-			
+
 			Client client = new Client();
-			
+
 			client.address = args[0];
 			client.port = Integer.parseInt(args[1]);
 
@@ -76,6 +132,6 @@ public class Client{
 
 }
 
-			
+
 
 
