@@ -8,6 +8,7 @@ public class PlayerNode {
 	int playerID;
 	int stack;
 	int currentBetAmount;
+	int betPerTurn;
 	boolean turn = false;
 	boolean folded = false;
 	int port;
@@ -20,11 +21,18 @@ public class PlayerNode {
 		this.playerNumber = playerNumber;
 		this.playerID = playerID;
 		this.currentBetAmount = 0;
+		this.betPerTurn = 0;
 		this.turn = false;
 		this.folded = false;
 		this.port = port;
 		this.hand = null;
 		numberOfPlayers++;
 		
+	}
+
+	public void bet(int amount){
+		currentBetAmount += amount;
+		betPerTurn += amount;
+		stack -= amount;
 	}
 }
