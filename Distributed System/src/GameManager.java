@@ -62,18 +62,22 @@ public class GameManager {
 		if(amount < player.stack){
 			// If the bet is greater than the currentBetCall, then set the
 			// bet to the new currentBetCall
-			if((betPerTurn + amount) > currentBetCall){		//Raise
-				currentBetCall = (betPerTurn + amount);
+			if((player.betPerTurn + amount) > currentBetCall){		//Raise
+				currentBetCall = (player.betPerTurn + amount);
 				player.bet(amount);
+				pot += amount;
 			}	
 			// Check if bet is equal to the currentBetCall, if so continue on
-			else if((betPerTurn + amount) == currentBetCall){ 	//Call
+			else if((player.betPerTurn + amount) == currentBetCall){ 	//Call
 				player.bet(amount);
+				pot += amount;
 			} else if (amount == player.stack) { //All in
 				player.bet(amount);
+				pot += amount;
 			} else {
 				;//TODO Illegal bet
 			}
+		}
 		// Keep track of how much each player bets, for each round of betting
 		
 		// Will have to record each player's bet in their 'playerNode', setting the
