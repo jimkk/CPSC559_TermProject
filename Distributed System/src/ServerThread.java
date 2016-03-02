@@ -5,28 +5,39 @@ import java.util.*;
 
 public class ServerThread implements Runnable{
 
-	private Socket socket;
-	private boolean isDone = false;
-	public static int playerCount = 0;
-	private static int playerID = 0;
+	
+	private int randomCardNumber;
 	private int playerPort;
-	private boolean turn = false;
+	private int returnCode;
+	
+	private boolean isDone = false;
 	private boolean folded = false;
-	Random rand = new Random();
-	int randomCardNumber;
+	
 	private static String serverMessage = "";
 	private static boolean serverMessageLock = false;
 	private static int key = -1;
-
+		
+	// Instance variables
+	private Socket socket;
+	Random rand = new Random();
 	Card[] hand;
-	LinkedPlayerList playerList = new LinkedPlayerList();
+	GameManager game;
+	//LinkedPlayerList playerList = new LinkedPlayerList();
 
-	public ServerThread(Socket socket){
+	public ServerThread(Socket socket, GameManager game){
 		this.socket = socket;
+		this.game = game;
 	}
 
 	public void run(){
 		try{
+			//if (game == null) {
+			//	game = new GameManager();
+			//}
+			
+			int playerNumber;
+			int playerID;
+			
 			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
 			InputStreamReader in = new InputStreamReader(bufIn);
 			BufferedOutputStream bufOut = new BufferedOutputStream(socket.getOutputStream());
@@ -40,13 +51,17 @@ public class ServerThread implements Runnable{
 			//	return;
 			//}
 
-			System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
-			playerCount++;
-			playerID++;
 			playerPort = socket.getPort();
-			playerList.addPlayers(playerCount, playerID, turn, folded, playerPort, hand);
-			playerList.displayGameState();
-			int playerNumber;  
+			returnCode = game.addPlayerToGame(playerPort);
+			if (returnCode == -1) {
+				out.write("Game is full; connection denied");
+				out.flush();
+				socket.close();
+				
+			}
+			System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
+			game.getPlayerList().displayGameState();
+			  
 
 			StringBuffer buffer = new StringBuffer();
 			String messageType = "";
@@ -67,7 +82,7 @@ public class ServerThread implements Runnable{
 							randomCardNumber = rand.nextInt(52) + 1;
 							String deal = String.valueOf(randomCardNumber);
 							System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
-							playerNumber = playerList.findPlayerbyPort(socket.getPort());
+							playerNumber = game.getPlayerList().findPlayerByPort(socket.getPort(), "Player Number");
 							System.out.printf("Assigning card to player: %s\n", playerNumber);
               //attempt at integrating Card class to deal command
               String randomSuit = determineCardSuit(randomCardNumber);
@@ -134,6 +149,9 @@ public class ServerThread implements Runnable{
 							break;
 						case("close"):
 							System.out.println("Socket closed at client's request");
+							// return the playerID
+							playerID = game.getPlayerList().findPlayerByPort(socket.getPort(), "Player ID");
+							game.removePlayerFromGame(playerID);
 							isDone = true;
 							break;
 						case("destroy"):

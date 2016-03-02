@@ -11,13 +11,15 @@ public class LinkedPlayerList {
 	static PlayerNode temp;
 	static PlayerNode rootPlayer;
 	
-	public void addPlayers (int playerNumber, int playerID, boolean turn, boolean folded, int port, Card[] hand){
-		PlayerNode player = new PlayerNode(playerNumber, playerID, turn, folded, port, hand);
+	public void addPlayers (int playerNumber, int playerID, int port){
+		PlayerNode player = new PlayerNode(playerNumber, playerID, port);
 		
 		if(rootPlayer == null){
 			
 			rootPlayer = player;
-			rootPlayer.turn = true;
+			// ** could have the line directly below if we wanted to set player 1's turn to true
+			// otherwise just do that when all player slots have been filled
+			//rootPlayer.turn = true;
 			//player.nextPlayer = null;
 			rootPlayer.nextPlayer = rootPlayer;
 			
@@ -44,13 +46,10 @@ public class LinkedPlayerList {
 	
 	public void insertPlayer (int     playerNumber,
 							  int     playerID,
-							  boolean turn,  
-							  boolean folded,
 							  int	  port,
-							  Card[]    hand,
 							  int     after){
 		
-		PlayerNode player = new PlayerNode(playerNumber, playerID, turn, folded, port, hand);
+		PlayerNode player = new PlayerNode(playerNumber, playerID, port);
 		
 		int ithPlayer = 1;
 		
@@ -98,7 +97,7 @@ public class LinkedPlayerList {
 		PlayerNode.numberOfPlayers--;
 	}
 	
-	public int findPlayerbyPort(int playerPort){
+	public int findPlayerByPort(int playerPort, String returnType){
 		currentPlayer = rootPlayer;
 		do{
 			if (currentPlayer.port == playerPort){
@@ -107,7 +106,32 @@ public class LinkedPlayerList {
 			currentPlayer = currentPlayer.nextPlayer;
 		}while(currentPlayer != rootPlayer);
 		
-		return currentPlayer.playerNumber;
+		if (returnType == "Player Number") 
+			return currentPlayer.playerNumber;
+		if (returnType == "Player ID")
+			return currentPlayer.playerID;
+		if (returnType == "Bet Amount")
+			return currentPlayer.currentBetAmount;
+		else return -1;
+	}
+	
+	public PlayerNode findPlayerByID(int playerID){
+		currentPlayer = rootPlayer;
+		do{
+			if (currentPlayer.playerID == playerID){
+				break;
+			}
+			currentPlayer = currentPlayer.nextPlayer;
+		}while(currentPlayer != rootPlayer);
+		
+		return currentPlayer;
+	}
+	
+	public void setPlayerBetAmount (int playerID, int betAmount){
+		PlayerNode player;
+		
+		player = findPlayerByID(playerID);
+		player.currentBetAmount = betAmount;		
 	}
 	
 	public void displayGameState() {
