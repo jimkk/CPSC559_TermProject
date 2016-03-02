@@ -52,7 +52,7 @@ public class ServerThread implements Runnable{
 			//}
 
 			playerPort = socket.getPort();
-			returnCode = game.addPlayerToGame(playerPort);
+			returnCode = game.addPlayerToGame(playerPort, 1000);		//TODO Set custom stack amount
 			if (returnCode == -1) {
 				out.write("Game is full; connection denied");
 				out.flush();

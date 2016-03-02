@@ -11,8 +11,8 @@ public class LinkedPlayerList {
 	static PlayerNode temp;
 	static PlayerNode rootPlayer;
 	
-	public void addPlayers (int playerNumber, int playerID, int port){
-		PlayerNode player = new PlayerNode(playerNumber, playerID, port);
+	public void addPlayers (int playerNumber, int playerID, int port, int stack){
+		PlayerNode player = new PlayerNode(playerNumber, playerID, port, stack);
 		
 		if(rootPlayer == null){
 			
@@ -47,9 +47,10 @@ public class LinkedPlayerList {
 	public void insertPlayer (int     playerNumber,
 							  int     playerID,
 							  int	  port,
+							  int	  stack,
 							  int     after){
 		
-		PlayerNode player = new PlayerNode(playerNumber, playerID, port);
+		PlayerNode player = new PlayerNode(playerNumber, playerID, port, stack);
 		
 		int ithPlayer = 1;
 		
@@ -126,7 +127,9 @@ public class LinkedPlayerList {
 		
 		return currentPlayer;
 	}
-	
+
+
+	//Is this method really needed?	
 	public void setPlayerBetAmount (int playerID, int betAmount){
 		PlayerNode player;
 		

@@ -6,6 +6,7 @@ public class PlayerNode {
 	
 	int playerNumber;
 	int playerID;
+	int stack;
 	int currentBetAmount;
 	boolean turn = false;
 	boolean folded = false;
@@ -13,8 +14,9 @@ public class PlayerNode {
 	Card[] hand;
 	PlayerNode nextPlayer;
 	
-	PlayerNode (int playerNumber, int playerID, int port){
+	PlayerNode (int playerNumber, int playerID, int port, int stack){
 		
+		this.stack = stack;
 		this.playerNumber = playerNumber;
 		this.playerID = playerID;
 		this.currentBetAmount = 0;
