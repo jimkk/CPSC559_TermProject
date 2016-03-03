@@ -86,6 +86,13 @@ public class ServerThread implements Runnable{
 					}
 
 					switch(messageType){
+            case("bet"):
+              String betAmount = buffer.substring(buffer.indexOf(" "));
+       				System.out.printf("Bet amount from %s: %s\n", socket.getInetAddress(), betAmount);
+
+              playerID = game.getPlayerList().findPlayerByPort(socket.getPort(), "Player ID");
+              game.bet(playerID, Integer.parseInt(betAmount.trim()));
+							break;
 						case("deal"):
 							//String deal = buffer.substring(buffer.indexOf(" "));
 							randomCardNumber = rand.nextInt(52) + 1;
