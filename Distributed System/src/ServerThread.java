@@ -12,6 +12,7 @@ public class ServerThread implements Runnable{
 	
 	private boolean isDone = false;
 	private boolean folded = false;
+	private boolean handSent = false;
 	
 	private static String serverMessage = "";
 	private static boolean serverMessageLock = false;
@@ -67,6 +68,14 @@ public class ServerThread implements Runnable{
 			String messageType = "";
 
 			while(!isDone){
+				
+				if(game.isGameOn() && !handSent){
+					Card [] hand = game.getPlayerList().findPlayerByPort(playerPort).getHand();
+					out.write("message Game Started!\n");
+					out.write("message Hand: " + hand[0] + " " + hand[1] + "\n");
+					out.flush();
+					handSent = true;
+				}
 			
 				if(in.ready()){
 					buffer = read(in);

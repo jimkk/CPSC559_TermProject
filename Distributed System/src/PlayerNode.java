@@ -25,9 +25,18 @@ public class PlayerNode {
 		this.turn = false;
 		this.folded = false;
 		this.port = port;
-		this.hand = null;
+		this.hand = new Card[2];
 		numberOfPlayers++;
 		
+	}
+
+	public void setHand(Card c1, Card c2){
+		hand[0] = c1;
+		hand[1] = c2;
+	}
+
+	public Card[] getHand(){
+		return hand;
 	}
 
 	public void bet(int amount){

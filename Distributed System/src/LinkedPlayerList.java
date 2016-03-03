@@ -115,7 +115,20 @@ public class LinkedPlayerList {
 			return currentPlayer.currentBetAmount;
 		else return -1;
 	}
-	
+	public PlayerNode findPlayerByPort(int playerPort){
+		currentPlayer = rootPlayer;
+		do{
+			if (currentPlayer.port == playerPort){
+				break;
+			}
+			currentPlayer = currentPlayer.nextPlayer;
+		}while(currentPlayer != rootPlayer);
+		
+		if(currentPlayer.port != playerPort){
+			return null;
+		}
+		return currentPlayer;	
+	}	
 	public PlayerNode findPlayerByID(int playerID){
 		currentPlayer = rootPlayer;
 		do{
@@ -128,6 +141,18 @@ public class LinkedPlayerList {
 		return currentPlayer;
 	}
 
+	public PlayerNode findPlayerByIndex(int index){
+		int ithplayer = 0;
+
+		currentPlayer = rootPlayer;
+
+		while(index != ithplayer){
+			currentPlayer = currentPlayer.nextPlayer;
+			ithplayer++;
+		}
+
+		return currentPlayer;
+	}
 
 	//Is this method really needed?	
 	public void setPlayerBetAmount (int playerID, int betAmount){

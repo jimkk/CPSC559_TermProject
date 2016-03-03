@@ -9,7 +9,9 @@ public class GameManager {
 	private int playerCount = 0;
 	private int playerID = 0;
 	private int turn = -1;
-	
+	private boolean gameOn = false;
+
+	private Deck deck;
 	private Card[] communityCards = new Card[5];
 	private LinkedPlayerList playerList = new LinkedPlayerList();
 
@@ -24,6 +26,17 @@ public class GameManager {
 	// traverse the list of players by playerNumber and prompt each player for their turn
 
 	// Deal cards
+	public void deal(){	
+		deck = new Deck();
+	
+		for(int i = 0; i < playerCount; i++){
+			PlayerNode player = getPlayerList().findPlayerByIndex(i);
+			player.setHand(deck.Draw(), deck.Draw());
+			System.out.print(".");
+		}
+		gameOn = true;
+		turn = 0;
+	}
 	// Assign turn
 	// Flip a card
 	// Add bet to pot
@@ -37,7 +50,11 @@ public class GameManager {
 		playerCount++;
 		playerID++;
 		this.getPlayerList().addPlayers(playerCount, playerID, playerPort, stack);
-		
+	
+		if(playerCount > 2){
+			deal();
+		}
+
 		return 0;
 	}
 	
@@ -83,6 +100,10 @@ public class GameManager {
 		// Will have to record each player's bet in their 'playerNode', setting the
 		// amount accordingly
 		
+	}
+
+	public boolean isGameOn(){
+		return gameOn;
 	}
 	
 	
