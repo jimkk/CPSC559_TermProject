@@ -60,6 +60,11 @@ public class Client{
 					String input = br.readLine();
 
 					switch(input){
+            case("bet"):
+              System.out.print("Enter bet: ");
+              String betAmount = br.readLine();
+              out.write("bet " + betAmount + '\n');
+              break;
 						case("deal"):
 							/* THis was the client side deal code
 							   randomCardNumber = rand.nextInt(52) + 1;
