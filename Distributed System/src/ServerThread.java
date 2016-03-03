@@ -7,8 +7,10 @@ public class ServerThread implements Runnable{
 
 	
 	private int randomCardNumber;
+	
 	private int playerPort;
 	private int returnCode;
+	private String playerIP;
 	
 	private boolean isDone = false;
 	private boolean folded = false;
@@ -53,7 +55,8 @@ public class ServerThread implements Runnable{
 			//}
 
 			playerPort = socket.getPort();
-			returnCode = game.addPlayerToGame(playerPort, 1000);		//TODO Set custom stack amount
+			playerIP = socket.getInetAddress().getHostAddress();
+			returnCode = game.addPlayerToGame(1000, playerPort, playerIP);		//TODO Set custom stack amount
 			if (returnCode == -1) {
 				out.write("Game is full; connection denied");
 				out.flush();
@@ -84,8 +87,11 @@ public class ServerThread implements Runnable{
 					} else {
 						messageType = buffer.toString();
 					}
-
+					
 					switch(messageType){
+					
+						//case("bet"):
+						
 						case("deal"):
 							//String deal = buffer.substring(buffer.indexOf(" "));
 							randomCardNumber = rand.nextInt(52) + 1;
@@ -93,16 +99,16 @@ public class ServerThread implements Runnable{
 							System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
 							playerNumber = game.getPlayerList().findPlayerByPort(socket.getPort(), "Player Number");
 							System.out.printf("Assigning card to player: %s\n", playerNumber);
-              //attempt at integrating Card class to deal command
-              String randomSuit = determineCardSuit(randomCardNumber);
+							//attempt at integrating Card class to deal command
+							String randomSuit = determineCardSuit(randomCardNumber);
 
-              int finalCardValue = determineCardValue(randomCardNumber, randomSuit);
-              Card randCard = new Card(randomSuit, finalCardValue);
+							int finalCardValue = determineCardValue(randomCardNumber, randomSuit);
+							Card randCard = new Card(randomSuit, finalCardValue);
               
 
-              //Card randCard = new Card(randomSuit, randomCardNumber);
-              //System.out.println("This is the card: " + randCard.getSuit() + randCard.getValue());
-              System.out.println("This is the card: " + randCard + " with random number: " + randomCardNumber);
+							//Card randCard = new Card(randomSuit, randomCardNumber);
+							//System.out.println("This is the card: " + randCard.getSuit() + randCard.getValue());
+							System.out.println("This is the card: " + randCard + " with random number: " + randomCardNumber);
 
 
 							out.write("message Card dealt: " + randCard + "\n");

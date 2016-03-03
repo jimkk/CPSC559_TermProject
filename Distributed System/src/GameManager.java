@@ -43,13 +43,13 @@ public class GameManager {
 	// force display the cards
 	// remove pot from table and award to winning player
 	
-	public int addPlayerToGame(int playerPort, int stack) {
+	public int addPlayerToGame(int stack, int playerPort, String ipAddress) {
 		if(playerCount == 6) {
 			return -1;
 		}
 		playerCount++;
 		playerID++;
-		this.getPlayerList().addPlayers(playerCount, playerID, playerPort, stack);
+		this.getPlayerList().addPlayers(playerCount, playerID, stack, playerPort, ipAddress);
 	
 		if(playerCount > 2){
 			deal();

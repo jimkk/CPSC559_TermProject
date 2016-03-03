@@ -11,8 +11,8 @@ public class LinkedPlayerList {
 	static PlayerNode temp;
 	static PlayerNode rootPlayer;
 	
-	public void addPlayers (int playerNumber, int playerID, int port, int stack){
-		PlayerNode player = new PlayerNode(playerNumber, playerID, port, stack);
+	public void addPlayers (int playerNumber, int playerID, int stack, int port, String ipAddress){
+		PlayerNode player = new PlayerNode(playerNumber, playerID, stack, port, ipAddress);
 		
 		if(rootPlayer == null){
 			
@@ -46,11 +46,12 @@ public class LinkedPlayerList {
 	
 	public void insertPlayer (int     playerNumber,
 							  int     playerID,
-							  int	  port,
 							  int	  stack,
+							  int	  port,
+							  String  ipAddress,
 							  int     after){
 		
-		PlayerNode player = new PlayerNode(playerNumber, playerID, port, stack);
+		PlayerNode player = new PlayerNode(playerNumber, playerID, stack, port, ipAddress);
 		
 		int ithPlayer = 1;
 		
@@ -115,6 +116,8 @@ public class LinkedPlayerList {
 			return currentPlayer.currentBetAmount;
 		else return -1;
 	}
+	
+	
 	public PlayerNode findPlayerByPort(int playerPort){
 		currentPlayer = rootPlayer;
 		do{
@@ -128,7 +131,9 @@ public class LinkedPlayerList {
 			return null;
 		}
 		return currentPlayer;	
-	}	
+	}
+	
+	
 	public PlayerNode findPlayerByID(int playerID){
 		currentPlayer = rootPlayer;
 		do{
@@ -171,10 +176,13 @@ public class LinkedPlayerList {
 			//System.out.print((arrow) ? " --> |" + currentPlayer.playerNumber + "\t|" : "|" + currentPlayer.playerNumber + "\t|");
 			System.out.print((arrow) ? "\t|\n" : "");
 			System.out.print((arrow) ? "\tV\n" : "");
-			System.out.println("ID   |" + currentPlayer.playerID + "\t\t|");
-			System.out.println("#    |" + currentPlayer.playerNumber + "\t\t|");
-			System.out.println("Turn |" + currentPlayer.turn + "\t|");
-			System.out.println("Port |" + currentPlayer.port + "\t|");
+			System.out.println("ID    |" + currentPlayer.playerID + "\t   |");
+			System.out.println("#     |" + currentPlayer.playerNumber + "\t   |");
+			System.out.println("Turn  |" + currentPlayer.turn + "\t   |");
+			System.out.println("Stack |" + currentPlayer.stack + "\t   |");
+			System.out.println("Folded|" + currentPlayer.folded + "\t   |");
+			System.out.println("IP    |" + currentPlayer.ipAddress + "   |");
+			System.out.println("Port  |" + currentPlayer.port + "\t   |");
 			
 			arrow = true;
 			
