@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 
 
-public class GameManager {
+public class GameManager implements Serializable {
 	
 	private int pot = 0;
 	private int currentBetCall = 0;

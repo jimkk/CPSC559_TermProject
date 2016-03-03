@@ -1,6 +1,7 @@
 import java.util.LinkedList;
+import java.io.*;
 
-public class PlayerNode {
+public class PlayerNode implements Serializable{
 	
 	static int numberOfPlayers = 0;
 	

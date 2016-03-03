@@ -7,10 +7,29 @@ public class Server {
 	private int port = 7777;
 	private ServerSocket serverSocket;
 
+	//Backup stuff
+	private String backupServerAddress = "localhost";
+	private int backupServerPort = 5432;
+	private Socket backupServer;
+	private ObjectOutputStream out = null;
+
+
 	GameManager game = new GameManager();
-	
+	private int gameChecksum = 0;
+
 	private void run(){
 		
+		try{
+			backupServer = new Socket(backupServerAddress, backupServerPort);
+			BufferedOutputStream bufOut = new BufferedOutputStream(backupServer.getOutputStream());
+			out = new ObjectOutputStream(bufOut);
+		} catch (Exception e){
+			System.out.println("Unable to connect to backup server");
+		}
+
+		new Thread(new BackupManager(out, game)).start();
+
+
 		try{
 			serverSocket = new ServerSocket(port);
 		} catch (Exception e){
