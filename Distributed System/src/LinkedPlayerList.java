@@ -5,7 +5,7 @@ import java.io.*;
 // Referenced the following videos on linked lists:
 // https://www.youtube.com/watch?v=pBaZl9B448g
 // https://www.youtube.com/watch?v=SMuL7ld3r5M
-public class LinkedPlayerList {
+public class LinkedPlayerList implements Serializable{
 
 	static PlayerNode currentPlayer;
 	static PlayerNode temp;
