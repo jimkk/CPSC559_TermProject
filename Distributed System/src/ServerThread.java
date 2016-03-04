@@ -95,6 +95,9 @@ public class ServerThread implements Runnable{
 			
 			       			playerID = game.getPlayerList().findPlayerByPort(socket.getPort(), "Player ID");
 			       			game.bet(playerID, Integer.parseInt(betAmount.trim()));
+									PlayerNode player = game.getPlayerList().findPlayerByPort(socket.getPort());
+									int stack = player.getStack();
+									System.out.println("This player's new stack total: " + stack);
 							break;
 						case("deal"):
 							//String deal = buffer.substring(buffer.indexOf(" "));

@@ -48,6 +48,10 @@ public class PlayerNode implements Serializable{
 		return hand;
 	}
 
+	public int getStack(){
+		return stack;
+	}
+
 	public void bet(int amount){
 		currentBetAmount += amount;
 		betPerTurn += amount;
