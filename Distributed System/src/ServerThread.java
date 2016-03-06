@@ -19,6 +19,7 @@ public class ServerThread implements Runnable{
 	private static String serverMessage = "";
 	private static boolean serverMessageLock = false;
 	private static int key = -1;
+	private static boolean debug = true;
 		
 	// Instance variables
 	private Socket socket;
@@ -79,7 +80,7 @@ public class ServerThread implements Runnable{
 					out.flush();
 					handSent = true;
 				}
-			
+				
 				if(in.ready()){
 					buffer = read(in);
 					if(buffer.indexOf(" ") != -1){
@@ -88,8 +89,21 @@ public class ServerThread implements Runnable{
 						messageType = buffer.toString();
 					}
 					
+					// Check if it is that player's turn; if not reply accordingly
+					// Note: only check if the player has requested something that cannot
+					// be done if it is not his or her turn; i.e. betting, folding, calling
+					playerPort = socket.getPort();
+					
 					switch(messageType){
 			            case("bet"):
+			            	if (game.checkTurn(playerPort) == false) {
+			            		System.out.println("Currently not this player's turn; cannot place bet yet");
+			            		
+			            		out.write("It's not your turn, you cannot place a bet yet.");
+			            		out.flush();
+			            		
+			            		break;
+			            	}
 			            	String betAmount = buffer.substring(buffer.indexOf(" "));
 			       			System.out.printf("Bet amount from %s: %s\n", socket.getInetAddress(), betAmount);
 			
@@ -99,7 +113,28 @@ public class ServerThread implements Runnable{
 									int stack = player.getStack();
 									System.out.println("This player's new stack total: " + stack);
 							break;
+			            case("call"):
+			            	if (game.checkTurn(playerPort) == false) {
+			            		System.out.println("Currently not this player's turn; cannot call another player's bet");
+			            		
+			            		out.write("It's not your turn, you cannot call another player's bet yet");
+			            		out.flush();
+			            		
+			            		break;
+			            	}
+			            	break;
+			            case("fold"):
+			            	if (game.checkTurn(playerPort) == false) {
+			            		System.out.println("Currently not this player's turn; cannot fold until it is");
+			            		
+			            		out.write("It's not your turn, you cannot fold until it is");
+			            		out.flush();
+			            		
+			            		break;
+			            	}
+			            	break;
 						case("deal"):
+							if (game.checkTurn(playerPort) == false) break;
 							//String deal = buffer.substring(buffer.indexOf(" "));
 							randomCardNumber = rand.nextInt(52) + 1;
 							String deal = String.valueOf(randomCardNumber);
@@ -169,7 +204,11 @@ public class ServerThread implements Runnable{
 								out.flush();
 							}
 							break;
+						case("display game"):
+							if (debug == false) break;
+							else game.getPlayerList().displayGameState();
 						case("close"):
+							
 							System.out.println("Socket closed at client's request");
 							// return the playerID
 							playerID = game.getPlayerList().findPlayerByPort(socket.getPort(), "Player ID");

@@ -10,6 +10,7 @@ public class GameManager implements Serializable {
 	private int playerID = 0;
 	private int turn = -1;
 	private boolean gameOn = false;
+	private boolean gameStart = true;
 
 	private Deck deck;
 	private Card[] communityCards = new Card[5];
@@ -20,8 +21,40 @@ public class GameManager implements Serializable {
 	// this point
 	
 	
-	// Need to have a state-machine to manage the turns required of each player
 	
+	public void beginRound(){
+	/**
+	 * Need to have a state-machine to manage the turns required of each player 
+	 */
+		 
+		// Set the blinds and the turns
+		setBlinds();
+		deal();
+		
+	}
+	
+	public void setBlinds(){
+	/**
+	 * Set Big and small blinds for each round
+	 */
+		
+		for(int i = 0; i < playerCount; i++){
+			PlayerNode player = getPlayerList().findPlayerByIndex(i);
+			if(player.playerNumber == 1 && player.folded == false && gameStart == true){
+				// initial state of the game
+				player.bigBlind = true;
+				player.turn = true;
+				player.nextPlayer.smallBlind = true;
+				gameStart = false;
+			}
+			else if (player.bigBlind == true){
+				player.bigBlind = false;
+				player.nextPlayer.bigBlind = true;
+				player.nextPlayer.turn = true;
+				player.nextPlayer.nextPlayer.smallBlind = true;
+			}
+		}
+	} 
 	
 	// traverse the list of players by playerNumber and prompt each player for their turn
 
@@ -52,7 +85,7 @@ public class GameManager implements Serializable {
 		this.getPlayerList().addPlayers(playerCount, playerID, stack, playerPort, ipAddress);
 	
 		if(playerCount > 2){
-			deal();
+			beginRound();
 		}
 
 		return 0;
@@ -67,6 +100,16 @@ public class GameManager implements Serializable {
 		getPlayerList().deletePlayer(playerID);
 		
 		return 0;
+	}
+	
+	public boolean checkTurn (int playerPort){
+	/**
+	 * Check if it's the player's turn. If not, return false.
+	 */
+		PlayerNode player = getPlayerList().findPlayerByPort(playerPort);
+		
+		if(player.getTurn() == false) return false;
+		else return true; 
 	}
 	
 	public void bet(int playerID, int amount){

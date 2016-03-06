@@ -113,6 +113,10 @@ public class Client{
 						case("destroy"):
 							//TODO
 							break;
+						case("display game"):
+							out.write("display game\n");
+							out.flush();
+							break;
 						default:
 							System.out.println("ERROR: Unknown Message Type");
 							break;

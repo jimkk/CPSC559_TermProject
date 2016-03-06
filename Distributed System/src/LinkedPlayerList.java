@@ -172,6 +172,7 @@ public class LinkedPlayerList implements Serializable{
 		currentPlayer = rootPlayer;
 		boolean arrow = false;
 		
+		System.out.println("---------------------------");
 		do{
 			//System.out.print((arrow) ? " --> |" + currentPlayer.playerNumber + "\t|" : "|" + currentPlayer.playerNumber + "\t|");
 			System.out.print((arrow) ? "\t|\n" : "");
@@ -179,6 +180,9 @@ public class LinkedPlayerList implements Serializable{
 			System.out.println("ID    |" + currentPlayer.playerID + "\t   |");
 			System.out.println("#     |" + currentPlayer.playerNumber + "\t   |");
 			System.out.println("Turn  |" + currentPlayer.turn + "\t   |");
+			System.out.print("Blind |");
+			System.out.println((currentPlayer.smallBlind) ? "Small Blind" + "\t	|" 
+							 : (currentPlayer.bigBlind) ? "Big Blind" + "\t	|" : "None");
 			System.out.println("Stack |" + currentPlayer.stack + "\t   |");
 			System.out.println("Folded|" + currentPlayer.folded + "\t   |");
 			System.out.println("IP    |" + currentPlayer.ipAddress + "   |");
@@ -189,7 +193,7 @@ public class LinkedPlayerList implements Serializable{
 			currentPlayer = currentPlayer.nextPlayer;
 			
 		}while(currentPlayer != rootPlayer);
-		System.out.println();
+		System.out.println("---------------------------");
 		arrow = false;
 		
 		/*

@@ -14,7 +14,7 @@ public class PlayerNode implements Serializable{
 	boolean turn = false;
 	boolean folded = false;
 	boolean bigBlind = false;
-	boolean littleBlind = false;
+	boolean smallBlind = false;
 	boolean allIn = false;
 	String ipAddress;
 	Card[] hand;
@@ -32,7 +32,7 @@ public class PlayerNode implements Serializable{
 		this.turn = false;
 		this.folded = false;
 		this.bigBlind = false;
-		this.littleBlind = false;
+		this.smallBlind = false;
 		this.allIn = false;
 		this.hand = new Card[2];
 		numberOfPlayers++;
@@ -44,6 +44,14 @@ public class PlayerNode implements Serializable{
 		hand[1] = c2;
 	}
 
+	public void setBigBlind(boolean b){
+		bigBlind = b;
+	}
+	
+	public void setSmallBlind(boolean b){
+		smallBlind = b;
+	}
+	
 	public Card[] getHand(){
 		return hand;
 	}
@@ -52,6 +60,10 @@ public class PlayerNode implements Serializable{
 		return stack;
 	}
 
+	public boolean getTurn(){
+		return turn;
+	}
+	
 	public void bet(int amount){
 		currentBetAmount += amount;
 		betPerTurn += amount;
