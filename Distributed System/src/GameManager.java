@@ -152,7 +152,17 @@ public class GameManager implements Serializable {
 	
 	public LinkedPlayerList getPlayerList(){
 		return playerList;
+	}	
+
+	public int getPot(){
+		return pot;
 	}
-	
-	
+
+	public int getTurn(){
+		return turn;
+	}
+
+	public int getPlayerCount(){
+		return playerCount;
+	}
 }

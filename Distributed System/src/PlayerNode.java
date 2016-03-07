@@ -3,7 +3,7 @@ import java.io.*;
 
 public class PlayerNode implements Serializable{
 	
-	static int numberOfPlayers = 0;
+	//int numberOfPlayers = 0;
 	
 	int playerNumber;
 	int playerID;
@@ -35,7 +35,7 @@ public class PlayerNode implements Serializable{
 		this.smallBlind = false;
 		this.allIn = false;
 		this.hand = new Card[2];
-		numberOfPlayers++;
+		//numberOfPlayers++;
 		
 	}
 

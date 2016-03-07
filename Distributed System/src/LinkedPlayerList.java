@@ -7,13 +7,16 @@ import java.io.*;
 // https://www.youtube.com/watch?v=SMuL7ld3r5M
 public class LinkedPlayerList implements Serializable{
 
-	static PlayerNode currentPlayer;
-	static PlayerNode temp;
-	static PlayerNode rootPlayer;
+	//NOTE: I made these non-static, if it breaks something then change it back
+	PlayerNode currentPlayer;
+	PlayerNode temp;
+	PlayerNode rootPlayer;
+	private volatile int count = 0;
 	
 	public void addPlayers (int playerNumber, int playerID, int stack, int port, String ipAddress){
 		PlayerNode player = new PlayerNode(playerNumber, playerID, stack, port, ipAddress);
-		
+		count++;
+
 		if(rootPlayer == null){
 			
 			rootPlayer = player;
@@ -52,7 +55,8 @@ public class LinkedPlayerList implements Serializable{
 							  int     after){
 		
 		PlayerNode player = new PlayerNode(playerNumber, playerID, stack, port, ipAddress);
-		
+		count++;
+
 		int ithPlayer = 1;
 		
 		currentPlayer = rootPlayer;
@@ -96,7 +100,8 @@ public class LinkedPlayerList implements Serializable{
 		}
 		
 		// Decrease number of players
-		PlayerNode.numberOfPlayers--;
+		//PlayerNode.numberOfPlayers--;
+		count--;
 	}
 	
 	public int findPlayerByPort(int playerPort, String returnType){
@@ -220,6 +225,11 @@ public class LinkedPlayerList implements Serializable{
 		System.out.println();*/
 		
 	}
+
+	public int getCount(){
+		return count;
+	}
+
 	
 	public static void main(String[] args){
 		

@@ -18,6 +18,9 @@ public class BackupServer {
 			while(!isDone){
 				game = (GameManager) in.readObject();
 				System.out.println("Received backup from server");
+				System.out.println(game.getPlayerCount());
+				System.out.println(game.getPot());
+				System.out.println(game.getTurn());
 			}
 		} catch (Exception e) {e.printStackTrace();}
 	}

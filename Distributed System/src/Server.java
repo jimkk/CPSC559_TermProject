@@ -23,11 +23,11 @@ public class Server {
 			backupServer = new Socket(backupServerAddress, backupServerPort);
 			BufferedOutputStream bufOut = new BufferedOutputStream(backupServer.getOutputStream());
 			out = new ObjectOutputStream(bufOut);
+			new Thread(new BackupManager(out, game)).start();
 		} catch (Exception e){
-			System.out.println("Unable to connect to backup server");
+			System.out.println("WARNING: Unable to connect to backup server");
 		}
 
-		new Thread(new BackupManager(out, game)).start();
 
 
 		try{
