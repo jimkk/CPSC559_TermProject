@@ -60,6 +60,10 @@ public class Client{
 					String input = br.readLine();
 
 					switch(input){
+						case("checkTurn"):
+							System.out.println("Checking turn...");
+							out.write("checkTurn " + '\n');
+							break;
             case("bet"):
               System.out.print("Enter bet: ");
               String betAmount = br.readLine();

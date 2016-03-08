@@ -15,6 +15,7 @@ public class ServerThread implements Runnable{
 	private boolean isDone = false;
 	private boolean folded = false;
 	private boolean handSent = false;
+	private boolean turnSent = false;
 	
 	private static String serverMessage = "";
 	private static boolean serverMessageLock = false;
@@ -36,6 +37,8 @@ public class ServerThread implements Runnable{
 	public ServerThread(Socket socket, GameManager game){
 		this.socket = socket;
 		this.game = game;
+
+		//this.game.setTurnToCurrentPlayer(playerPort);
 	}
 
 	public void run(){
@@ -43,7 +46,9 @@ public class ServerThread implements Runnable{
 			//if (game == null) {
 			//	game = new GameManager();
 			//}
-			
+
+						
+
 			int playerNumber;
 			int playerID;
 			
@@ -62,6 +67,9 @@ public class ServerThread implements Runnable{
 			//}
 
 			playerPort = socket.getPort();
+
+			
+
 			playerIP = socket.getInetAddress().getHostAddress();
 			returnCode = game.addPlayerToGame(1000, playerPort, playerIP);		//TODO Set custom stack amount
 			if (returnCode == -1) {
@@ -78,6 +86,12 @@ public class ServerThread implements Runnable{
 			String messageType = "";
 
 			while(!isDone){
+
+				if(game.getPlayerList().findPlayerByPort(playerPort).getTurn() && !turnSent){
+					out.write("message It's your turn!\n");
+					out.flush();
+					turnSent = true;
+				}
 				
 				if(game.isGameOn() && !handSent){
 					Card [] hand = game.getPlayerList().findPlayerByPort(playerPort).getHand();
@@ -109,6 +123,18 @@ public class ServerThread implements Runnable{
 					playerPort = socket.getPort();
 					
 					switch(messageType){
+									case("checkTurn"):
+			            	if (game.checkTurn(playerPort) == false) {
+			            		System.out.println("Currently not this player's turn.");
+			            		
+			            		out.write("It's not your turn");
+			            		out.flush();
+			            		
+			            		break;
+			            	}
+										else
+											System.out.println("It is your turn.");
+										break;
 			            case("bet"):
 			            	if (game.checkTurn(playerPort) == false) {
 			            		System.out.println("Currently not this player's turn; cannot place bet yet");
@@ -126,6 +152,8 @@ public class ServerThread implements Runnable{
 									player = game.getPlayerList().findPlayerByPort(socket.getPort());
 									int stack = player.getStack();
 									System.out.println("This player's new stack total: " + stack);
+									player.setTurn(false);
+									System.out.println("No longer this players turn. Confirmation: " + player.getTurn());
 							break;
 			            case("call"):
 			            	if (game.checkTurn(playerPort) == false) {
