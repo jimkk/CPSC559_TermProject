@@ -60,6 +60,10 @@ public class PlayerNode implements Serializable{
 		return stack;
 	}
 
+	public void setTurn(boolean val){
+		turn = val;
+	}
+
 	public boolean getTurn(){
 		return turn;
 	}

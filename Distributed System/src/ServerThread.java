@@ -15,6 +15,7 @@ public class ServerThread implements Runnable{
 	private boolean isDone = false;
 	private boolean folded = false;
 	private boolean handSent = false;
+	private boolean turnSent = false;
 	
 	private static String serverMessage = "";
 	private static boolean serverMessageLock = false;
@@ -31,6 +32,8 @@ public class ServerThread implements Runnable{
 	public ServerThread(Socket socket, GameManager game){
 		this.socket = socket;
 		this.game = game;
+
+		//this.game.setTurnToCurrentPlayer(playerPort);
 	}
 
 	public void run(){
@@ -38,7 +41,9 @@ public class ServerThread implements Runnable{
 			//if (game == null) {
 			//	game = new GameManager();
 			//}
-			
+
+						
+
 			int playerNumber;
 			int playerID;
 			
@@ -56,6 +61,9 @@ public class ServerThread implements Runnable{
 			//}
 
 			playerPort = socket.getPort();
+
+			
+
 			playerIP = socket.getInetAddress().getHostAddress();
 			returnCode = game.addPlayerToGame(1000, playerPort, playerIP);		//TODO Set custom stack amount
 			if (returnCode == -1) {
@@ -72,6 +80,12 @@ public class ServerThread implements Runnable{
 			String messageType = "";
 
 			while(!isDone){
+
+				if(game.getPlayerList().findPlayerByPort(playerPort).getTurn() && !turnSent){
+					out.write("message It's your turn!\n");
+					out.flush();
+					turnSent = true;
+				}
 				
 				if(game.isGameOn() && !handSent){
 					Card [] hand = game.getPlayerList().findPlayerByPort(playerPort).getHand();

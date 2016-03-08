@@ -26,7 +26,9 @@ public class GameManager implements Serializable {
 	/**
 	 * Need to have a state-machine to manage the turns required of each player 
 	 */
-		 
+
+		//setTurnToCurrentPlayer();		 
+
 		// Set the blinds and the turns
 		setBlinds();
 		deal();
@@ -102,6 +104,12 @@ public class GameManager implements Serializable {
 		return 0;
 	}
 	
+	public void rotatePlayers(){
+		PlayerNode currentPlayer = getPlayerList().findPlayerByIndex(0);
+		currentPlayer.setTurn(true);
+		System.out.println("Current player's port: " + currentPlayer.port);
+	}
+
 	public boolean checkTurn (int playerPort){
 	/**
 	 * Check if it's the player's turn. If not, return false.
