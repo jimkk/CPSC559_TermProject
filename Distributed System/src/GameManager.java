@@ -9,6 +9,8 @@ public class GameManager implements Serializable {
 	private int playerCount = 0;
 	private int playerID = 0;
 	private int turn = -1;
+	private int bigBlindAmount = 100;
+	private int smallBlindAmount = 50;
 	private boolean gameOn = false;
 	private boolean gameStart = true;
 
@@ -31,7 +33,24 @@ public class GameManager implements Serializable {
 
 		// Set the blinds and the turns
 		setBlinds();
+		
+		// Deal the cards
 		deal();
+		
+		// Subtract the big and small blind values from their respective player's stacks
+		// and add them to the pot
+		subtractBlinds();
+		
+		// Traverse through player list, prompting each player for their turns
+		for(int i = 0; i < playerCount; i++){
+			PlayerNode player = getPlayerList().findPlayerByIndex(i);
+			if (player.doneTurn == true && player.getTurn() == true){
+				// Set the next player's turn to true
+				
+			}
+		}
+		
+		//set various flags 
 		
 	}
 	
@@ -58,6 +77,25 @@ public class GameManager implements Serializable {
 		}
 	} 
 	
+	public void subtractBlinds(){
+	/**
+	 * Method to subtract the blinds from the respective players' stacks	
+	 */
+		for(int i = 0; i < playerCount; i++){
+			PlayerNode player = getPlayerList().findPlayerByIndex(i);
+			if(player.bigBlind == true){
+				player.stack -= bigBlindAmount;
+				// notify the player of the changes using the player's port to send the message
+			}
+			if(player.smallBlind == true){
+				player.stack -= smallBlindAmount;
+				// notify the player of the changes using the player's port to send the message
+			}
+			//else, we do nothing...
+		}
+		
+	}
+	
 	// traverse the list of players by playerNumber and prompt each player for their turn
 
 	// Deal cards
@@ -79,6 +117,9 @@ public class GameManager implements Serializable {
 	// remove pot from table and award to winning player
 	
 	public int addPlayerToGame(int stack, int playerPort, String ipAddress) {
+	/**
+	 * Add a player to the game
+	 */
 		if(playerCount == 6) {
 			return -1;
 		}
