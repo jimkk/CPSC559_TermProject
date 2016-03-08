@@ -27,7 +27,7 @@ public class GameManager implements Serializable {
 	 * Need to have a state-machine to manage the turns required of each player 
 	 */
 
-		//setTurnToCurrentPlayer();		 
+		//rotatePlayers();		 
 
 		// Set the blinds and the turns
 		setBlinds();

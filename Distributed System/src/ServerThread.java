@@ -109,6 +109,18 @@ public class ServerThread implements Runnable{
 					playerPort = socket.getPort();
 					
 					switch(messageType){
+									case("checkTurn"):
+			            	if (game.checkTurn(playerPort) == false) {
+			            		System.out.println("Currently not this player's turn.");
+			            		
+			            		out.write("It's not your turn");
+			            		out.flush();
+			            		
+			            		break;
+			            	}
+										else
+											System.out.println("It is your turn.");
+										break;
 			            case("bet"):
 			            	if (game.checkTurn(playerPort) == false) {
 			            		System.out.println("Currently not this player's turn; cannot place bet yet");
@@ -126,6 +138,8 @@ public class ServerThread implements Runnable{
 									PlayerNode player = game.getPlayerList().findPlayerByPort(socket.getPort());
 									int stack = player.getStack();
 									System.out.println("This player's new stack total: " + stack);
+									player.setTurn(false);
+									System.out.println("No longer this players turn. Confirmation: " + player.getTurn());
 							break;
 			            case("call"):
 			            	if (game.checkTurn(playerPort) == false) {
