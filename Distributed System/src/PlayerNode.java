@@ -16,6 +16,7 @@ public class PlayerNode implements Serializable{
 	boolean bigBlind = false;
 	boolean smallBlind = false;
 	boolean allIn = false;
+	boolean doneTurn = false;
 	String ipAddress;
 	Card[] hand;
 	PlayerNode nextPlayer;

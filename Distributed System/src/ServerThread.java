@@ -28,6 +28,11 @@ public class ServerThread implements Runnable{
 	GameManager game;
 	//LinkedPlayerList playerList = new LinkedPlayerList();
 
+	BufferedInputStream bufIn;
+	InputStreamReader in;
+	BufferedOutputStream bufOut;
+	OutputStreamWriter out;
+	
 	public ServerThread(Socket socket, GameManager game){
 		this.socket = socket;
 		this.game = game;
@@ -42,10 +47,11 @@ public class ServerThread implements Runnable{
 			int playerNumber;
 			int playerID;
 			
-			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
-			InputStreamReader in = new InputStreamReader(bufIn);
-			BufferedOutputStream bufOut = new BufferedOutputStream(socket.getOutputStream());
-			OutputStreamWriter out = new OutputStreamWriter(bufOut);
+			bufIn = new BufferedInputStream(socket.getInputStream());
+			in = new InputStreamReader(bufIn);
+			bufOut = new BufferedOutputStream(socket.getOutputStream());
+			out = new OutputStreamWriter(bufOut);
+			PlayerNode player;
 
 			//if(playerCount >= 2){
 			//	System.out.println("New client rejected due to game being full");
@@ -81,6 +87,14 @@ public class ServerThread implements Runnable{
 					handSent = true;
 				}
 				
+				// game play
+				// begin round
+				playerPort = socket.getPort();
+				player = game.getPlayerList().findPlayerByPort(playerPort);
+				// notify player of their turn
+				
+				// notifyPlayer();
+				
 				if(in.ready()){
 					buffer = read(in);
 					if(buffer.indexOf(" ") != -1){
@@ -109,7 +123,7 @@ public class ServerThread implements Runnable{
 			
 			       			playerID = game.getPlayerList().findPlayerByPort(socket.getPort(), "Player ID");
 			       			game.bet(playerID, Integer.parseInt(betAmount.trim()));
-									PlayerNode player = game.getPlayerList().findPlayerByPort(socket.getPort());
+									player = game.getPlayerList().findPlayerByPort(socket.getPort());
 									int stack = player.getStack();
 									System.out.println("This player's new stack total: " + stack);
 							break;
@@ -207,6 +221,7 @@ public class ServerThread implements Runnable{
 						case("display game"):
 							if (debug == false) break;
 							else game.getPlayerList().displayGameState();
+							break;
 						case("close"):
 							
 							System.out.println("Socket closed at client's request");
