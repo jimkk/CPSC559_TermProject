@@ -80,13 +80,14 @@ public class ServerThread implements Runnable{
 			String messageType = "";
 
 			while(!isDone){
-
-				if(game.getPlayerList().findPlayerByPort(playerPort).getTurn() && !turnSent){
+				
+				if(game.getPlayerList().findPlayerByPort(playerPort).getTurn() 
+						&& !turnSent){
 					out.write("message It's your turn!\n");
 					out.flush();
 					turnSent = true;
 				}
-				
+
 				if(game.isGameOn() && !handSent){
 					Card [] hand = game.getPlayerList().findPlayerByPort(playerPort).getHand();
 					out.write("message Game Started!\n");

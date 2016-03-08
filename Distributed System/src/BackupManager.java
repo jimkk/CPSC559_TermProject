@@ -1,13 +1,15 @@
 import java.io.*;
 import java.net.*;
+import java.util.Date;
+import com.google.gson.*;
 
 public class BackupManager implements Runnable{
 
 	private boolean isDone = false;
-	private ObjectOutputStream out;
+	private OutputStreamWriter out;
 	GameManager game;
 
-	public BackupManager(ObjectOutputStream out, GameManager game){
+	public BackupManager(OutputStreamWriter out, GameManager game){
 		this.out = out;
 		this.game = game;
 	}
@@ -17,21 +19,48 @@ public class BackupManager implements Runnable{
 		int pot;
 		int playerCount;
 
+		String message;
+
 		try{
-			out.writeObject(game);
-			out.flush();
+			FileOutputStream fos = new FileOutputStream("serialize.tmp");
+			ObjectOutputStream oos = new ObjectOutputStream(fos);
+			FileWriter fw = new FileWriter("backup.json");
+			//out.writeObject(game);
+			//out.flush();
 
 			turn = game.getTurn();
 			pot = game.getPot();
 			playerCount = game.getPlayerCount();
 
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			message = gson.toJson(game);
+			out.write(message + "\n");
+			out.flush();
+			//fw.close();
+
 			while(!isDone){
 				if(turn != game.getTurn() || pot != game.getPot() ||
 						playerCount != game.getPlayerList().getCount()){
 					System.out.printf("Game State Changed.\n");
-					System.out.println(playerCount);
-					out.writeObject(game);
+
+					//GSON
+					//fw = new FileWriter("backup.json");
+					LinkedPlayerList list = game.getPlayerList();
+					list.findPlayerByIndex(list.getCount()-1).nextPlayer = null;
+					message = gson.toJson(game);
+					list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
+						list.findPlayerByIndex(0);
+					//fw.close();
+
+					out.write(message + "\n");
 					out.flush();
+
+					//out.writeObject(new Date());
+					//out.writeObject(game);
+					System.out.printf("Player Count: %d\n", game.getPlayerCount());
+					System.out.printf("Pot: %d\n", game.getPot());
+					System.out.printf("Turn: %d\n", game.getTurn());
+					//oos.writeObject(game);
 					turn = game.getTurn();
 					pot = game.getPot();
 					playerCount = game.getPlayerList().getCount();
