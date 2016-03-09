@@ -11,18 +11,19 @@ public class Server {
 	private String backupServerAddress = "localhost";
 	private int backupServerPort = 5432;
 	private Socket backupServer;
-	private ObjectOutputStream out = null;
+	private OutputStreamWriter out = null;
 
 
 	GameManager game = new GameManager();
 	private int gameChecksum = 0;
 
 	private void run(){
-		
+
 		try{
 			backupServer = new Socket(backupServerAddress, backupServerPort);
 			BufferedOutputStream bufOut = new BufferedOutputStream(backupServer.getOutputStream());
-			out = new ObjectOutputStream(bufOut);
+			//out = new ObjectOutputStream(bufOut);
+			out = new OutputStreamWriter(bufOut);
 			new Thread(new BackupManager(out, game)).start();
 		} catch (Exception e){
 			System.out.println("WARNING: Unable to connect to backup server");
@@ -37,13 +38,13 @@ public class Server {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
+
 		while(!isDone){
 			try{
 				//if (ServerThread.playerCount <= 6){
-					Socket clientSocket = serverSocket.accept();
+				Socket clientSocket = serverSocket.accept();
 
-					new Thread(new ServerThread(clientSocket, game)).start();
+				new Thread(new ServerThread(clientSocket, game)).start();
 				//}
 			} catch (Exception e){
 				System.out.println("Error accepting client\n");

@@ -3,7 +3,7 @@ import java.util.*;
 
 
 public class GameManager implements Serializable {
-	
+
 	private int pot = 0;
 	private int currentBetCall = 0;
 	private int playerCount = 0;
@@ -21,26 +21,26 @@ public class GameManager implements Serializable {
 	// When all players have joined, the game manager will deal the cards and assign the first
 	// player in the player linked list, the turn. Big and small blinds will also be assigned at
 	// this point
-	
-	
-	
+
+
+
 	public void beginRound(){
-	/**
-	 * Need to have a state-machine to manage the turns required of each player 
-	 */
+		/**
+		 * Need to have a state-machine to manage the turns required of each player 
+		 */
 
 		//rotatePlayers();		 
 
 		// Set the blinds and the turns
 		setBlinds();
-		
+
 		// Deal the cards
 		deal();
-		
+
 		// Subtract the big and small blind values from their respective player's stacks
 		// and add them to the pot
 		subtractBlinds();
-		
+
 		// Traverse through player list, prompting each player for their turns
 		for(int i = 0; i < playerCount; i++){
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
@@ -60,16 +60,16 @@ public class GameManager implements Serializable {
 				}
 			}
 		}
-		
+
 		//set various flags 
-		
+
 	}
-	
+
 	public void setBlinds(){
-	/**
-	 * Set Big and small blinds for each round
-	 */
-		
+		/**
+		 * Set Big and small blinds for each round
+		 */
+
 		for(int i = 0; i < playerCount; i++){
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
 			if(player.playerNumber == 1 && player.folded == false && gameStart == true){
@@ -87,11 +87,11 @@ public class GameManager implements Serializable {
 			}
 		}
 	} 
-	
+
 	public void subtractBlinds(){
-	/**
-	 * Method to subtract the blinds from the respective players' stacks	
-	 */
+		/**
+		 * Method to subtract the blinds from the respective players' stacks	
+		 */
 		for(int i = 0; i < playerCount; i++){
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
 			if(player.bigBlind == true){
@@ -104,15 +104,15 @@ public class GameManager implements Serializable {
 			}
 			//else, we do nothing...
 		}
-		
+
 	}
-	
+
 	// traverse the list of players by playerNumber and prompt each player for their turn
 
 	// Deal cards
 	public void deal(){	
 		deck = new Deck();
-	
+
 		for(int i = 0; i < playerCount; i++){
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
 			player.setHand(deck.Draw(), deck.Draw());
@@ -126,25 +126,25 @@ public class GameManager implements Serializable {
 	// Add bet to pot
 	// force display the cards
 	// remove pot from table and award to winning player
-	
+
 	public int addPlayerToGame(int stack, int playerPort, String ipAddress) {
-	/**
-	 * Add a player to the game
-	 */
+		/**
+		 * Add a player to the game
+		 */
 		if(playerCount == 6) {
 			return -1;
 		}
 		playerCount++;
 		playerID++;
 		this.getPlayerList().addPlayers(playerCount, playerID, stack, playerPort, ipAddress);
-	
+
 		if(playerCount > 2){
 			beginRound();
 		}
 
 		return 0;
 	}
-	
+
 	public int removePlayerFromGame(int playerID)
 	{
 		if (playerCount == 0){
@@ -152,10 +152,10 @@ public class GameManager implements Serializable {
 		}
 		playerCount--;
 		getPlayerList().deletePlayer(playerID);
-		
+
 		return 0;
 	}
-	
+
 	public void rotatePlayers(){
 		PlayerNode currentPlayer = getPlayerList().findPlayerByIndex(0);
 		currentPlayer.setTurn(true);
@@ -163,15 +163,15 @@ public class GameManager implements Serializable {
 	}
 
 	public boolean checkTurn (int playerPort){
-	/**
-	 * Check if it's the player's turn. If not, return false.
-	 */
+		/**
+		 * Check if it's the player's turn. If not, return false.
+		 */
 		PlayerNode player = getPlayerList().findPlayerByPort(playerPort);
-		
+
 		if(player.getTurn() == false) return false;
 		else return true; 
 	}
-	
+
 	public void bet(int playerID, int amount){
 		// check if the player has enough to bet what they asked to
 		// if so, then add that money to pot and subtract it from the
@@ -199,17 +199,17 @@ public class GameManager implements Serializable {
 			}
 		}
 		// Keep track of how much each player bets, for each round of betting
-		
+
 		// Will have to record each player's bet in their 'playerNode', setting the
 		// amount accordingly
-		
+
 	}
 
 	public boolean isGameOn(){
 		return gameOn;
 	}
-	
-	
+
+
 	public LinkedPlayerList getPlayerList(){
 		return playerList;
 	}	

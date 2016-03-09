@@ -2,9 +2,9 @@ import java.util.LinkedList;
 import java.io.*;
 
 public class PlayerNode implements Serializable{
-	
+
 	//int numberOfPlayers = 0;
-	
+
 	int playerNumber;
 	int playerID;
 	int stack;
@@ -21,9 +21,9 @@ public class PlayerNode implements Serializable{
 	String ipAddress;
 	Card[] hand;
 	PlayerNode nextPlayer;
-	
+
 	PlayerNode (int playerNumber, int playerID, int stack, int port, String ipAddress){
-		
+
 		this.playerNumber = playerNumber;
 		this.playerID = playerID;
 		this.port = port;
@@ -40,7 +40,7 @@ public class PlayerNode implements Serializable{
 		this.beginTurn = false;
 		this.hand = new Card[2];
 		//numberOfPlayers++;
-		
+
 	}
 
 	public void setHand(Card c1, Card c2){
@@ -51,11 +51,11 @@ public class PlayerNode implements Serializable{
 	public void setBigBlind(boolean b){
 		bigBlind = b;
 	}
-	
+
 	public void setSmallBlind(boolean b){
 		smallBlind = b;
 	}
-	
+
 	public Card[] getHand(){
 		return hand;
 	}
@@ -87,7 +87,7 @@ public class PlayerNode implements Serializable{
 	public boolean getTurn(){
 		return turn;
 	}
-	
+
 	public void bet(int amount){
 		currentBetAmount += amount;
 		betPerTurn += amount;

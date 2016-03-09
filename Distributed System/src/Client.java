@@ -64,11 +64,11 @@ public class Client{
 							System.out.println("Checking turn...");
 							out.write("checkTurn " + '\n');
 							break;
-            case("bet"):
-              System.out.print("Enter bet: ");
-              String betAmount = br.readLine();
-              out.write("bet " + betAmount + '\n');
-              break;
+						case("bet"):
+							System.out.print("Enter bet: ");
+							String betAmount = br.readLine();
+							out.write("bet " + betAmount + '\n');
+							break;
 						case("deal"):
 							/* THis was the client side deal code
 							   randomCardNumber = rand.nextInt(52) + 1;
