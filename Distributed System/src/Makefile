@@ -1,7 +1,11 @@
+CLASSPATH = gson-2.6.2.jar
+SOURCEPATH = .
+
+
 all: compile
 
 compile:
-	javac -cp gson-2.6.2.jar *.java
+	javac -cp $(CLASSPATH) -sourcepath $(SOURCEPATH) *.java
 
 clean:
 	rm -f *.class

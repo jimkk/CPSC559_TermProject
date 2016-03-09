@@ -14,6 +14,7 @@ public class BackupServer {
 	public void run(){
 		try{
 			String message;
+			LinkedPlayerList list;
 
 			serverSocket = new ServerSocket(port);
 			Socket socket = serverSocket.accept();
@@ -26,10 +27,14 @@ public class BackupServer {
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			game = gson.fromJson(message, GameManager.class);
 
+			//list = game.getPlayerList();
+			//list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
+			//	list.findPlayerByIndex(0);
+
 			System.out.println("Received backup from server");
-			System.out.println(game.getPlayerCount());
-			System.out.println(game.getPot());
-			System.out.println(game.getTurn());
+			System.out.printf("Player Count: %d\n", game.getPlayerCount());
+			System.out.printf("Pot: %d\n", game.getPot());
+			System.out.printf("Turn: %d\n", game.getTurn());
 			while(!isDone){
 				//Date date = (Date) in.readObject();
 				//System.out.printf("Backup for %s\n", date);
@@ -37,6 +42,9 @@ public class BackupServer {
 
 				message = read(in).toString();
 				game = gson.fromJson(message, GameManager.class);
+				list = game.getPlayerList();
+				list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
+					list.findPlayerByIndex(0);
 				System.out.println("Received backup from server");
 				System.out.printf("Player Count: %d\n", game.getPlayerCount());
 				System.out.printf("Pot: %d\n", game.getPot());
@@ -50,7 +58,7 @@ public class BackupServer {
 			StringBuffer buffer = new StringBuffer();
 			int c;
 			while((c = in.read()) != -1){
-				if(c == (int) '\n'){
+				if(c == (int) '\f'){
 					break;
 				}
 				buffer.append((char) c);
