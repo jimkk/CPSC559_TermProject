@@ -17,6 +17,7 @@ public class PlayerNode implements Serializable{
 	boolean smallBlind = false;
 	boolean allIn = false;
 	boolean doneTurn = false;
+	boolean beginTurn = false;
 	String ipAddress;
 	Card[] hand;
 	PlayerNode nextPlayer;
@@ -35,6 +36,8 @@ public class PlayerNode implements Serializable{
 		this.bigBlind = false;
 		this.smallBlind = false;
 		this.allIn = false;
+		this.doneTurn = false;
+		this.beginTurn = false;
 		this.hand = new Card[2];
 		//numberOfPlayers++;
 		
@@ -61,6 +64,22 @@ public class PlayerNode implements Serializable{
 		return stack;
 	}
 
+	public void setBeginTurn(boolean val){
+		beginTurn = val;
+	}
+	
+	public boolean getBeginTurn(){
+		return beginTurn;
+	}
+	
+	public void setDoneTurn(boolean val){
+		doneTurn = val;
+	}
+	
+	public boolean getDoneTurn(){
+		return doneTurn;
+	}
+	
 	public void setTurn(boolean val){
 		turn = val;
 	}

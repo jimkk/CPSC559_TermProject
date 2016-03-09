@@ -44,9 +44,20 @@ public class GameManager implements Serializable {
 		// Traverse through player list, prompting each player for their turns
 		for(int i = 0; i < playerCount; i++){
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
-			if (player.doneTurn == true && player.getTurn() == true){
-				// Set the next player's turn to true
+			while (player.getDoneTurn() == false && player.getTurn() == true ){
 				
+				// Now we need to notify the player that it is their turn
+				// Setting the flag below, lets the serverthread know that it's now
+				// that player's turn, and the serverthread will notify them accordingly
+				player.setBeginTurn(true);
+				
+				
+				if(player.getDoneTurn() == true && player.getTurn() == true) {
+					// Set the next player's turn to true
+					player.setTurn(false);
+					player.setDoneTurn(false);
+					player.nextPlayer.setTurn(true);
+				}
 			}
 		}
 		
