@@ -7,7 +7,7 @@ public class Card{
 
 
 	public Card(String suit, int value){
-		
+
 		this.value = value;
 		this.suit = suit;
 	}

@@ -18,7 +18,7 @@ public class Server {
 	private int gameChecksum = 0;
 
 	private void run(){
-		
+
 		try{
 			backupServer = new Socket(backupServerAddress, backupServerPort);
 			BufferedOutputStream bufOut = new BufferedOutputStream(backupServer.getOutputStream());
@@ -38,13 +38,13 @@ public class Server {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
+
 		while(!isDone){
 			try{
 				//if (ServerThread.playerCount <= 6){
-					Socket clientSocket = serverSocket.accept();
+				Socket clientSocket = serverSocket.accept();
 
-					new Thread(new ServerThread(clientSocket, game)).start();
+				new Thread(new ServerThread(clientSocket, game)).start();
 				//}
 			} catch (Exception e){
 				System.out.println("Error accepting client\n");

@@ -44,7 +44,7 @@ public class BackupServer {
 			}
 		} catch (Exception e) {e.printStackTrace();}
 	}
-	
+
 	private StringBuffer read(InputStreamReader in){
 		try{
 			StringBuffer buffer = new StringBuffer();
