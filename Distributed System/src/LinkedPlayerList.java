@@ -5,7 +5,7 @@ import java.io.*;
 // Referenced the following videos on linked lists:
 // https://www.youtube.com/watch?v=pBaZl9B448g
 // https://www.youtube.com/watch?v=SMuL7ld3r5M
-public class LinkedPlayerList implements Serializable{
+public class LinkedPlayerList {
 
 	//NOTE: I made these non-static, if it breaks something then change it back
 	static PlayerNode currentPlayer;
@@ -13,11 +13,25 @@ public class LinkedPlayerList implements Serializable{
 	static PlayerNode rootPlayer;
 	private volatile int count = 0;
 
+	private volatile boolean writeLock = false;
+	private volatile boolean readLock = false;
+
 	public void addPlayers (int playerNumber, int playerID, int stack, int port, String ipAddress){
 		PlayerNode player = new PlayerNode(playerNumber, playerID, stack, port, ipAddress);
+		PlayerNode currentPlayer;
 		count++;
 
+		while(writeLock == true){
+			System.out.println("waiting...");
+			try{
+				Thread.sleep(10);
+			} catch (Exception e) {e.printStackTrace();}
+		}
+
+		writeLock = true;
+
 		if(rootPlayer == null){
+			System.out.println("Root set");
 
 			rootPlayer = player;
 			// ** could have the line directly below if we wanted to set player 1's turn to true
@@ -44,7 +58,10 @@ public class LinkedPlayerList implements Serializable{
 			//player.nextPlayer = null;
 			player.nextPlayer = rootPlayer;
 
+
+
 		}
+		writeLock = false;
 	}
 
 	public void insertPlayer (int     playerNumber,
@@ -104,8 +121,8 @@ public class LinkedPlayerList implements Serializable{
 		count--;
 	}
 
-	public int findPlayerByPort(int playerPort, String returnType){
-		currentPlayer = rootPlayer;
+	public int findPlayerByPort(int playerPort, String returnType){	
+		PlayerNode currentPlayer = rootPlayer;
 		do{
 			if (currentPlayer.port == playerPort){
 				break;
@@ -113,18 +130,22 @@ public class LinkedPlayerList implements Serializable{
 			currentPlayer = currentPlayer.nextPlayer;
 		}while(currentPlayer != rootPlayer);
 
+		int ret;
+
 		if (returnType == "Player Number") 
-			return currentPlayer.playerNumber;
+			ret = currentPlayer.playerNumber;
 		if (returnType == "Player ID")
-			return currentPlayer.playerID;
+			ret = currentPlayer.playerID;
 		if (returnType == "Bet Amount")
-			return currentPlayer.currentBetAmount;
-		else return -1;
+			ret = currentPlayer.currentBetAmount;
+		else ret = -1;
+
+		return ret;
 	}
 
 
 	public PlayerNode findPlayerByPort(int playerPort){
-		currentPlayer = rootPlayer;
+		PlayerNode currentPlayer = rootPlayer;
 		do{
 			if (currentPlayer.port == playerPort){
 				break;
@@ -140,7 +161,7 @@ public class LinkedPlayerList implements Serializable{
 
 
 	public PlayerNode findPlayerByID(int playerID){
-		currentPlayer = rootPlayer;
+		PlayerNode currentPlayer = rootPlayer;
 		do{
 			if (currentPlayer.playerID == playerID){
 				break;
@@ -154,7 +175,7 @@ public class LinkedPlayerList implements Serializable{
 	public PlayerNode findPlayerByIndex(int index){
 		int ithplayer = 0;
 
-		currentPlayer = rootPlayer;
+		PlayerNode currentPlayer = rootPlayer;
 
 		while(index != ithplayer){
 			currentPlayer = currentPlayer.nextPlayer;
