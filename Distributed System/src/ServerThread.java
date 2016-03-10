@@ -282,7 +282,9 @@ public class ServerThread implements Runnable{
 				}
 				Thread.sleep(10);
 			}
-
+		} catch(SocketException e) {
+			System.err.println("Lost connection to client");
+			//TODO Remove player from game
 		} catch(Exception e) {e.printStackTrace();}
 
 	}
