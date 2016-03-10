@@ -108,12 +108,14 @@ public class ServerThread implements Runnable{
 				// begin round
 				playerPort = socket.getPort();
 				player = game.getPlayerList().findPlayerByPort(playerPort);
-				if (player.getBeginTurn() == true) {
+				/*if (player.getBeginTurn() == true && turnSent == false) {
 					out.write("message It's now your turn...\n");
 					out.write("message You can either bet, call, or fold\n");
 					out.flush();
 					player.setBeginTurn(false);
-				}
+					turnSent = true;
+					
+				}*/
 				// notify player of their turn
 
 				// notifyPlayer();

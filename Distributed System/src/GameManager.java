@@ -42,7 +42,7 @@ public class GameManager {
 		subtractBlinds();
 
 		// Traverse through player list, prompting each player for their turns
-		for(int i = 0; i < playerCount; i++){
+		/*for(int i = 0; i < playerCount; i++){
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
 			while (player.getDoneTurn() == false && player.getTurn() == true ){
 				
@@ -59,7 +59,7 @@ public class GameManager {
 					player.nextPlayer.setTurn(true);
 				}
 			}
-		}
+		}*/
 
 		//set various flags 
 
