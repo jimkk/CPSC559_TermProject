@@ -32,9 +32,10 @@ public class BackupServer {
 			//	list.findPlayerByIndex(0);
 
 			System.out.println("Received backup from server");
-			System.out.printf("Player Count: %d\n", game.getPlayerCount());
-			System.out.printf("Pot: %d\n", game.getPot());
-			System.out.printf("Turn: %d\n", game.getTurn());
+			System.out.println(message);
+			//System.out.printf("Player Count: %d\n", game.getPlayerCount());
+			//System.out.printf("Pot: %d\n", game.getPot());
+			//System.out.printf("Turn: %d\n", game.getTurn());
 			while(!isDone){
 				//Date date = (Date) in.readObject();
 				//System.out.printf("Backup for %s\n", date);
@@ -46,9 +47,10 @@ public class BackupServer {
 				list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
 					list.findPlayerByIndex(0);
 				System.out.println("Received backup from server");
-				System.out.printf("Player Count: %d\n", game.getPlayerCount());
-				System.out.printf("Pot: %d\n", game.getPot());
-				System.out.printf("Turn: %d\n", game.getTurn());
+				System.out.println(message);
+				//System.out.printf("Player Count: %d\n", game.getPlayerCount());
+				//System.out.printf("Pot: %d\n", game.getPot());
+				//System.out.printf("Turn: %d\n", game.getTurn());
 			}
 		} catch(NullPointerException e){
 			System.out.println("--------------------------");
