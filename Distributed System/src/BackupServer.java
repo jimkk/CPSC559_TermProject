@@ -50,7 +50,13 @@ public class BackupServer {
 				System.out.printf("Pot: %d\n", game.getPot());
 				System.out.printf("Turn: %d\n", game.getTurn());
 			}
-		} catch (Exception e) {e.printStackTrace();}
+		} catch(NullPointerException e){
+			System.out.println("--------------------------");
+			System.err.println("Lost connection to server."); 
+			System.out.println("--------------------------");
+			System.exit(-1);
+		}
+		catch (Exception e) {e.printStackTrace();}
 	}
 
 	private StringBuffer read(InputStreamReader in){
