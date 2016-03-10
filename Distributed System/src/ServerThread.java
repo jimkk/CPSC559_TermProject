@@ -84,15 +84,17 @@ public class ServerThread implements Runnable{
 
 			StringBuffer buffer = new StringBuffer();
 			String messageType = "";
-
+			
 			while(!isDone){
-
-				if(game.getPlayerList().findPlayerByPort(playerPort).getTurn() 
+				
+				
+				
+				/*if(game.getPlayerList().findPlayerByPort(playerPort).getTurn() 
 						&& !turnSent){
 					out.write("message It's your turn!\n");
 					out.flush();
 					turnSent = true;
-				}
+				}*/
 
 				if(game.isGameOn() && !handSent){
 					Card [] hand = game.getPlayerList().findPlayerByPort(playerPort).getHand();
@@ -101,14 +103,14 @@ public class ServerThread implements Runnable{
 					out.flush();
 					handSent = true;
 				}
-
+				
 				// game play
 				// begin round
 				playerPort = socket.getPort();
 				player = game.getPlayerList().findPlayerByPort(playerPort);
 				if (player.getBeginTurn() == true) {
 					out.write("message It's now your turn...\n");
-					out.write("message You can eith bet, call, or fold\n");
+					out.write("message You can either bet, call, or fold\n");
 					out.flush();
 					player.setBeginTurn(false);
 				}

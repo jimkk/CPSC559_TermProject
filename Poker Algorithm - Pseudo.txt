@@ -1,0 +1,44 @@
+set blinds and turn
+
+deal
+
+subtract the blinds and add to pot
+
+prompt player 1 for turn
+...
+prompt player 6 for turn
+
+check player bets to make sure if all are equal
+- if not all equal, go back and prompt all players who need to call that new raise
+
+flip three cards for the flop
+
+prompt player 1 for turn
+...
+prompt player 6 for turn
+
+check player bets to make sure if all are equal
+- if not all equal, go back and prompt all players who need to call that new raise
+
+flip the turn
+
+prompt player 1 for turn
+...
+prompt player 6 for turn
+
+check player bets to make sure if all are equal
+- if not all equal, go back and prompt all players who need to call that new raise
+
+flip the river
+
+prompt player 1 for turn
+...
+prompt player 6 for turn
+
+check player bets to make sure if all are equal
+- if not all equal, go back and prompt all players who need to call that new raise
+
+
+
+
+

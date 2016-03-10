@@ -8,9 +8,9 @@ import java.io.*;
 public class LinkedPlayerList implements Serializable{
 
 	//NOTE: I made these non-static, if it breaks something then change it back
-	PlayerNode currentPlayer;
-	PlayerNode temp;
-	PlayerNode rootPlayer;
+	static PlayerNode currentPlayer;
+	static PlayerNode temp;
+	static PlayerNode rootPlayer;
 	private volatile int count = 0;
 
 	public void addPlayers (int playerNumber, int playerID, int stack, int port, String ipAddress){
