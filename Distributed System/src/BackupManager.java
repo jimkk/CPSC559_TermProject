@@ -22,9 +22,9 @@ public class BackupManager implements Runnable{
 		String message;
 
 		try{
-			FileOutputStream fos = new FileOutputStream("serialize.tmp");
-			ObjectOutputStream oos = new ObjectOutputStream(fos);
-			FileWriter fw = new FileWriter("backup.json");
+			//FileOutputStream fos = new FileOutputStream("serialize.tmp");
+			//ObjectOutputStream oos = new ObjectOutputStream(fos);
+			//FileWriter fw = new FileWriter("backup.json");
 			//out.writeObject(game);
 			//out.flush();
 
