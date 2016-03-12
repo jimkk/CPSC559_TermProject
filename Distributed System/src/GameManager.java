@@ -1,6 +1,9 @@
 import java.io.*;
 import java.util.*;
 
+/**
+ * This class maintains the game state as well as containing the logic for most of the actions possible in a game.
+ */
 
 public class GameManager {
 
@@ -23,7 +26,9 @@ public class GameManager {
 	// this point
 
 
-
+	/**
+	 * Triggers the beginning of a round. The blinds are collected and the players are dealt their cards.
+	 */
 	public void beginRound(){
 		/**
 		 * Need to have a state-machine to manage the turns required of each player 
@@ -65,6 +70,9 @@ public class GameManager {
 
 	}
 
+	/**
+	 * Sets the flags for which players just bet the large and small blinds.
+	 */
 	public void setBlinds(){
 		/**
 		 * Set Big and small blinds for each round
@@ -87,7 +95,10 @@ public class GameManager {
 			}
 		}
 	} 
-
+	
+	/**
+	 * Collects the blinds from the players that are responsible for them.
+	 */
 	public void subtractBlinds(){
 		/**
 		 * Method to subtract the blinds from the respective players' stacks	
@@ -109,7 +120,9 @@ public class GameManager {
 
 	// traverse the list of players by playerNumber and prompt each player for their turn
 
-	// Deal cards
+	/**
+	 * Deals each players their hands.
+	 */
 	public void deal(){	
 		deck = new Deck();
 
@@ -127,6 +140,13 @@ public class GameManager {
 	// force display the cards
 	// remove pot from table and award to winning player
 
+	/**
+	 * Adds a player to the game.
+	 * @param stack The stack starting value for the new player.
+	 * @param playerPort The port that the player's socket is connected to.
+	 * @param ipAddress The IP address that the player's socket is connected to.
+	 * @return int - Returns 0 on the player being added to the game and -1 if the game is at capacity
+	 */	
 	public int addPlayerToGame(int stack, int playerPort, String ipAddress) {
 		/**
 		 * Add a player to the game
@@ -145,6 +165,11 @@ public class GameManager {
 		return 0;
 	}
 
+	/**
+	 * Removes a player from the game.
+	 * @param playerID The ID of the player to be removed.
+	 * @return int Returns 0 on the player being successfully removed, -1 if there are no players in the game.
+	 */
 	public int removePlayerFromGame(int playerID)
 	{
 		if (playerCount == 0){
@@ -156,12 +181,18 @@ public class GameManager {
 		return 0;
 	}
 
+	//TODO Add javadoc comment because I don't understand this comment
 	public void rotatePlayers(){
 		PlayerNode currentPlayer = getPlayerList().findPlayerByIndex(0);
 		currentPlayer.setTurn(true);
 		System.out.println("Current player's port: " + currentPlayer.port);
 	}
 
+	/**
+	 * Checks if it is the specified players turn
+	 * @param playerPort The player to check
+	 * @return boolean - True if it is the player's turn, false otherwise
+	 */
 	public boolean checkTurn (int playerPort){
 		/**
 		 * Check if it's the player's turn. If not, return false.
@@ -172,6 +203,11 @@ public class GameManager {
 		else return true; 
 	}
 
+	/**
+	 * Processes a player's bet.
+	 * @param playerID The ID of the player that is betting
+	 * @param amount The amount to be bet
+	 */
 	public void bet(int playerID, int amount){
 		// check if the player has enough to bet what they asked to
 		// if so, then add that money to pot and subtract it from the
@@ -205,23 +241,42 @@ public class GameManager {
 
 	}
 
+	/**
+	 * Check if the game is currently on.
+	 * @return boolean - True if the game is on, False if the game is not on.
+	 */
 	public boolean isGameOn(){
 		return gameOn;
 	}
 
-
+	/**
+	 * Gets the list of players
+	 * @return LinkedPlayerList - The list of players in the game.
+	 */
 	public LinkedPlayerList getPlayerList(){
 		return playerList;
 	}	
 
+	/**
+	 * Returns the value of the pot.
+	 * @return int - The value of the pot.
+	 */
 	public int getPot(){
 		return pot;
 	}
 
+	/**
+	 * Returns the turn value.
+	 * @return int
+	 */
 	public int getTurn(){
 		return turn;
 	}
 
+	/**
+	 * Returns the number of players in the game.
+	 * @return int - The number of players.
+	 */
 	public int getPlayerCount(){
 		return playerCount;
 	}

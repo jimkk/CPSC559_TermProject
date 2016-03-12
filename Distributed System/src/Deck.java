@@ -1,5 +1,8 @@
 import java.util.*;
 
+/**
+ *	This class represents a deck of cards.
+ */
 public class Deck {	
 
 	private ArrayList<Card> deck;
@@ -8,7 +11,10 @@ public class Deck {
 		deck = new ArrayList<Card>();
 		generateDeck();
 	}
-
+	
+	/**
+	 * Generate a deck of cards that are randomly sorted.
+	 */
 	private void generateDeck(){
 		Random rd = new Random();
 
@@ -24,6 +30,10 @@ public class Deck {
 		}
 	}
 
+	/**
+	 * Draws one card from the deck and removes it from the deck.
+	 * @return Card The card on the top of the deck
+	 */
 	public Card Draw(){
 		if(deck.size() == 0){
 			return null;

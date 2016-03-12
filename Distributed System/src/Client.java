@@ -2,7 +2,11 @@ import java.net.*;
 import java.util.*;
 import java.io.*;
 
-
+/**
+ * This class is the main process for a client in the game. It connects to the
+ * server and will get input from the user and manage communications to and
+ * from the game server.
+ */
 public class Client{
 
 	private String address;
@@ -13,7 +17,9 @@ public class Client{
 	//Random rand = new Random();
 	//int randomCardNumber;
 
-
+	/**
+	 * The main function for the client that loops while reading input from the user if there is any and receives and processes messages from the server.
+	 */
 	public void run(){
 		try{
 			socket = new Socket(address, port);
@@ -141,6 +147,11 @@ public class Client{
 		return;
 	}
 
+	/**
+	 * Reads in a message from the stream, stopping on a -1 or a newline character
+	 * @param in The stream to read from
+	 * @return StringBuffer The received message
+	 */
 	private StringBuffer read(InputStreamReader in){
 		try{
 			StringBuffer buffer = new StringBuffer();

@@ -3,6 +3,13 @@ import java.lang.*;
 import java.io.*;
 import java.util.*;
 
+/**
+ * The main processing thread on the server side for communications with a
+ * client. It will manage communications with the client and convey the
+ * player's moves to the GameManager and sends and game related messages from
+ * the server to the client.
+ */
+
 public class ServerThread implements Runnable{
 
 
@@ -41,14 +48,11 @@ public class ServerThread implements Runnable{
 		//this.game.setTurnToCurrentPlayer(playerPort);
 	}
 
+	/**
+	 * The main function that runs in a loop and and will manage communications for the client and GameManager.
+	 */
 	public void run(){
 		try{
-			//if (game == null) {
-			//	game = new GameManager();
-			//}
-
-
-
 			int playerNumber;
 			int playerID;
 
@@ -291,6 +295,11 @@ public class ServerThread implements Runnable{
 
 	}
 
+	/**
+	 * Reads in a message from the stream, stopping on a -1 or a newline character
+	 * @param in The stream to read from
+	 * @return StringBuffer The received message
+	 */
 	private StringBuffer read(InputStreamReader in){
 		try{
 			StringBuffer buffer = new StringBuffer();
@@ -306,6 +315,7 @@ public class ServerThread implements Runnable{
 		return null;
 	}
 
+	//TODO Move this method to the Card class
 	private String determineCardSuit(int randCard){
 		String foundSuit = "default suit";
 		if(randCard > 0 && randCard < 14){
@@ -324,6 +334,7 @@ public class ServerThread implements Runnable{
 
 	}
 
+	//TODO Move this method to the Card class
 	private int determineCardValue(int randCard, String suit){
 		int finalCardNumber = 0;
 		if(suit == "Spades"){

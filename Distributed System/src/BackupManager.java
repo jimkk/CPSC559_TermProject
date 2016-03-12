@@ -3,11 +3,23 @@ import java.net.*;
 import java.util.Date;
 import com.google.gson.*;
 
+/**
+ *	BackupManager is a thread started by the Server class that continuously
+ *	checks the game state for any changes and if there are changes then it will
+ *	send a backup to the backup server.
+ */
+
 public class BackupManager implements Runnable{
 
 	private boolean isDone = false;
 	private OutputStreamWriter out;
 	GameManager game;
+
+
+	/**
+	 * @param out This is the output stream to the backup server
+	 * @param game This is the GameManager class that will be monitored for changes
+	 */
 
 	public BackupManager(OutputStreamWriter out, GameManager game){
 		this.out = out;

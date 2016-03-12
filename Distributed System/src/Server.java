@@ -1,6 +1,11 @@
 import java.net.*;
 import java.io.*;
 
+/**
+ * The class from the server that will set up a connection to a backup server
+ * if there is one and then will listen for client connections and create new
+ * ServerThread threads to manage that client.
+ */
 public class Server {
 
 	private boolean isDone = false;
@@ -17,19 +22,12 @@ public class Server {
 	GameManager game = new GameManager();
 	private int gameChecksum = 0;
 
+	/**
+	 * The main function that will loop while checking for clients attempting to connect and create ServerThreads for them.
+	 */
 	private void run(){
 
-		try{
-			backupServer = new Socket(backupServerAddress, backupServerPort);
-			BufferedOutputStream bufOut = new BufferedOutputStream(backupServer.getOutputStream());
-			//out = new ObjectOutputStream(bufOut);
-			out = new OutputStreamWriter(bufOut);
-			new Thread(new BackupManager(out, game)).start();
-		} catch (Exception e){
-			System.out.println("WARNING: Unable to connect to backup server");
-		}
-
-
+		setUpBackup();
 
 		try{
 			serverSocket = new ServerSocket(port);
@@ -41,17 +39,30 @@ public class Server {
 
 		while(!isDone){
 			try{
-				//if (ServerThread.playerCount <= 6){
 				Socket clientSocket = serverSocket.accept();
-
 				new Thread(new ServerThread(clientSocket, game)).start();
-				//}
 			} catch (Exception e){
 				System.out.println("Error accepting client\n");
 				e.printStackTrace();
 			}
 		}
 	};
+
+	/**
+	 * This function will check for a backup server and connect to it if it exists.
+	 */
+	private void setUpBackup(){
+		try{
+			backupServer = new Socket(backupServerAddress, backupServerPort);
+			BufferedOutputStream bufOut = new BufferedOutputStream(backupServer.getOutputStream());
+			//out = new ObjectOutputStream(bufOut);
+			out = new OutputStreamWriter(bufOut);
+			new Thread(new BackupManager(out, game)).start();
+		} catch (Exception e){
+			System.out.println("WARNING: Unable to connect to backup server");
+		}
+	}
+
 
 	public static void main(String[] args) {
 		Server server = new Server();
