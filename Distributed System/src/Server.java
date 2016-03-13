@@ -1,15 +1,24 @@
 import java.net.*;
 import java.io.*;
+import java.util.*;
 
 /**
  * The class from the server that will set up a connection to a backup server
  * if there is one and then will listen for client connections and create new
  * ServerThread threads to manage that client.
  */
-public class Server {
+public class Server implements Runnable{
+
+	public static final int SERVER = 0;
+	public static final int CLIENT = 1;
+	
+	private static int clientPort = 7777;
+	private static int serverPort = 7776;
+
 
 	private boolean isDone = false;
-	private int port = 7777;
+	private int port;
+	private int type;
 	private ServerSocket serverSocket;
 
 	//Backup stuff
@@ -18,16 +27,19 @@ public class Server {
 	private Socket backupServer;
 	private OutputStreamWriter out = null;
 
+	private volatile ArrayList<Socket> servers;
 
-	GameManager game = new GameManager();
-	private int gameChecksum = 0;
+	public Server(int port, int type){
+		this.port = port;
+		this.type = type;
+		servers = new ArrayList<Socket>();
+	}
+
 
 	/**
 	 * The main function that will loop while checking for clients attempting to connect and create ServerThreads for them.
 	 */
-	private void run(){
-
-		setUpBackup();
+	public void run(){
 
 		try{
 			serverSocket = new ServerSocket(port);
@@ -40,9 +52,18 @@ public class Server {
 		while(!isDone){
 			try{
 				Socket clientSocket = serverSocket.accept();
-				new Thread(new ServerThread(clientSocket, game)).start();
+				if(type == SERVER){
+					servers.add(clientSocket);
+					System.out.println("Server added to list");
+				} else if (type == CLIENT){
+					new Thread(new ServerThread(clientSocket, servers)).start();
+				}
 			} catch (Exception e){
-				System.out.println("Error accepting client\n");
+				if(type == SERVER){
+					System.out.println("Error accepting server\n");
+				} else if (type == CLIENT){
+					System.out.println("Error accepting client\n");
+				}
 				e.printStackTrace();
 			}
 		}
@@ -51,22 +72,10 @@ public class Server {
 	/**
 	 * This function will check for a backup server and connect to it if it exists.
 	 */
-	private void setUpBackup(){
-		try{
-			backupServer = new Socket(backupServerAddress, backupServerPort);
-			BufferedOutputStream bufOut = new BufferedOutputStream(backupServer.getOutputStream());
-			//out = new ObjectOutputStream(bufOut);
-			out = new OutputStreamWriter(bufOut);
-			new Thread(new BackupManager(out, game)).start();
-		} catch (Exception e){
-			System.out.println("WARNING: Unable to connect to backup server");
-		}
-	}
-
 
 	public static void main(String[] args) {
-		Server server = new Server();
-		server.run();
+		new Thread(new Server(clientPort, Server.CLIENT)).start();
+		new Server(serverPort, Server.SERVER).run();
 	}
 
 }
