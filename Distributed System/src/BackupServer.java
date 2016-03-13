@@ -50,7 +50,6 @@ public class BackupServer {
 			System.out.println("--------------------------");
 			System.err.println("Lost connection to server."); 
 			System.out.println("--------------------------");
-			e.printStackTrace();
 			System.exit(-1);
 		}
 		catch (Exception e) {e.printStackTrace();}
