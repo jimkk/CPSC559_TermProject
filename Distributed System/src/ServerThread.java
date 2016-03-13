@@ -83,7 +83,7 @@ public class ServerThread implements Runnable{
 
 			}
 			System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
-			game.getPlayerList().displayGameState();
+			//game.getPlayerList().displayGameState();
 
 
 			StringBuffer buffer = new StringBuffer();
@@ -291,14 +291,16 @@ public class ServerThread implements Runnable{
 				out.write("It's not your turn, you cannot place a bet yet.");
 				out.flush();
 			}
-			String betAmount = buffer.substring(buffer.indexOf(" "));
-			System.out.printf("Bet amount from %s: %s\n", socket.getInetAddress(), betAmount);		
-			game.bet(playerID, Integer.parseInt(betAmount.trim()));
-			player = game.getPlayerList().findPlayerByPort(socket.getPort());
-			int stack = player.getStack();
-			System.out.println("This player's new stack total: " + stack);
-			player.setTurn(false);
-			System.out.println("No longer this players turn. Confirmation: " + player.getTurn());
+			else{
+				String betAmount = buffer.substring(buffer.indexOf(" "));
+				System.out.printf("Bet amount from %s: %s\n", socket.getInetAddress(), betAmount);		
+				game.bet(playerID, Integer.parseInt(betAmount.trim()));
+				player = game.getPlayerList().findPlayerByPort(socket.getPort());
+				int stack = player.getStack();
+				System.out.println("This player's new stack total: " + stack);
+				player.setTurn(false);
+				System.out.println("No longer this players turn. Confirmation: " + player.getTurn());
+			}
 		} catch (IOException e) {e.printStackTrace();}
 	}
 

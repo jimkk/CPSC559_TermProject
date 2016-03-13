@@ -35,7 +35,6 @@ public class GameManager {
 		 */
 
 		//rotatePlayers();		 
-
 		// Set the blinds and the turns
 		setBlinds();
 
@@ -47,10 +46,13 @@ public class GameManager {
 		subtractBlinds();
 
 		// Traverse through player list, prompting each player for their turns
-		/*for(int i = 0; i < playerCount; i++){
+		for(int i = 0; i < playerCount; i++){
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
+			System.out.println("Current player's turn " + player.playerNumber);
+			
+			this.getPlayerList().displayGameState();
+			
 			while (player.getDoneTurn() == false && player.getTurn() == true ){
-				
 				// Now we need to notify the player that it is their turn
 				// Setting the flag below, lets the serverthread know that it's now
 				// that player's turn, and the serverthread will notify them accordingly
@@ -64,7 +66,7 @@ public class GameManager {
 					player.nextPlayer.setTurn(true);
 				}
 			}
-		}*/
+		}
 
 		//set various flags 
 
@@ -77,9 +79,12 @@ public class GameManager {
 		/**
 		 * Set Big and small blinds for each round
 		 */
-
+		
 		for(int i = 0; i < playerCount; i++){
+			// pass in i+1 so that the index matches up with the player number
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
+			//System.out.println("index: " + i);
+			//System.out.println("player.playerNumber: " + player.playerNumber);
 			if(player.playerNumber == 1 && player.folded == false && gameStart == true){
 				// initial state of the game
 				player.bigBlind = true;
@@ -154,13 +159,15 @@ public class GameManager {
 		if(playerCount == 6) {
 			return -1;
 		}
-		playerCount++;
+		//playerCount++;	
 		playerID++;
 		this.getPlayerList().addPlayers(playerCount, playerID, stack, playerPort, ipAddress);
 
-		if(playerCount > 2){
+		//this.getPlayerList().displayGameState();
+		
+		/*if(playerCount > 2){
 			beginRound();
-		}
+		}*/
 
 		return 0;
 	}
@@ -249,6 +256,10 @@ public class GameManager {
 		return gameOn;
 	}
 
+	public void setGameOn(boolean b){
+		this.gameOn = b;
+	}
+	
 	/**
 	 * Gets the list of players
 	 * @return LinkedPlayerList - The list of players in the game.
@@ -280,4 +291,9 @@ public class GameManager {
 	public int getPlayerCount(){
 		return playerCount;
 	}
+	
+	public void setPlayerCountPlusOne (int i){
+		this.playerCount += i;
+	}
+	
 }

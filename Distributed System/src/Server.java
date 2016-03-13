@@ -41,6 +41,16 @@ public class Server {
 			try{
 				Socket clientSocket = serverSocket.accept();
 				new Thread(new ServerThread(clientSocket, game)).start();
+				game.setPlayerCountPlusOne(1);
+				
+				//System.out.println("Server Loop Test");
+				//System.out.println("Number of players: " + game.getPlayerCount());
+				//System.out.println("Game on?: " + game.isGameOn());
+				if (game.getPlayerCount() == 3 && game.isGameOn() == false){
+					//System.out.println("Should only enter this once per game");
+					game.beginRound();
+					game.setGameOn(true);
+				}
 			} catch (Exception e){
 				System.out.println("Error accepting client\n");
 				e.printStackTrace();

@@ -207,8 +207,8 @@ public class LinkedPlayerList {
 			System.out.println("#     |" + currentPlayer.playerNumber + "\t   |");
 			System.out.println("Turn  |" + currentPlayer.turn + "\t   |");
 			System.out.print("Blind |");
-			System.out.println((currentPlayer.smallBlind) ? "Small Blind" + "\t	|" 
-					: (currentPlayer.bigBlind) ? "Big Blind" + "\t	|" : "None");
+			System.out.println((currentPlayer.smallBlind) ? "Small Blind" + " |" 
+					: (currentPlayer.bigBlind) ? "Big Blind" + "\t	|" : "None" + "\t   |");
 			System.out.println("Stack |" + currentPlayer.stack + "\t   |");
 			System.out.println("Folded|" + currentPlayer.folded + "\t   |");
 			System.out.println("IP    |" + currentPlayer.ipAddress + "   |");
