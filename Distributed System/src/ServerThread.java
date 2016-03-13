@@ -146,62 +146,23 @@ public class ServerThread implements Runnable{
 							bet(buffer, playerID, player);
 							break;
 						case("call"):
-							if (game.checkTurn(playerPort) == false) {
-								System.out.println("Currently not this player's turn; cannot call another player's bet");
-
-								out.write("It's not your turn, you cannot call another player's bet yet");
-								out.flush();
-
-								break;
-							}
+							call();
 							break;
 						case("fold"):
-							if (game.checkTurn(playerPort) == false) {
-								System.out.println("Currently not this player's turn; cannot fold until it is");
-
-								out.write("It's not your turn, you cannot fold until it is");
-								out.flush();
-
-								break;
-							}
+							fold();
 							break;
 						case("deal"):
 							if (game.checkTurn(playerPort) == false) break;
-							//String deal = buffer.substring(buffer.indexOf(" "));
-							randomCardNumber = rand.nextInt(52) + 1;
-							String deal = String.valueOf(randomCardNumber);
-							System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
+
 							playerNumber = game.getPlayerList().findPlayerByPort(socket.getPort(), "Player Number");
-							System.out.printf("Assigning card to player: %s\n", playerNumber);
-							//attempt at integrating Card class to deal command
-							String randomSuit = determineCardSuit(randomCardNumber);
-
-							int finalCardValue = determineCardValue(randomCardNumber, randomSuit);
-							Card randCard = new Card(randomSuit, finalCardValue);
-
-
-							//Card randCard = new Card(randomSuit, randomCardNumber);
-							//System.out.println("This is the card: " + randCard.getSuit() + randCard.getValue());
-							System.out.println("This is the card: " + randCard + " with random number: " + randomCardNumber);
-
-
-							out.write("message Card dealt: " + randCard + "\n");
-							out.flush();
+							deal(playerNumber);
 							break;
 						case("message"):
 							String message = buffer.substring(buffer.indexOf(" "));
 							System.out.printf("Message from %s: %s\n", socket.getInetAddress(), message);
 							break;
 						case("set_message_request"):
-							if(!serverMessageLock){
-								serverMessageLock = true;
-								key = rand.nextInt(10000);
-								out.write("set_message_request_granted " + Integer.toString(key) + "\n");
-								out.flush();
-							} else {
-								out.write("set_message_request_denied\n");
-								out.flush();
-							}
+							setMessageRequest();
 							break;
 						case("set_message"):
 							String smessage = buffer.substring(buffer.indexOf(" ")+1);
@@ -228,13 +189,7 @@ public class ServerThread implements Runnable{
 
 							break;
 						case("get_message"):
-							if(!serverMessage.equals("")){
-								out.write("message " + serverMessage + "\n");
-								out.flush();
-							} else {
-								out.write("message No server message is set\n");
-								out.flush();
-							}
+							getMessage();
 							break;
 						case("display game"):
 							if (debug == false) break;
@@ -327,23 +282,24 @@ public class ServerThread implements Runnable{
 		return finalCardNumber;
 	}  
 
+	//message switch methods
 	private void bet(StringBuffer buffer, int playerID, PlayerNode player){
-	try{
-		if (game.checkTurn(playerPort) == false) {
-			System.out.println("Currently not this player's turn; cannot place bet yet");
+		try{
+			if (game.checkTurn(playerPort) == false) {
+				System.out.println("Currently not this player's turn; cannot place bet yet");
 
-			out.write("It's not your turn, you cannot place a bet yet.");
-			out.flush();
-		}
-		String betAmount = buffer.substring(buffer.indexOf(" "));
-		System.out.printf("Bet amount from %s: %s\n", socket.getInetAddress(), betAmount);		
-		game.bet(playerID, Integer.parseInt(betAmount.trim()));
-		player = game.getPlayerList().findPlayerByPort(socket.getPort());
-		int stack = player.getStack();
-		System.out.println("This player's new stack total: " + stack);
-		player.setTurn(false);
-		System.out.println("No longer this players turn. Confirmation: " + player.getTurn());
-	} catch (IOException e) {e.printStackTrace();}
+				out.write("It's not your turn, you cannot place a bet yet.");
+				out.flush();
+			}
+			String betAmount = buffer.substring(buffer.indexOf(" "));
+			System.out.printf("Bet amount from %s: %s\n", socket.getInetAddress(), betAmount);		
+			game.bet(playerID, Integer.parseInt(betAmount.trim()));
+			player = game.getPlayerList().findPlayerByPort(socket.getPort());
+			int stack = player.getStack();
+			System.out.println("This player's new stack total: " + stack);
+			player.setTurn(false);
+			System.out.println("No longer this players turn. Confirmation: " + player.getTurn());
+		} catch (IOException e) {e.printStackTrace();}
 	}
 
 	private void checkTurn(){
@@ -357,5 +313,70 @@ public class ServerThread implements Runnable{
 				System.out.println("It is your turn.");
 		} catch (IOException e) {e.printStackTrace();}
 	}
+
+	private void call(){
+		try{
+			if (game.checkTurn(playerPort) == false) {
+				System.out.println("Currently not this player's turn; cannot call another player's bet");
+				out.write("It's not your turn, you cannot call another player's bet yet");
+				out.flush();
+			}
+		} catch (IOException e){e.printStackTrace();}
+	}
+	
+	private void fold(){
+		try{
+			if (game.checkTurn(playerPort) == false) {
+				System.out.println("Currently not this player's turn; cannot fold until it is");
+				out.write("It's not your turn, you cannot fold until it is");
+				out.flush();
+			}
+		} catch (IOException e){e.printStackTrace();}
+	}
+
+	private void deal(int playerNumber){
+		try{
+			randomCardNumber = rand.nextInt(52) + 1;
+			String deal = String.valueOf(randomCardNumber);
+			System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
+			System.out.printf("Assigning card to player: %s\n", playerNumber);
+			//attempt at integrating Card class to deal command
+			String randomSuit = determineCardSuit(randomCardNumber);
+
+			int finalCardValue = determineCardValue(randomCardNumber, randomSuit);
+			Card randCard = new Card(randomSuit, finalCardValue);														
+			System.out.println("This is the card: " + randCard + " with random number: " + randomCardNumber);
+
+			out.write("message Card dealt: " + randCard + "\n");
+			out.flush();
+		} catch (IOException e) {e.printStackTrace();}
+	}
+
+	private void setMessageRequest(){
+		try{
+			if(!serverMessageLock){
+				serverMessageLock = true;
+				key = rand.nextInt(10000);
+				out.write("set_message_request_granted " + Integer.toString(key) + "\n");
+				out.flush();
+			} else {
+				out.write("set_message_request_denied\n");
+				out.flush();
+			}
+		} catch (IOException e) {e.printStackTrace();}
+	}
+
+	private void getMessage(){
+		try{
+			if(!serverMessage.equals("")){
+				out.write("message " + serverMessage + "\n");
+				out.flush();
+			} else {
+				out.write("message No server message is set\n");
+				out.flush();
+			}
+		} catch (IOException e) {e.printStackTrace();}
+	}
+
 
 }
