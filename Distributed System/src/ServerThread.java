@@ -54,7 +54,7 @@ public class ServerThread implements Runnable{
 	public void run(){
 		try{
 			int playerNumber;
-			int playerID;
+			int playerID;			
 
 			bufIn = new BufferedInputStream(socket.getInputStream());
 			in = new InputStreamReader(bufIn);
@@ -139,36 +139,11 @@ public class ServerThread implements Runnable{
 
 					switch(messageType){
 						case("checkTurn"):
-							if (game.checkTurn(playerPort) == false) {
-								System.out.println("Currently not this player's turn.");
-
-								out.write("It's not your turn");
-								out.flush();
-
-								break;
-							}
-							else
-								System.out.println("It is your turn.");
+							checkTurn();
 							break;
 						case("bet"):
-							if (game.checkTurn(playerPort) == false) {
-								System.out.println("Currently not this player's turn; cannot place bet yet");
-
-								out.write("It's not your turn, you cannot place a bet yet.");
-								out.flush();
-
-								break;
-							}
-							String betAmount = buffer.substring(buffer.indexOf(" "));
-							System.out.printf("Bet amount from %s: %s\n", socket.getInetAddress(), betAmount);
-
 							playerID = game.getPlayerList().findPlayerByPort(socket.getPort(), "Player ID");
-							game.bet(playerID, Integer.parseInt(betAmount.trim()));
-							player = game.getPlayerList().findPlayerByPort(socket.getPort());
-							int stack = player.getStack();
-							System.out.println("This player's new stack total: " + stack);
-							player.setTurn(false);
-							System.out.println("No longer this players turn. Confirmation: " + player.getTurn());
+							bet(buffer, playerID, player);
 							break;
 						case("call"):
 							if (game.checkTurn(playerPort) == false) {
@@ -351,5 +326,36 @@ public class ServerThread implements Runnable{
 		}
 		return finalCardNumber;
 	}  
+
+	private void bet(StringBuffer buffer, int playerID, PlayerNode player){
+	try{
+		if (game.checkTurn(playerPort) == false) {
+			System.out.println("Currently not this player's turn; cannot place bet yet");
+
+			out.write("It's not your turn, you cannot place a bet yet.");
+			out.flush();
+		}
+		String betAmount = buffer.substring(buffer.indexOf(" "));
+		System.out.printf("Bet amount from %s: %s\n", socket.getInetAddress(), betAmount);		
+		game.bet(playerID, Integer.parseInt(betAmount.trim()));
+		player = game.getPlayerList().findPlayerByPort(socket.getPort());
+		int stack = player.getStack();
+		System.out.println("This player's new stack total: " + stack);
+		player.setTurn(false);
+		System.out.println("No longer this players turn. Confirmation: " + player.getTurn());
+	} catch (IOException e) {e.printStackTrace();}
+	}
+
+	private void checkTurn(){
+		try{
+			if (game.checkTurn(playerPort) == false) {
+				System.out.println("Currently not this player's turn.");
+				out.write("It's not your turn");
+				out.flush();
+			}
+			else
+				System.out.println("It is your turn.");
+		} catch (IOException e) {e.printStackTrace();}
+	}
 
 }
