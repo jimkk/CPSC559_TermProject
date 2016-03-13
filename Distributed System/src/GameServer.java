@@ -44,7 +44,11 @@ public class GameServer {
 			System.err.println("ERROR: Failed to connect to server manager");
 			System.exit(-1);
 		}
+		
+		new GameThread(serverManagerSocket, game).run();
 
+
+		/*
 		try{
 			serverSocket = new ServerSocket(port);
 		} catch (Exception e){
@@ -62,6 +66,7 @@ public class GameServer {
 				e.printStackTrace();
 			}
 		}
+		*/
 	};
 
 	/**

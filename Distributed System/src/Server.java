@@ -27,7 +27,8 @@ public class Server implements Runnable{
 	private Socket backupServer;
 	private OutputStreamWriter out = null;
 
-	private volatile ArrayList<Socket> servers;
+	private static ArrayList<Socket> servers;
+	private int nextClientID = 0;
 
 	public Server(int port, int type){
 		this.port = port;
@@ -56,7 +57,7 @@ public class Server implements Runnable{
 					servers.add(clientSocket);
 					System.out.println("Server added to list");
 				} else if (type == CLIENT){
-					new Thread(new ServerThread(clientSocket, servers)).start();
+					new Thread(new ServerThread(clientSocket, nextClientID++, servers)).start();
 				}
 			} catch (Exception e){
 				if(type == SERVER){

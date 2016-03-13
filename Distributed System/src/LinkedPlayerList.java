@@ -16,8 +16,8 @@ public class LinkedPlayerList {
 	private volatile boolean writeLock = false;
 	private volatile boolean readLock = false;
 
-	public void addPlayers (int playerNumber, int playerID, int stack, int port, String ipAddress){
-		PlayerNode player = new PlayerNode(playerNumber, playerID, stack, port, ipAddress);
+	public void addPlayers (int playerNumber, int playerID, int stack){
+		PlayerNode player = new PlayerNode(playerNumber, playerID, stack);
 		PlayerNode currentPlayer;
 		count++;
 
@@ -67,11 +67,9 @@ public class LinkedPlayerList {
 	public void insertPlayer (int     playerNumber,
 			int     playerID,
 			int	  stack,
-			int	  port,
-			String  ipAddress,
 			int     after){
 
-		PlayerNode player = new PlayerNode(playerNumber, playerID, stack, port, ipAddress);
+		PlayerNode player = new PlayerNode(playerNumber, playerID, stack);
 		count++;
 
 		int ithPlayer = 1;
@@ -120,7 +118,7 @@ public class LinkedPlayerList {
 		//PlayerNode.numberOfPlayers--;
 		count--;
 	}
-
+	/*
 	public int findPlayerByPort(int playerPort, String returnType){	
 		PlayerNode currentPlayer = rootPlayer;
 		do{
@@ -158,7 +156,7 @@ public class LinkedPlayerList {
 		}
 		return currentPlayer;	
 	}
-
+	*/
 
 	public PlayerNode findPlayerByID(int playerID){
 		PlayerNode currentPlayer = rootPlayer;
@@ -211,8 +209,6 @@ public class LinkedPlayerList {
 					: (currentPlayer.bigBlind) ? "Big Blind" + "\t	|" : "None");
 			System.out.println("Stack |" + currentPlayer.stack + "\t   |");
 			System.out.println("Folded|" + currentPlayer.folded + "\t   |");
-			System.out.println("IP    |" + currentPlayer.ipAddress + "   |");
-			System.out.println("Port  |" + currentPlayer.port + "\t   |");
 
 			arrow = true;
 

@@ -25,10 +25,13 @@ public class ServerThread implements Runnable{
 	private boolean gameServerChosen;
 	private boolean isDone;
 
-	public ServerThread(Socket socket, ArrayList<Socket> servers){
+	private int clientID;
+
+	public ServerThread(Socket socket, int clientID, ArrayList<Socket> servers){
 		this.clientSocket = socket;
-		gameServerChosen = false;
+		this.clientID = clientID;
 		this.servers = servers;
+		gameServerChosen = false;
 	}
 
 	public void run(){
@@ -40,17 +43,18 @@ public class ServerThread implements Runnable{
 		bufOut = new BufferedOutputStream(clientSocket.getOutputStream());
 		out = new OutputStreamWriter(bufOut);
 
-
-		out.write("message Welcome to the Poker server!");
+		out.write("message Welcome to the Poker server!\n");
 		out.flush();
 		while(!gameServerChosen){
 			if(servers.size() == 0){
+				System.out.println("Currently no active servers...");
 				Thread.sleep(1000);
 				continue;
 			}
 			//TODO Ask which game server to join
 			//For now, it's the first one
 			gameServerSocket = servers.get(0);
+			gameServerChosen = true;
 		}
 
 		bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
@@ -58,15 +62,30 @@ public class ServerThread implements Runnable{
 		bufGameOut = new BufferedOutputStream(gameServerSocket.getOutputStream());
 		gameOut = new OutputStreamWriter(bufGameOut);
 
+		int stack = 1000; //TODO Custom stack
+		gameOut.write(clientID + " addplayer " + stack + "\n");
+		gameOut.flush();
+
 		while(!isDone){
 			try{
 				if(in.ready()){
-					gameOut.write(read(in).toString());
+					String message = read(in).toString();
+					System.out.printf("Message from %d: %s\n", clientID, message);
+					gameOut.write(clientID + " " + message + "\n");
+					gameOut.flush();
 				}
 				if(gameIn.ready()){
-					out.write(read(gameIn).toString());
+					String message = read(gameIn).toString();
+					System.out.printf("Message from game server: \"%s\"\n", message);
+					int ID = Integer.parseInt(message.split(" ")[0]);
+					if(ID == clientID){
+						out.write(message.substring(message.indexOf(" ")+1) + "\n");
+						out.flush();
+					}
 				}
 			} catch(Exception e){e.printStackTrace(); isDone = true;}
+			
+			Thread.sleep(100);
 		}
 
 		} catch (Exception e) {e.printStackTrace();}

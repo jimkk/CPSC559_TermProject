@@ -10,7 +10,6 @@ public class PlayerNode {
 	int stack;
 	int currentBetAmount;
 	int betPerTurn;
-	int port;
 	boolean turn = false;
 	boolean folded = false;
 	boolean bigBlind = false;
@@ -18,16 +17,13 @@ public class PlayerNode {
 	boolean allIn = false;
 	boolean doneTurn = false;
 	boolean beginTurn = false;
-	String ipAddress;
 	Card[] hand;
 	PlayerNode nextPlayer;
 
-	PlayerNode (int playerNumber, int playerID, int stack, int port, String ipAddress){
+	PlayerNode (int playerNumber, int playerID, int stack){
 
 		this.playerNumber = playerNumber;
 		this.playerID = playerID;
-		this.port = port;
-		this.ipAddress = ipAddress;
 		this.stack = stack;
 		this.currentBetAmount = 0;
 		this.betPerTurn = 0;
@@ -41,6 +37,10 @@ public class PlayerNode {
 		this.hand = new Card[2];
 		//numberOfPlayers++;
 
+	}
+
+	public int getPlayerID(){
+		return playerID;
 	}
 
 	public void setHand(Card c1, Card c2){
