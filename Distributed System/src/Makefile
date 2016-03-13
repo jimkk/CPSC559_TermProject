@@ -4,9 +4,6 @@ DOCPATH = ../docs
 
 all: compile
 
-setup:
-	export CLASSPATH=$(CLASSPATH)	
-
 compile:
 	javac -cp $(CLASSPATH) -sourcepath $(SOURCEPATH) *.java
 

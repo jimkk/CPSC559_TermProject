@@ -39,17 +39,18 @@ public class BackupServer {
 			while(!isDone){
 
 				message = read(in).toString();
+				System.out.println("Received backup from server");
+				System.out.println(message);
 				game = gson.fromJson(message, GameManager.class);
 				list = game.getPlayerList();
 				list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
 					list.findPlayerByIndex(0);
-				System.out.println("Received backup from server");
-				System.out.println(message);
 			}
 		} catch(NullPointerException e){
 			System.out.println("--------------------------");
 			System.err.println("Lost connection to server."); 
 			System.out.println("--------------------------");
+			e.printStackTrace();
 			System.exit(-1);
 		}
 		catch (Exception e) {e.printStackTrace();}

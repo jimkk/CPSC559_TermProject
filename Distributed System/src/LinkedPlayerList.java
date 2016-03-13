@@ -8,9 +8,9 @@ import java.io.*;
 public class LinkedPlayerList {
 
 	//NOTE: I made these non-static, if it breaks something then change it back
-	static PlayerNode currentPlayer;
-	static PlayerNode temp;
-	static PlayerNode rootPlayer;
+	//PlayerNode currentPlayer;
+	volatile PlayerNode temp;
+	volatile PlayerNode rootPlayer;
 	private volatile int count = 0;
 
 	private volatile boolean writeLock = false;
@@ -76,7 +76,7 @@ public class LinkedPlayerList {
 
 		int ithPlayer = 1;
 
-		currentPlayer = rootPlayer;
+		PlayerNode currentPlayer = rootPlayer;
 
 		while (after != ithPlayer){
 			currentPlayer = currentPlayer.nextPlayer;
@@ -94,7 +94,7 @@ public class LinkedPlayerList {
 
 		int ithPlayer = 1;
 
-		currentPlayer = rootPlayer;
+		PlayerNode currentPlayer = rootPlayer;
 
 		if(playerToBeDeleted == 1){
 
@@ -195,7 +195,7 @@ public class LinkedPlayerList {
 
 	public void displayGameState() {
 		// Print the game state on the Server side
-		currentPlayer = rootPlayer;
+		PlayerNode currentPlayer = rootPlayer;
 		boolean arrow = false;
 
 		System.out.println("---------------------------");
