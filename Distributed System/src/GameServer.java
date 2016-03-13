@@ -59,7 +59,7 @@ public class GameServer {
 		while(!isDone){
 			try{
 				Socket clientSocket = serverSocket.accept();
-				new Thread(new GameThread(clientSocket, game)).start();
+				new GameThread(clientSocket, game).run();
 				game.setPlayerCountPlusOne(1);
 				
 				//System.out.println("Server Loop Test");
