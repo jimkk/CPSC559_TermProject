@@ -4,13 +4,18 @@ import java.io.*;
 /**
  * The class from the server that will set up a connection to a backup server
  * if there is one and then will listen for client connections and create new
- * ServerThread threads to manage that client.
+ * GameThread threads to manage that client.
  */
-public class Server {
+public class GameServer {
 
 	private boolean isDone = false;
 	private int port = 7777;
 	private ServerSocket serverSocket;
+	
+	//Server Manager stuff
+	private Socket serverManagerSocket;
+	private String serverManagerAddress;
+	private int serverManagerPort;
 
 	//Backup stuff
 	private String backupServerAddress = "localhost";
@@ -20,14 +25,28 @@ public class Server {
 
 
 	GameManager game = new GameManager();
-	private int gameChecksum = 0;
+
+	public GameServer(String address, int port){
+		serverManagerAddress = address;
+		serverManagerPort = port;
+	}
 
 	/**
-	 * The main function that will loop while checking for clients attempting to connect and create ServerThreads for them.
+	 * The main function that will loop while checking for clients attempting to connect and create GameThreads for them.
 	 */
 	private void run(){
 
 		setUpBackup();
+
+		try{
+			serverManagerSocket = new Socket(serverManagerAddress, serverManagerPort);
+		} catch (Exception e) {
+			System.err.println("ERROR: Failed to connect to server manager");
+			System.exit(-1);
+		}
+		
+		new GameThread(serverManagerSocket, game).run();
+
 
 		try{
 			serverSocket = new ServerSocket(port);
@@ -40,7 +59,7 @@ public class Server {
 		while(!isDone){
 			try{
 				Socket clientSocket = serverSocket.accept();
-				new Thread(new ServerThread(clientSocket, game)).start();
+				new Thread(new GameThread(clientSocket, game)).start();
 				game.setPlayerCountPlusOne(1);
 				
 				//System.out.println("Server Loop Test");
@@ -74,9 +93,12 @@ public class Server {
 	}
 
 
-	public static void main(String[] args) {
-		Server server = new Server();
-		server.run();
+	public static void main(String[] args) {	
+		if(args.length == 2){
+			String address = args[0];
+			int port = Integer.parseInt(args[1]);
+			new GameServer(address, port).run();
+		}
 	}
 
 }

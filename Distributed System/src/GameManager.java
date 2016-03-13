@@ -152,16 +152,15 @@ public class GameManager {
 	 * @param ipAddress The IP address that the player's socket is connected to.
 	 * @return int - Returns 0 on the player being added to the game and -1 if the game is at capacity
 	 */	
-	public int addPlayerToGame(int stack, int playerPort, String ipAddress) {
+	public int addPlayerToGame(int stack, int playerID) {
 		/**
 		 * Add a player to the game
 		 */
 		if(playerCount == 6) {
 			return -1;
 		}
-		//playerCount++;	
-		playerID++;
-		this.getPlayerList().addPlayers(playerCount, playerID, stack, playerPort, ipAddress);
+		playerCount++;
+		getPlayerList().addPlayers(playerCount, playerID, stack);
 
 		//this.getPlayerList().displayGameState();
 		
@@ -192,7 +191,7 @@ public class GameManager {
 	public void rotatePlayers(){
 		PlayerNode currentPlayer = getPlayerList().findPlayerByIndex(0);
 		currentPlayer.setTurn(true);
-		System.out.println("Current player's port: " + currentPlayer.port);
+		System.out.println("Current player's ID: " + currentPlayer.playerID);
 	}
 
 	/**
@@ -200,11 +199,11 @@ public class GameManager {
 	 * @param playerPort The player to check
 	 * @return boolean - True if it is the player's turn, false otherwise
 	 */
-	public boolean checkTurn (int playerPort){
+	public boolean checkTurn (int playerID){
 		/**
 		 * Check if it's the player's turn. If not, return false.
 		 */
-		PlayerNode player = getPlayerList().findPlayerByPort(playerPort);
+		PlayerNode player = getPlayerList().findPlayerByID(playerID);
 
 		if(player.getTurn() == false) return false;
 		else return true; 
