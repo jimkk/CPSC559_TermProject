@@ -30,21 +30,25 @@ public class BackupServer {
 			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
 			InputStreamReader in = new InputStreamReader(bufIn);
 
-			message = read(in).toString();
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			game = gson.fromJson(message, GameManager.class);
 
-			System.out.println("Received backup from server");
-			System.out.println(message);
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			
 			while(!isDone){
 
 				message = read(in).toString();
-				System.out.println("Received backup from server");
-				System.out.println(message);
+				System.out.printf("%s: Received backup from server\n", new Date());
+				
+				FileWriter fw = new FileWriter("backups.bck");
+				fw.write(message);
+				fw.close();
+				
+				//System.out.println(message);
 				game = gson.fromJson(message, GameManager.class);
-				list = game.getPlayerList();
-				list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
-					list.findPlayerByIndex(0);
+				if(game.getPlayerCount() > 0){
+					list = game.getPlayerList();
+					list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
+						list.findPlayerByIndex(0);
+				}
 			}
 		} catch(NullPointerException e){
 			System.out.println("--------------------------");
