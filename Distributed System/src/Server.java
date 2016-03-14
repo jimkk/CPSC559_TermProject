@@ -28,7 +28,7 @@ public class Server implements Runnable{
 	private OutputStreamWriter out = null;
 
 	private static ArrayList<Socket> servers;
-	private int nextClientID = 0;
+	private int nextClientID = 1;
 
 	public Server(int port, int type){
 		this.port = port;
