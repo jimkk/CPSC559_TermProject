@@ -199,8 +199,7 @@ public class GameThread {
 							   break;
 							   */
 						case("display game"):
-							if (debug == false) break;
-							else game.getPlayerList().displayGameState();
+							game.getPlayerList().displayGameState();
 							break;
 						case("close"):
 

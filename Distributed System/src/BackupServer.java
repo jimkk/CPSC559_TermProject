@@ -1,6 +1,7 @@
 import java.net.*;
 import java.io.*;
 import java.util.Date;
+import java.util.Scanner;
 import com.google.gson.*;
 
 
@@ -52,9 +53,9 @@ public class BackupServer {
 			}
 		} catch(NullPointerException e){
 			System.out.println("--------------------------");
-			System.err.println("Lost connection to server."); 
+			System.err.println("Lost connection to GameServer. Please restart it to demonstrate Fault Tolerance."); 
 			System.out.println("--------------------------");
-			System.exit(-1);
+			//System.exit(-1);
 		}
 		catch (Exception e) {e.printStackTrace();}
 	}
@@ -72,6 +73,20 @@ public class BackupServer {
 			return buffer;
 		} catch (IOException e) {e.printStackTrace();}
 		return null;
+	}
+
+	public void restoreBackup(){
+		try{
+			StringBuffer restoredMessage = new StringBuffer();
+			int c;
+			FileReader fr = new FileReader("backups.bck");
+			
+
+			while((c = fr.read()) != -1){
+				restoredMessage.append((char) c);
+			}
+			
+		} catch (Exception e) {e.printStackTrace();}
 	}
 
 	public static void main (String [] args){
