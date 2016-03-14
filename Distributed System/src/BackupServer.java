@@ -94,6 +94,7 @@ public class BackupServer {
 			}
 			
 		} catch (Exception e) {e.printStackTrace();}
+	}
 
 	private String rebuildString(String [] parts, int start, int end){
 		StringBuffer buffer = new StringBuffer();
