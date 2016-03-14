@@ -7,6 +7,7 @@ import java.util.*;
 
 public class GameManager {
 
+	private int gameID;
 	private int pot = 0;
 	private int currentBetCall = 0;
 	private int playerCount = 0;
@@ -292,6 +293,14 @@ public class GameManager {
 	
 	public void setPlayerCountPlusOne (int i){
 		this.playerCount += i;
+	}
+
+	public void setGameID(int ID){
+		gameID = ID;
+	}
+
+	public int getGameID(){
+		return gameID;
 	}
 	
 }

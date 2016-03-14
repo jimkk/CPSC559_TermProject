@@ -28,6 +28,7 @@ public class Server implements Runnable{
 	private OutputStreamWriter out = null;
 
 	private static ArrayList<Socket> servers;
+	private int nextGameID = 1;
 	private int nextClientID = 1;
 
 	public Server(int port, int type){
@@ -56,6 +57,11 @@ public class Server implements Runnable{
 				if(type == SERVER){
 					servers.add(clientSocket);
 					System.out.println("Server added to list");
+
+					BufferedOutputStream bufOut = new BufferedOutputStream(clientSocket.getOutputStream());
+					OutputStreamWriter out = new OutputStreamWriter(bufOut);
+					out.write("gameid " + nextGameID++ + "\n");
+					out.flush();
 				} else if (type == CLIENT){
 					new Thread(new ServerThread(clientSocket, nextClientID++, servers)).start();
 				}
