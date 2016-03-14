@@ -69,6 +69,7 @@ public class BackupServer {
 					message = read(in).toString();
 					int gameID = Integer.parseInt(message.split(" ")[1]);
 					//TODO Recover backup for gameID
+					restoreBackup(gameID);
 				}
 			}
 		} catch(NullPointerException e){
@@ -96,11 +97,11 @@ public class BackupServer {
 	}
 
 
-	public void restoreBackup(){
+	public void restoreBackup(int gameID){
 		try{
 			StringBuffer restoredMessage = new StringBuffer();
 			int c;
-			FileReader fr = new FileReader("backups.bck");
+			FileReader fr = new FileReader("backup" + gameID +".bck");
 			
 
 			while((c = fr.read()) != -1){
