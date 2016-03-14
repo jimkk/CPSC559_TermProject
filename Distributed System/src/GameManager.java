@@ -148,8 +148,7 @@ public class GameManager {
 	/**
 	 * Adds a player to the game.
 	 * @param stack The stack starting value for the new player.
-	 * @param playerPort The port that the player's socket is connected to.
-	 * @param ipAddress The IP address that the player's socket is connected to.
+	 * @param playerID The ID of the new player 
 	 * @return int - Returns 0 on the player being added to the game and -1 if the game is at capacity
 	 */	
 	public int addPlayerToGame(int stack, int playerID) {
@@ -196,7 +195,7 @@ public class GameManager {
 
 	/**
 	 * Checks if it is the specified players turn
-	 * @param playerPort The player to check
+	 * @param playerID The player to check
 	 * @return boolean - True if it is the player's turn, false otherwise
 	 */
 	public boolean checkTurn (int playerID){
