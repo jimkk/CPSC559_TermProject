@@ -45,8 +45,9 @@ public class GameServer {
 			System.exit(-1);
 		}
 		
+		System.out.println("Number of players: " + game.getPlayerCount());
 		new GameThread(serverManagerSocket, game).run();
-
+		
 
 		try{
 			serverSocket = new ServerSocket(port);
@@ -58,12 +59,13 @@ public class GameServer {
 
 		while(!isDone){
 			try{
+				System.out.println("Number of players: " + game.getPlayerCount());
 				Socket clientSocket = serverSocket.accept();
 				new GameThread(clientSocket, game).run();
 				game.setPlayerCountPlusOne(1);
 				
 				//System.out.println("Server Loop Test");
-				//System.out.println("Number of players: " + game.getPlayerCount());
+				System.out.println("Number of players: " + game.getPlayerCount());
 				//System.out.println("Game on?: " + game.isGameOn());
 				if (game.getPlayerCount() == 3 && game.isGameOn() == false){
 					//System.out.println("Should only enter this once per game");

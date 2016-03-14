@@ -54,7 +54,6 @@ public class GameThread {
 			bufOut = new BufferedOutputStream(socket.getOutputStream());
 			out = new OutputStreamWriter(bufOut);
 
-
 			/*
 			   returnCode = game.addPlayerToGame(1000, playerID);		//TODO Set custom stack amount
 			   if (returnCode == -1) {
@@ -81,6 +80,10 @@ public class GameThread {
 				  turnSent = true;
 				  }*/
 
+				if(game.getPlayerCount() > 2){
+					game.beginRound();
+				}
+				
 				if(game.isGameOn() && !handSent){
 					for(int i = 0; i < game.getPlayerCount(); i++){
 						PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
@@ -136,7 +139,9 @@ public class GameThread {
 					switch(messageType){
 						case("addplayer"):
 							int stack = Integer.parseInt(messageParts[2]);
-							game.addPlayerToGame(stack, playerID); 
+							System.out.println("ADDING NEW PLAYER");
+							game.addPlayerToGame(stack, playerID);
+							System.out.println("playerCount: " + game.getPlayerCount());
 						case("checkTurn"):
 							checkTurn(playerID);
 							break;
