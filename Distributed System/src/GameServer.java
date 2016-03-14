@@ -49,6 +49,7 @@ public class GameServer {
 		new GameThread(serverManagerSocket, game).run();
 		
 
+		/*
 		try{
 			serverSocket = new ServerSocket(port);
 		} catch (Exception e){
@@ -56,6 +57,7 @@ public class GameServer {
 			e.printStackTrace();
 			System.exit(-1);
 		}
+		*/
 
 		while(!isDone){
 			try{
