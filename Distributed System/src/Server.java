@@ -11,10 +11,11 @@ public class Server implements Runnable{
 
 	public static final int SERVER = 0;
 	public static final int CLIENT = 1;
+	public static final int BACKUP = 2;
 	
 	private static int clientPort = 7777;
 	private static int serverPort = 7776;
-
+	private static int backupPort = 7775;
 
 	private boolean isDone = false;
 	private int port;
@@ -28,6 +29,7 @@ public class Server implements Runnable{
 	private OutputStreamWriter out = null;
 
 	private static ArrayList<Socket> servers;
+	private static ArrayList<Socket> backupServers;
 	private int nextGameID = 1;
 	private int nextClientID = 1;
 
@@ -35,6 +37,7 @@ public class Server implements Runnable{
 		this.port = port;
 		this.type = type;
 		servers = new ArrayList<Socket>();
+		backupServers = new ArrayList<Socket>();
 	}
 
 
@@ -64,7 +67,11 @@ public class Server implements Runnable{
 					out.flush();
 				} else if (type == CLIENT){
 					new Thread(new ServerThread(clientSocket, nextClientID++, servers)).start();
+				} else if (type == BACKUP){
+					backupServers.add(clientSocket);
+					System.out.println("Backup server added to list");
 				}
+
 			} catch (Exception e){
 				if(type == SERVER){
 					System.out.println("Error accepting server\n");
@@ -82,6 +89,7 @@ public class Server implements Runnable{
 
 	public static void main(String[] args) {
 		new Thread(new Server(clientPort, Server.CLIENT)).start();
+		new Thread(new Server(backupPort, Server.BACKUP)).start();
 		new Server(serverPort, Server.SERVER).run();
 	}
 

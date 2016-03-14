@@ -11,7 +11,11 @@ import com.google.gson.*;
 
 public class BackupServer {
 
+	private static final int serverManagerPort = 7775;
+	private static String serverManagerAddress;
+
 	private ServerSocket serverSocket;
+	private Socket serverManagerSocket;
 	private int port = 5432;
 	private boolean isDone = false;
 	private GameManager game;
@@ -25,10 +29,15 @@ public class BackupServer {
 			String message;
 			LinkedPlayerList list;
 
+			serverManagerSocket = new Socket(serverManagerAddress, serverManagerPort);
+
 			serverSocket = new ServerSocket(port);
 			Socket socket = serverSocket.accept();
 			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
 			InputStreamReader in = new InputStreamReader(bufIn);
+			
+			BufferedInputStream bufManagerIn = new BufferedInputStream(socket.getInputStream());
+			InputStreamReader managerIn = new InputStreamReader(bufManagerIn);
 
 
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -54,6 +63,11 @@ public class BackupServer {
 						list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
 							list.findPlayerByIndex(0);
 					}
+				}
+				else if(managerIn.ready()){
+					message = read(in).toString();
+					int gameID = Integer.parseInt(message.split(" ")[1]);
+					//TODO Recover backup for gameID
 				}
 			}
 		} catch(NullPointerException e){
@@ -89,8 +103,12 @@ public class BackupServer {
 	}
 
 	public static void main (String [] args){
-		BackupServer bs = new BackupServer();
-		bs.run();
+		if(args.length == 1){
+
+			BackupServer bs = new BackupServer();
+			bs.serverManagerAddress = args[0];
+			bs.run();
+		}
 	}
 
 
