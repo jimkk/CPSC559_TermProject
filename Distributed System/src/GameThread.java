@@ -65,7 +65,12 @@ public class GameThread {
 			   System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
 			   game.getPlayerList().displayGameState();
 			   */
-
+			
+			String message = read(in).toString();
+			int gameID = Integer.parseInt(message.split(" ")[1]);
+			game.setGameID(gameID);
+			System.out.printf("Game ID: %d\n", gameID);
+			
 			StringBuffer buffer = new StringBuffer();
 			String messageType = "";
 
@@ -375,6 +380,7 @@ public class GameThread {
 		}
 		return buffer.toString();
 	}
+
 
 /*
 	private void setMessageRequest(){

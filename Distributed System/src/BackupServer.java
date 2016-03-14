@@ -32,22 +32,28 @@ public class BackupServer {
 
 
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			
-			while(!isDone){
 
-				message = read(in).toString();
-				System.out.printf("%s: Received backup from server\n", new Date());
-				
-				FileWriter fw = new FileWriter("backups.bck");
-				fw.write(message);
-				fw.close();
-				
-				//System.out.println(message);
-				game = gson.fromJson(message, GameManager.class);
-				if(game.getPlayerCount() > 0){
-					list = game.getPlayerList();
-					list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
-						list.findPlayerByIndex(0);
+			while(!isDone){
+				if(in.ready()){
+					message = read(in).toString();
+					System.out.printf("Message: \"%s\"\n", message);
+					String [] messageParts = message.split(" ");
+					int gameID = Integer.parseInt(messageParts[1]);
+					String backup = rebuildString(messageParts, 2, messageParts.length);
+
+					System.out.printf("%s: Received backup from server for game %d\n", new Date(), gameID);
+
+					FileWriter fw = new FileWriter("backup" + gameID + ".bck");
+					fw.write(backup);
+					fw.close();
+
+					//System.out.println(backup);
+					game = gson.fromJson(backup, GameManager.class);
+					if(game.getPlayerCount() > 0){
+						list = game.getPlayerList();
+						list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
+							list.findPlayerByIndex(0);
+					}
 				}
 			}
 		} catch(NullPointerException e){
@@ -72,6 +78,14 @@ public class BackupServer {
 			return buffer;
 		} catch (IOException e) {e.printStackTrace();}
 		return null;
+	}
+
+	private String rebuildString(String [] parts, int start, int end){
+		StringBuffer buffer = new StringBuffer();
+		for(int i = start; i < end; i++){
+			buffer.append(parts[i]);
+		}
+		return buffer.toString();
 	}
 
 	public static void main (String [] args){

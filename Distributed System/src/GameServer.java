@@ -57,7 +57,6 @@ public class GameServer {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		*/
 
 		while(!isDone){
 			try{
@@ -79,7 +78,8 @@ public class GameServer {
 				e.printStackTrace();
 			}
 		}
-	};
+		*/
+	}
 
 	/**
 	 * This function will check for a backup server and connect to it if it exists.

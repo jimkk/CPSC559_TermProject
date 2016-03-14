@@ -46,7 +46,7 @@ public class BackupManager implements Runnable{
 
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			message = gson.toJson(game);
-			out.write(message + "\f");
+			out.write("json_backup " + game.getGameID() + " " + message + "\f");
 			out.flush();
 			//fw.close();
 
@@ -64,7 +64,7 @@ public class BackupManager implements Runnable{
 						list.findPlayerByIndex(0);
 					//fw.close();
 
-					out.write(message + "\f");
+					out.write("json_backup " + game.getGameID() + " " + message + "\f");
 					out.flush();
 
 					//out.writeObject(new Date());
