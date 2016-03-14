@@ -83,6 +83,8 @@ public class ServerThread implements Runnable{
 						out.flush();
 					}
 				}
+			} catch(SocketException e){
+				System.err.println("Game server has crashed. Recovering...(but not really)");
 			} catch(Exception e){e.printStackTrace(); isDone = true;}
 			
 			Thread.sleep(100);
