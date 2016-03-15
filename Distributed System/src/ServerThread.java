@@ -11,8 +11,9 @@ public class ServerThread implements Runnable{
 
 	private Socket clientSocket;
 	private Socket gameServerSocket;
-	private ArrayList<Socket> servers;
-	
+	//private ArrayList<Socket> servers;
+	private HashMap<Integer, Socket> servers;
+
 	private BufferedInputStream bufIn;
 	private InputStreamReader in;
 	private BufferedOutputStream bufOut;
@@ -26,10 +27,11 @@ public class ServerThread implements Runnable{
 	private boolean isDone;
 
 	private int clientID;
+	private int gameIndex;
 
 	private static String message;
 
-	public ServerThread(Socket socket, int clientID, ArrayList<Socket> servers){
+	public ServerThread(Socket socket, int clientID, HashMap<Integer, Socket> servers){
 		this.clientSocket = socket;
 		this.clientID = clientID;
 		this.servers = servers;
@@ -56,7 +58,8 @@ public class ServerThread implements Runnable{
 			}
 			//TODO Ask which game server to join
 			//For now, it's the first one
-			gameServerSocket = servers.get(0);
+			gameIndex = 1;
+			gameServerSocket = servers.get(gameIndex);
 			gameServerChosen = true;
 		}
 

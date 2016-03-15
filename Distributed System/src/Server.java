@@ -28,7 +28,8 @@ public class Server implements Runnable{
 	private Socket backupServer;
 	private OutputStreamWriter out = null;
 
-	private static ArrayList<Socket> servers;
+	//private static ArrayList<Socket> servers;
+	private static HashMap<Integer, Socket> servers;
 	private static ArrayList<Socket> backupServers;
 	private int nextGameID = 1;
 	private int nextClientID = 1;
@@ -36,7 +37,7 @@ public class Server implements Runnable{
 	public Server(int port, int type){
 		this.port = port;
 		this.type = type;
-		servers = new ArrayList<Socket>();
+		servers = new HashMap<Integer, Socket>();
 		backupServers = new ArrayList<Socket>();
 	}
 
@@ -58,7 +59,7 @@ public class Server implements Runnable{
 			try{
 				Socket clientSocket = serverSocket.accept();
 				if(type == SERVER){
-					servers.add(clientSocket);
+					servers.put(nextGameID, clientSocket);
 					System.out.println("Server added to list");
 
 					BufferedOutputStream bufOut = new BufferedOutputStream(clientSocket.getOutputStream());
@@ -72,11 +73,7 @@ public class Server implements Runnable{
 					System.out.println("Backup server added to list");
 				}
 
-				for(int i = 0; i < servers.size(); i++){
-					if(servers.get(i).isClosed()){
-						System.out.printf("Server %d is closed and needs recovery!\n", i);
-					}
-				}
+				//TODO Detect a server down
 
 			} catch (Exception e){
 				if(type == SERVER){
