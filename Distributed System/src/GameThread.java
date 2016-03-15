@@ -65,7 +65,12 @@ public class GameThread {
 			   System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
 			   game.getPlayerList().displayGameState();
 			   */
-
+			
+			String message = read(in).toString();
+			int gameID = Integer.parseInt(message.split(" ")[1]);
+			game.setGameID(gameID);
+			System.out.printf("Game ID: %d\n", gameID);
+			
 			StringBuffer buffer = new StringBuffer();
 			String messageType = "";
 
@@ -142,6 +147,7 @@ public class GameThread {
 					// Note: only check if the player has requested something that cannot
 					// be done if it is not his or her turn; i.e. betting, folding, calling
 
+
 					switch(messageType){
 						case("addplayer"):
 							int stack = Integer.parseInt(messageParts[2]);
@@ -165,6 +171,11 @@ public class GameThread {
 						case("deal"):
 							System.out.println("Player's Turn? Deal?");
 							if (game.checkTurn(playerID) == false) break;
+
+							if (game.checkTurn(playerID) == false){
+								 sendMessage(out, playerID, "It is not your turn");
+								 break;
+							}
 							deal(playerID);
 							break;
 						case("message"):
@@ -203,8 +214,7 @@ public class GameThread {
 							   break;
 							   */
 						case("display game"):
-							if (debug == false) break;
-							else game.getPlayerList().displayGameState();
+							game.getPlayerList().displayGameState();
 							break;
 						case("close"):
 
@@ -368,11 +378,11 @@ public class GameThread {
 		System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
 		System.out.printf("Assigning card to player: %s\n", playerID);
 		//attempt at integrating Card class to deal command
-		String randomSuit = determineCardSuit(randomCardNumber);
+		//String randomSuit = determineCardSuit(randomCardNumber);
 
-		int finalCardValue = determineCardValue(randomCardNumber, randomSuit);
-		Card randCard = new Card(randomSuit, finalCardValue);														
-		System.out.println("This is the card: " + randCard + " with random number: " + randomCardNumber);
+		//int finalCardValue = determineCardValue(randomCardNumber, randomSuit);
+		Card randCard = new Card(randomCardNumber);														
+		System.out.println("This is the card: " + randCard);
 
 		sendMessage(out, playerID, "message Card dealt: " + randCard + "\n");
 		//out.write("message Card dealt: " + randCard + "\n");
@@ -395,6 +405,7 @@ public class GameThread {
 		}
 		return buffer.toString();
 	}
+
 
 /*
 	private void setMessageRequest(){

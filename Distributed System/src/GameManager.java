@@ -7,6 +7,7 @@ import java.util.*;
 
 public class GameManager implements Runnable {
 
+	private static int gameID;
 	private static int pot = 0;
 	private static int currentBetCall = 0;
 	private static int playerCount = 0;
@@ -21,6 +22,7 @@ public class GameManager implements Runnable {
 	private static Deck deck;
 	private static Card[] communityCards = new Card[5];
 	private static LinkedPlayerList playerList = new LinkedPlayerList();
+
 
 	// When all players have joined, the game manager will deal the cards and assign the first
 	// player in the player linked list, the turn. Big and small blinds will also be assigned at
@@ -152,8 +154,7 @@ public class GameManager implements Runnable {
 	/**
 	 * Adds a player to the game.
 	 * @param stack The stack starting value for the new player.
-	 * @param playerPort The port that the player's socket is connected to.
-	 * @param ipAddress The IP address that the player's socket is connected to.
+	 * @param playerID The ID of the new player 
 	 * @return int - Returns 0 on the player being added to the game and -1 if the game is at capacity
 	 */	
 	public int addPlayerToGame(int stack, int playerID) {
@@ -200,7 +201,7 @@ public class GameManager implements Runnable {
 
 	/**
 	 * Checks if it is the specified players turn
-	 * @param playerPort The player to check
+	 * @param playerID The player to check
 	 * @return boolean - True if it is the player's turn, false otherwise
 	 */
 	public boolean checkTurn (int playerID){
@@ -307,10 +308,16 @@ public class GameManager implements Runnable {
 		this.playerCount += i;
 	}
 
-	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		beginRound();
 	}
 	
+	public void setGameID(int ID){
+		gameID = ID;
+	}
+
+	public int getGameID(){
+		return gameID;
+	}
 }

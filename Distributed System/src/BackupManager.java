@@ -36,7 +36,7 @@ public class BackupManager implements Runnable{
 		try{
 			//FileOutputStream fos = new FileOutputStream("serialize.tmp");
 			//ObjectOutputStream oos = new ObjectOutputStream(fos);
-			//FileWriter fw = new FileWriter("backup.json");
+			FileWriter fw = new FileWriter("backup.json");
 			//out.writeObject(game);
 			//out.flush();
 
@@ -46,9 +46,9 @@ public class BackupManager implements Runnable{
 
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 			message = gson.toJson(game);
-			out.write(message + "\f");
+			out.write("json_backup " + game.getGameID() + " " + message + "\f");
 			out.flush();
-			//fw.close();
+			fw.close();
 
 			while(!isDone){
 				if(turn != game.getTurn() || pot != game.getPot() ||
@@ -56,15 +56,15 @@ public class BackupManager implements Runnable{
 					System.out.printf("Game State Changed.\n");
 
 					//GSON
-					//fw = new FileWriter("backup.json");
+					fw = new FileWriter("backup.json");
 					LinkedPlayerList list = game.getPlayerList();
 					list.findPlayerByIndex(list.getCount()-1).nextPlayer = null;
 					message = gson.toJson(game);
 					list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
 						list.findPlayerByIndex(0);
-					//fw.close();
+					fw.close();
 
-					out.write(message + "\f");
+					out.write("json_backup " + game.getGameID() + " " + message + "\f");
 					out.flush();
 
 					//out.writeObject(new Date());

@@ -49,6 +49,7 @@ public class GameServer {
 		new GameThread(serverManagerSocket, game).run();
 		
 
+		/*
 		try{
 			serverSocket = new ServerSocket(port);
 		} catch (Exception e){
@@ -77,7 +78,8 @@ public class GameServer {
 				e.printStackTrace();
 			}
 		}
-	};
+		*/
+	}
 
 	/**
 	 * This function will check for a backup server and connect to it if it exists.

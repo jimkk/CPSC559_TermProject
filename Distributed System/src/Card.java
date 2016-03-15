@@ -20,6 +20,27 @@ public class Card{
 		this.suit = suit;
 	}
 
+	public Card(int value){
+		if(value > 0 && value < 14){
+			suit = "Spades";
+			this.value = value + 1;
+		}
+		else if(value > 13 && value < 27){
+			suit = "Hearts";
+			this.value = value - 12;
+		}
+		else if(value > 26 && value < 40){
+			suit = "Clubs";
+			this.value = value - 25;
+		}
+		else if(value > 39 && value < 53){
+			suit = "Diamonds";
+			this.value = value - 38;
+		}
+	}
+
+
+
 	/**
 	 * Sets the value of this card object.
 	 * @param suit The suit of the card (Hearts, Diamonds, Clubs, or Spades)

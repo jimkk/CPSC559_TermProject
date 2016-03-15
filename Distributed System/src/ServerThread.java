@@ -11,8 +11,9 @@ public class ServerThread implements Runnable{
 
 	private Socket clientSocket;
 	private Socket gameServerSocket;
-	private ArrayList<Socket> servers;
-	
+	//private ArrayList<Socket> servers;
+	private HashMap<Integer, Socket> servers;
+
 	private BufferedInputStream bufIn;
 	private InputStreamReader in;
 	private BufferedOutputStream bufOut;
@@ -26,12 +27,16 @@ public class ServerThread implements Runnable{
 	private boolean isDone;
 
 	private int clientID;
+	private int gameIndex;
 
-	public ServerThread(Socket socket, int clientID, ArrayList<Socket> servers){
+	private static String message;
+
+	public ServerThread(Socket socket, int clientID, HashMap<Integer, Socket> servers){
 		this.clientSocket = socket;
 		this.clientID = clientID;
 		this.servers = servers;
 		gameServerChosen = false;
+		message = "";
 	}
 
 	public void run(){
@@ -53,7 +58,8 @@ public class ServerThread implements Runnable{
 			}
 			//TODO Ask which game server to join
 			//For now, it's the first one
-			gameServerSocket = servers.get(0);
+			gameIndex = 1;
+			gameServerSocket = servers.get(gameIndex);
 			gameServerChosen = true;
 		}
 
@@ -69,20 +75,35 @@ public class ServerThread implements Runnable{
 		while(!isDone){
 			try{
 				if(in.ready()){
-					String message = read(in).toString();
-					System.out.printf("Message from %d: %s\n", clientID, message);
-					gameOut.write(clientID + " " + message + "\n");
+					String messageIn = read(in).toString();
+					System.out.printf("Message from %d: %s\n", clientID, messageIn);
+					gameOut.write(clientID + " " + messageIn + "\n");
 					gameOut.flush();
 				}
 				if(gameIn.ready()){
-					String message = read(gameIn).toString();
+					while(!message.equals("")){
+						Thread.sleep(100);
+					}
+					message = read(gameIn).toString();
 					System.out.printf("Message from game server: \"%s\"\n", message);
 					int ID = Integer.parseInt(message.split(" ")[0]);
 					if(ID == clientID){
 						out.write(message.substring(message.indexOf(" ")+1) + "\n");
 						out.flush();
+						message = "";
 					}
 				}
+				if(!message.equals("")){
+					int ID = Integer.parseInt(message.split(" ")[0]);
+					if(ID == clientID){
+						out.write(message.substring(message.indexOf(" ")+1) + "\n");
+						out.flush();
+						message = "";
+					}
+				}
+
+			} catch(SocketException e){
+				System.err.println("Game server has crashed. Recovering...(but not really)");
 			} catch(Exception e){e.printStackTrace(); isDone = true;}
 			
 			Thread.sleep(100);

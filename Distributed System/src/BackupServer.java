@@ -1,6 +1,7 @@
 import java.net.*;
 import java.io.*;
 import java.util.Date;
+import java.util.Scanner;
 import com.google.gson.*;
 
 
@@ -11,7 +12,11 @@ import com.google.gson.*;
 
 public class BackupServer {
 
+	private static final int serverManagerPort = 7775;
+	private static String serverManagerAddress;
+
 	private ServerSocket serverSocket;
+	private Socket serverManagerSocket;
 	private int port = 5432;
 	private boolean isDone = false;
 	private GameManager game;
@@ -25,32 +30,53 @@ public class BackupServer {
 			String message;
 			LinkedPlayerList list;
 
+			serverManagerSocket = new Socket(serverManagerAddress, serverManagerPort);
+
 			serverSocket = new ServerSocket(port);
 			Socket socket = serverSocket.accept();
 			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
 			InputStreamReader in = new InputStreamReader(bufIn);
+			
+			BufferedInputStream bufManagerIn = new BufferedInputStream(socket.getInputStream());
+			InputStreamReader managerIn = new InputStreamReader(bufManagerIn);
 
-			message = read(in).toString();
+
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			game = gson.fromJson(message, GameManager.class);
 
-			System.out.println("Received backup from server");
-			System.out.println(message);
 			while(!isDone){
+				if(in.ready()){
+					message = read(in).toString();
+					System.out.printf("Message: \"%s\"\n", message);
+					String [] messageParts = message.split(" ");
+					int gameID = Integer.parseInt(messageParts[1]);
+					String backup = rebuildString(messageParts, 2, messageParts.length);
 
-				message = read(in).toString();
-				System.out.println("Received backup from server");
-				System.out.println(message);
-				game = gson.fromJson(message, GameManager.class);
-				list = game.getPlayerList();
-				list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
-					list.findPlayerByIndex(0);
+					System.out.printf("%s: Received backup from server for game %d\n", new Date(), gameID);
+
+					FileWriter fw = new FileWriter("backup" + gameID + ".bck");
+					fw.write(backup);
+					fw.close();
+
+					//System.out.println(backup);
+					game = gson.fromJson(backup, GameManager.class);
+					if(game.getPlayerCount() > 0){
+						list = game.getPlayerList();
+						list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
+							list.findPlayerByIndex(0);
+					}
+				}
+				else if(managerIn.ready()){
+					message = read(in).toString();
+					int gameID = Integer.parseInt(message.split(" ")[1]);
+					//TODO Recover backup for gameID
+					restoreBackup(gameID);
+				}
 			}
 		} catch(NullPointerException e){
 			System.out.println("--------------------------");
-			System.err.println("Lost connection to server."); 
+			System.err.println("Lost connection to GameServer. Please restart it to demonstrate Fault Tolerance."); 
 			System.out.println("--------------------------");
-			System.exit(-1);
+			//System.exit(-1);
 		}
 		catch (Exception e) {e.printStackTrace();}
 	}
@@ -70,9 +96,37 @@ public class BackupServer {
 		return null;
 	}
 
+
+	public void restoreBackup(int gameID){
+		try{
+			StringBuffer restoredMessage = new StringBuffer();
+			int c;
+			FileReader fr = new FileReader("backup" + gameID +".bck");
+			
+
+			while((c = fr.read()) != -1){
+				restoredMessage.append((char) c);
+			}
+			
+		} catch (Exception e) {e.printStackTrace();}
+	}
+
+	private String rebuildString(String [] parts, int start, int end){
+		StringBuffer buffer = new StringBuffer();
+		for(int i = start; i < end; i++){
+			buffer.append(parts[i]);
+		}
+		return buffer.toString();
+
+	}
+
 	public static void main (String [] args){
-		BackupServer bs = new BackupServer();
-		bs.run();
+		if(args.length == 1){
+
+			BackupServer bs = new BackupServer();
+			bs.serverManagerAddress = args[0];
+			bs.run();
+		}
 	}
 
 
