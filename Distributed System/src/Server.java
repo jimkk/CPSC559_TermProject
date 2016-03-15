@@ -72,6 +72,12 @@ public class Server implements Runnable{
 					System.out.println("Backup server added to list");
 				}
 
+				for(int i = 0; i < servers.size(); i++){
+					if(servers.get(i).isClosed()){
+						System.out.printf("Server %d is closed and needs recovery!\n", i);
+					}
+				}
+
 			} catch (Exception e){
 				if(type == SERVER){
 					System.out.println("Error accepting server\n");

@@ -27,11 +27,14 @@ public class ServerThread implements Runnable{
 
 	private int clientID;
 
+	private static String message;
+
 	public ServerThread(Socket socket, int clientID, ArrayList<Socket> servers){
 		this.clientSocket = socket;
 		this.clientID = clientID;
 		this.servers = servers;
 		gameServerChosen = false;
+		message = "";
 	}
 
 	public void run(){
@@ -69,20 +72,33 @@ public class ServerThread implements Runnable{
 		while(!isDone){
 			try{
 				if(in.ready()){
-					String message = read(in).toString();
-					System.out.printf("Message from %d: %s\n", clientID, message);
-					gameOut.write(clientID + " " + message + "\n");
+					String messageIn = read(in).toString();
+					System.out.printf("Message from %d: %s\n", clientID, messageIn);
+					gameOut.write(clientID + " " + messageIn + "\n");
 					gameOut.flush();
 				}
 				if(gameIn.ready()){
-					String message = read(gameIn).toString();
+					while(!message.equals("")){
+						Thread.sleep(100);
+					}
+					message = read(gameIn).toString();
 					System.out.printf("Message from game server: \"%s\"\n", message);
 					int ID = Integer.parseInt(message.split(" ")[0]);
 					if(ID == clientID){
 						out.write(message.substring(message.indexOf(" ")+1) + "\n");
 						out.flush();
+						message = "";
 					}
 				}
+				if(!message.equals("")){
+					int ID = Integer.parseInt(message.split(" ")[0]);
+					if(ID == clientID){
+						out.write(message.substring(message.indexOf(" ")+1) + "\n");
+						out.flush();
+						message = "";
+					}
+				}
+
 			} catch(SocketException e){
 				System.err.println("Game server has crashed. Recovering...(but not really)");
 			} catch(Exception e){e.printStackTrace(); isDone = true;}
