@@ -92,8 +92,18 @@ public class Server implements Runnable{
 							try{
 								BufferedOutputStream bufBackupOut = new BufferedOutputStream(backupSocket.getOutputStream());
 								OutputStreamWriter backupOut = new OutputStreamWriter(bufBackupOut);
+								BufferedInputStream bufBackupIn = new BufferedInputStream(backupSocket.getInputStream());
+								InputStreamReader backupIn = new InputStreamReader(bufBackupIn);
+
 								backupOut.write("backup_request " + gameID + "\f");
 								backupOut.flush();
+
+								while(!backupIn.ready());
+
+								String backupMessage = read(backupIn).toString();
+								System.out.printf("Received backup: \"%s\"\n", backupMessage);
+								
+								
 							} catch (Exception e2){e2.printStackTrace();}
 						} else {
 							System.out.println("Sadly there are no backup servers right now :(");
@@ -114,6 +124,22 @@ public class Server implements Runnable{
 			} catch (Exception e) {e.printStackTrace();}
 		}
 	};
+
+	private StringBuffer read(InputStreamReader in){
+		try{
+			StringBuffer buffer = new StringBuffer();
+			int c;
+			while((c = in.read()) != -1){
+				if(c == (int) '\f'){
+					break;
+				}
+				buffer.append((char) c);
+			}
+			return buffer;
+		} catch (IOException e) {e.printStackTrace();}
+		return null;
+	}
+
 
 	/**
 	 * This function will check for a backup server and connect to it if it exists.
