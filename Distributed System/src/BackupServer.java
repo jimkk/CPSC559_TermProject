@@ -40,6 +40,8 @@ public class BackupServer {
 			BufferedInputStream bufManagerIn = new BufferedInputStream(serverManagerSocket.getInputStream());
 			InputStreamReader managerIn = new InputStreamReader(bufManagerIn);
 
+			BufferedOutputStream bufManagerOut = new BufferedOutputStream(serverManagerSocket.getOutputStream());
+			OutputStreamWriter managerOut = new OutputStreamWriter(bufManagerOut);
 
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -71,7 +73,10 @@ public class BackupServer {
 					System.out.printf("Recovering %d from backup\n", gameID);
 					//TODO Recover backup for gameID
 					
-					restoreBackup(gameID);
+					String restoredString = restoreBackup(gameID);
+					managerOut.write("backup_response " + gameID + " " + restoredString + "\f");
+					managerOut.flush();
+					System.out.println("Sent backup!");
 				}
 			}
 		} catch(NullPointerException e){
@@ -99,18 +104,18 @@ public class BackupServer {
 	}
 
 
-	public void restoreBackup(int gameID){
+	public String restoreBackup(int gameID){
+		StringBuffer restoredMessage = new StringBuffer();
 		try{
-			StringBuffer restoredMessage = new StringBuffer();
+			System.out.println("In restoreBackup()");
 			int c;
 			FileReader fr = new FileReader("backup" + gameID +".bck");
 			
-
 			while((c = fr.read()) != -1){
 				restoredMessage.append((char) c);
-			}
-			
+			}		
 		} catch (Exception e) {e.printStackTrace();}
+		return restoredMessage.toString();
 	}
 
 	private String rebuildString(String [] parts, int start, int end){
