@@ -87,12 +87,17 @@ public class Server implements Runnable{
 						System.out.println("Found crashed server!");
 						int gameID = -key;
 						Socket socket = servers.remove(key);
-						Socket backupSocket = backupServers.get(0);
-						try{
-						BufferedOutputStream bufBackupOut = new BufferedOutputStream(backupSocket.getOutputStream());
-						OutputStreamWriter backupOut = new OutputStreamWriter(bufBackupOut);
-						backupOut.write("backup_request " + gameID + "\f");
-						} catch (Exception e2){e2.printStackTrace();}
+						if(backupServers.size() > 0){
+							Socket backupSocket = backupServers.get(0);
+							try{
+								BufferedOutputStream bufBackupOut = new BufferedOutputStream(backupSocket.getOutputStream());
+								OutputStreamWriter backupOut = new OutputStreamWriter(bufBackupOut);
+								backupOut.write("backup_request " + gameID + "\f");
+								backupOut.flush();
+							} catch (Exception e2){e2.printStackTrace();}
+						} else {
+							System.out.println("Sadly there are no backup servers right now :(");
+						}
 
 					}
 				}
@@ -104,7 +109,9 @@ public class Server implements Runnable{
 				}
 				e.printStackTrace();
 			}
+			try{
 			Thread.sleep(10);
+			} catch (Exception e) {e.printStackTrace();}
 		}
 	};
 

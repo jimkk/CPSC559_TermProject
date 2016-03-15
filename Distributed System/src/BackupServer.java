@@ -66,7 +66,7 @@ public class BackupServer {
 					}
 				}
 				else if(managerIn.ready()){
-					String managerMessage = read(in).toString();
+					String managerMessage = read(managerIn).toString();
 					int gameID = Integer.parseInt(managerMessage.split(" ")[1]);
 					System.out.printf("Recovering %d from backup\n", gameID);
 					//TODO Recover backup for gameID
