@@ -110,7 +110,8 @@ public class ServerThread implements Runnable{
 			} catch(SocketException e){
 				Socket socket = servers.remove(gameIndex);
 				servers.put(-gameIndex, socket);
-				System.err.println("Game server has crashed. Recovering...(but not really)");
+				while(servers.get(gameIndex) == null);
+				gameServerSocket = servers.get(gameIndex);
 			} catch(Exception e){e.printStackTrace(); isDone = true;}
 			
 			Thread.sleep(100);

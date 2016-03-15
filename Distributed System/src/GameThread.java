@@ -2,6 +2,7 @@ import java.net.*;
 import java.lang.*;
 import java.io.*;
 import java.util.*;
+import com.google.gson.*;
 
 /**
  * The main processing thread on the server side for communications with a
@@ -66,10 +67,19 @@ public class GameThread {
 			   game.getPlayerList().displayGameState();
 			   */
 			
-			String message = read(in).toString();
-			int gameID = Integer.parseInt(message.split(" ")[1]);
+			String startMessage = read(in).toString();
+			String [] startMessageParts = startMessage.split(" ");
+			int gameID = Integer.parseInt(startMessageParts[1]);
 			game.setGameID(gameID);
+			String startContents = rebuildString(startMessageParts, 2, startMessageParts.length);
 			System.out.printf("Game ID: %d\n", gameID);
+
+			if(startMessageParts.length > 2){
+				System.out.println("Restoring from backup");
+				Gson gson = new GsonBuilder().create();
+				game = gson.fromJson(startContents, GameManager.class);
+			}
+
 			
 			StringBuffer buffer = new StringBuffer();
 			String messageType = "";
@@ -118,17 +128,11 @@ public class GameThread {
 
 					buffer = read(in);
 
-					//if(buffer.indexOf(" ") != -1){
-					//messageType = buffer.substring(0, buffer.indexOf(" "));
+
 					messageParts = buffer.toString().split(" ");
 					playerID = Integer.parseInt(messageParts[0]);
 					messageType = messageParts[1];
 					contents = rebuildString(messageParts, 2, messageParts.length);
-					//TODO Rebuild the rest
-					//} else {
-					//	messageType = buffer.toString();
-					//}
-
 
 					// Check if it is that player's turn; if not reply accordingly
 					// Note: only check if the player has requested something that cannot

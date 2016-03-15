@@ -43,7 +43,7 @@ public class BackupServer {
 			BufferedOutputStream bufManagerOut = new BufferedOutputStream(serverManagerSocket.getOutputStream());
 			OutputStreamWriter managerOut = new OutputStreamWriter(bufManagerOut);
 
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			Gson gson = new GsonBuilder().create();
 
 			while(!isDone){
 				if(in.ready()){

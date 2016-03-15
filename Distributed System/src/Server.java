@@ -34,11 +34,16 @@ public class Server implements Runnable{
 	private int nextGameID = 1;
 	private int nextClientID = 1;
 
+	private static ArrayList<Integer> backupIDs;
+	private static HashMap<Integer, String> backups;
+
 	public Server(int port, int type){
 		this.port = port;
 		this.type = type;
 		servers = new HashMap<Integer, Socket>();
 		backupServers = new ArrayList<Socket>();
+		backupIDs = new ArrayList<Integer>();
+		backups = new HashMap<Integer, String>();
 	}
 
 
@@ -63,13 +68,23 @@ public class Server implements Runnable{
 			try{
 				Socket clientSocket = serverSocket.accept();
 				if(type == SERVER){
-					servers.put(nextGameID, clientSocket);
 					System.out.println("Server added to list");
-
 					BufferedOutputStream bufOut = new BufferedOutputStream(clientSocket.getOutputStream());
 					OutputStreamWriter out = new OutputStreamWriter(bufOut);
-					out.write("gameid " + nextGameID++ + "\n");
-					out.flush();
+					System.out.printf("There are currently %d backups\n", backups.size());
+					if(backups.size() > 0){
+						System.out.println("New server is being repurposed as crashed server");
+						int gameID = backupIDs.remove(0);
+						System.out.printf("Game ID: %d\n", gameID);
+						servers.put(gameID, clientSocket);
+						out.write("gameid " + gameID + " " + backups.remove(gameID) + "\n");
+
+						out.flush();
+					} else {
+						servers.put(nextGameID, clientSocket);
+						out.write("gameid " + nextGameID++ + "\n");
+						out.flush();
+					}
 				} else if (type == CLIENT){
 					new Thread(new ServerThread(clientSocket, nextClientID++, servers)).start();
 				} else if (type == BACKUP){
@@ -101,8 +116,16 @@ public class Server implements Runnable{
 								while(!backupIn.ready());
 
 								String backupMessage = read(backupIn).toString();
-								System.out.printf("Received backup: \"%s\"\n", backupMessage);
-								
+								String [] messageParts = backupMessage.split(" ");
+								int receivedGameID = Integer.parseInt(messageParts[1]);
+								String contents = rebuildString(messageParts, 2, messageParts.length);
+								if(gameID == receivedGameID){
+									System.out.printf("Received backup for game %d: \"%s\"\n", gameID, contents);
+									backupIDs.add(gameID);
+									backups.put(gameID, contents);	
+									servers.remove(key);
+								}
+
 								
 							} catch (Exception e2){e2.printStackTrace();}
 						} else {
@@ -124,6 +147,15 @@ public class Server implements Runnable{
 			} catch (Exception e) {e.printStackTrace();}
 		}
 	};
+
+	private String rebuildString(String [] parts, int start, int end){
+		StringBuffer buffer = new StringBuffer();
+		for(int i = start; i < end; i++){
+			buffer.append(parts[i]);
+		}
+		return buffer.toString();
+	}
+
 
 	private StringBuffer read(InputStreamReader in){
 		try{

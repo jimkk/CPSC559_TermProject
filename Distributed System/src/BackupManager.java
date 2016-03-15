@@ -44,7 +44,7 @@ public class BackupManager implements Runnable{
 			pot = game.getPot();
 			playerCount = game.getPlayerCount();
 
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			Gson gson = new GsonBuilder().create();
 			message = gson.toJson(game);
 			out.write("json_backup " + game.getGameID() + " " + message + "\f");
 			out.flush();
