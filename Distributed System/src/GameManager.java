@@ -5,21 +5,22 @@ import java.util.*;
  * This class maintains the game state as well as containing the logic for most of the actions possible in a game.
  */
 
-public class GameManager {
+public class GameManager implements Runnable {
 
-	private int pot = 0;
-	private int currentBetCall = 0;
-	private int playerCount = 0;
-	private int playerID = 0;
-	private int turn = -1;
-	private int bigBlindAmount = 100;
-	private int smallBlindAmount = 50;
-	private boolean gameOn = false;
-	private boolean gameStart = true;
+	private static int pot = 0;
+	private static int currentBetCall = 0;
+	private static int playerCount = 0;
+	private static int playerID = 0;
+	private static int turn = -1;
+	private static int bigBlindAmount = 100;
+	private static int smallBlindAmount = 50;
+	private static boolean gameOn = false;
+	private static boolean gameStart = true;
+	private static boolean handDealt = false;
 
-	private Deck deck;
-	private Card[] communityCards = new Card[5];
-	private LinkedPlayerList playerList = new LinkedPlayerList();
+	private static Deck deck;
+	private static Card[] communityCards = new Card[5];
+	private static LinkedPlayerList playerList = new LinkedPlayerList();
 
 	// When all players have joined, the game manager will deal the cards and assign the first
 	// player in the player linked list, the turn. Big and small blinds will also be assigned at
@@ -40,6 +41,8 @@ public class GameManager {
 
 		// Deal the cards
 		deal();
+		handDealt = true;
+		
 
 		// Subtract the big and small blind values from their respective player's stacks
 		// and add them to the pot
@@ -130,12 +133,13 @@ public class GameManager {
 	 */
 	public void deal(){	
 		deck = new Deck();
-
+	
 		for(int i = 0; i < playerCount; i++){
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
 			player.setHand(deck.Draw(), deck.Draw());
 			System.out.print(".");
 		}
+		
 		gameOn = true;
 		turn = 0;
 	}
@@ -284,6 +288,14 @@ public class GameManager {
 	}
 
 	/**
+	 * Return the handDealt value
+	 * @return boolean
+	 */
+	public boolean getHandDealt(){
+		return handDealt;
+	}
+	
+	/**
 	 * Returns the number of players in the game.
 	 * @return int - The number of players.
 	 */
@@ -293,6 +305,12 @@ public class GameManager {
 	
 	public void setPlayerCountPlusOne (int i){
 		this.playerCount += i;
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		beginRound();
 	}
 	
 }

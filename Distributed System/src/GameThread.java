@@ -80,17 +80,23 @@ public class GameThread {
 				  turnSent = true;
 				  }*/
 
-				if(game.getPlayerCount() > 2){
-					game.beginRound();
+				
+				if(game.getPlayerCount() > 2 && !game.isGameOn()){
+					game.setGameOn(true);
+					new Thread(game).start();
+					System.out.println("AKJSLDFHJASDHFASDKLJFHHKLJHSDAF.");
+					
 				}
 				
-				if(game.isGameOn() && !handSent){
+				// moved to it's own method... 
+				if(game.isGameOn() && !handSent && game.getHandDealt()){
 					for(int i = 0; i < game.getPlayerCount(); i++){
 						PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
 						Card [] hand = player.getHand();
 						int playerID = player.getPlayerID();
 						sendMessage(out, playerID, "Game Started!");
 						sendMessage(out, playerID, "message Hand: " + hand[0] + " " + hand[1] + "\n");
+						System.out.println("PlayerID: " + playerID + "Hand: " + hand[0] + " " + hand[1]);
 						//out.write("message Game Started!\n");
 						//out.write("message Hand: " + hand[0] + " " + hand[1] + "\n");
 						//out.flush();
@@ -142,6 +148,7 @@ public class GameThread {
 							System.out.println("ADDING NEW PLAYER");
 							game.addPlayerToGame(stack, playerID);
 							System.out.println("playerCount: " + game.getPlayerCount());
+							break;
 						case("checkTurn"):
 							checkTurn(playerID);
 							break;
@@ -156,6 +163,7 @@ public class GameThread {
 							fold(playerID);
 							break;
 						case("deal"):
+							System.out.println("Player's Turn? Deal?");
 							if (game.checkTurn(playerID) == false) break;
 							deal(playerID);
 							break;
@@ -227,6 +235,22 @@ public class GameThread {
 
 	}
 
+	public void sendCards(){
+		if(game.isGameOn() && !handSent){
+			for(int i = 0; i < game.getPlayerCount(); i++){
+				PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
+				Card [] hand = player.getHand();
+				int playerID = player.getPlayerID();
+				sendMessage(out, playerID, "Game Started!");
+				sendMessage(out, playerID, "message Hand: " + hand[0] + " " + hand[1] + "\n");
+				//out.write("message Game Started!\n");
+				//out.write("message Hand: " + hand[0] + " " + hand[1] + "\n");
+				//out.flush();
+			}
+			handSent = true;
+		}
+	}
+	
 	/**
 	 * Reads in a message from the stream, stopping on a -1 or a newline character
 	 * @param in The stream to read from
