@@ -12,7 +12,7 @@ public class Server implements Runnable{
 	public static final int SERVER = 0;
 	public static final int CLIENT = 1;
 	public static final int BACKUP = 2;
-	
+
 	private static int clientPort = 7777;
 	private static int serverPort = 7776;
 	private static int backupPort = 7775;
@@ -55,6 +55,10 @@ public class Server implements Runnable{
 			System.exit(-1);
 		}
 
+		try{
+			serverSocket.setSoTimeout(1000);
+		} catch (Exception e){e.printStackTrace();}
+
 		while(!isDone){
 			try{
 				Socket clientSocket = serverSocket.accept();
@@ -73,8 +77,25 @@ public class Server implements Runnable{
 					System.out.println("Backup server added to list");
 				}
 
-				//TODO Detect a server down
 
+
+			} catch (SocketTimeoutException e){
+				Iterator it = servers.keySet().iterator();
+				while(it.hasNext()){
+					int key = (int) it.next();
+					if(key < 0){
+						System.out.println("Found crashed server!");
+						int gameID = -key;
+						Socket socket = servers.remove(key);
+						Socket backupSocket = backupServers.get(0);
+						try{
+						BufferedOutputStream bufBackupOut = new BufferedOutputStream(backupSocket.getOutputStream());
+						OutputStreamWriter backupOut = new OutputStreamWriter(bufBackupOut);
+						backupOut.write("backup_request " + gameID + "\f");
+						} catch (Exception e2){e2.printStackTrace();}
+
+					}
+				}
 			} catch (Exception e){
 				if(type == SERVER){
 					System.out.println("Error accepting server\n");
@@ -83,6 +104,7 @@ public class Server implements Runnable{
 				}
 				e.printStackTrace();
 			}
+			Thread.sleep(10);
 		}
 	};
 

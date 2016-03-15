@@ -7,21 +7,21 @@ import java.util.*;
 
 public class GameManager implements Runnable {
 
-	private static int gameID;
-	private static int pot = 0;
-	private static int currentBetCall = 0;
-	private static int playerCount = 0;
-	private static int playerID = 0;
-	private static int turn = -1;
-	private static int bigBlindAmount = 100;
-	private static int smallBlindAmount = 50;
-	private static boolean gameOn = false;
-	private static boolean gameStart = true;
-	private static boolean handDealt = false;
+	private volatile int gameID;
+	private volatile int pot = 0;
+	private volatile int currentBetCall = 0;
+	private volatile int playerCount = 0;
+	private volatile int playerID = 0;
+	private volatile int turn = -1;
+	private volatile int bigBlindAmount = 100;
+	private volatile int smallBlindAmount = 50;
+	private volatile boolean gameOn = false;
+	private volatile boolean gameStart = true;
+	private volatile boolean handDealt = false;
 
-	private static Deck deck;
-	private static Card[] communityCards = new Card[5];
-	private static LinkedPlayerList playerList = new LinkedPlayerList();
+	private volatile Deck deck;
+	private volatile Card[] communityCards = new Card[5];
+	private volatile LinkedPlayerList playerList = new LinkedPlayerList();
 
 
 	// When all players have joined, the game manager will deal the cards and assign the first

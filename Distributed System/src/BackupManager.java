@@ -59,7 +59,9 @@ public class BackupManager implements Runnable{
 					fw = new FileWriter("backup.json");
 					LinkedPlayerList list = game.getPlayerList();
 					list.findPlayerByIndex(list.getCount()-1).nextPlayer = null;
+					System.out.println(game);
 					message = gson.toJson(game);
+					System.out.printf("Backup message is: %s\n", message);
 					list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
 						list.findPlayerByIndex(0);
 					fw.close();

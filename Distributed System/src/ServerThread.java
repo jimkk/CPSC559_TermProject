@@ -61,6 +61,10 @@ public class ServerThread implements Runnable{
 			gameIndex = 1;
 			gameServerSocket = servers.get(gameIndex);
 			gameServerChosen = true;
+			if(gameServerSocket == null){
+				System.err.println("Something went wrong, the GameServer chosen does not exist");
+				System.exit(-1);
+			}
 		}
 
 		bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
@@ -83,6 +87,7 @@ public class ServerThread implements Runnable{
 				if(gameIn.ready()){
 					while(!message.equals("")){
 						Thread.sleep(100);
+						continue;
 					}
 					message = read(gameIn).toString();
 					System.out.printf("Message from game server: \"%s\"\n", message);
@@ -103,6 +108,8 @@ public class ServerThread implements Runnable{
 				}
 
 			} catch(SocketException e){
+				Socket socket = servers.remove(gameIndex);
+				servers.put(-gameIndex, socket);
 				System.err.println("Game server has crashed. Recovering...(but not really)");
 			} catch(Exception e){e.printStackTrace(); isDone = true;}
 			

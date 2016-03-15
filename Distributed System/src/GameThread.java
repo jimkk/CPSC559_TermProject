@@ -94,20 +94,7 @@ public class GameThread {
 				}
 				
 				// moved to it's own method... 
-				if(game.isGameOn() && !handSent && game.getHandDealt()){
-					for(int i = 0; i < game.getPlayerCount(); i++){
-						PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
-						Card [] hand = player.getHand();
-						int playerID = player.getPlayerID();
-						sendMessage(out, playerID, "Game Started!");
-						sendMessage(out, playerID, "message Hand: " + hand[0] + " " + hand[1] + "\n");
-						System.out.println("PlayerID: " + playerID + "Hand: " + hand[0] + " " + hand[1]);
-						//out.write("message Game Started!\n");
-						//out.write("message Hand: " + hand[0] + " " + hand[1] + "\n");
-						//out.flush();
-					}
-					handSent = true;
-				}
+				sendCards();	
 
 				// game play
 				// begin round
@@ -246,13 +233,13 @@ public class GameThread {
 	}
 
 	public void sendCards(){
-		if(game.isGameOn() && !handSent){
+		if(game.isGameOn() && !handSent && game.getHandDealt()){
 			for(int i = 0; i < game.getPlayerCount(); i++){
 				PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
 				Card [] hand = player.getHand();
 				int playerID = player.getPlayerID();
 				sendMessage(out, playerID, "Game Started!");
-				sendMessage(out, playerID, "message Hand: " + hand[0] + " " + hand[1] + "\n");
+				sendMessage(out, playerID, "Hand: " + hand[0] + " " + hand[1]);
 				//out.write("message Game Started!\n");
 				//out.write("message Hand: " + hand[0] + " " + hand[1] + "\n");
 				//out.flush();
