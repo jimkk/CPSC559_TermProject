@@ -47,9 +47,7 @@ public class Client{
 
 					switch(messageType){
 						case("message"):
-							String message = buffer.substring(buffer.indexOf(" "));
-							System.out.printf("\rServer says: %s\n", message);
-							System.out.print("Enter Command: ");
+							message(buffer);
 							break;
 						case("full"):
 							System.out.println("Server is full. Exiting.");
@@ -165,6 +163,12 @@ public class Client{
 			return buffer;
 		} catch (IOException e) {e.printStackTrace();}
 		return null;
+	}
+
+	private void message(StringBuffer buffer){
+		String message = buffer.substring(buffer.indexOf(" "));
+		System.out.printf("\rServer says: %s\n", message);
+		System.out.print("Enter Command: ");
 	}
 
 	public static void main(String [] args){
