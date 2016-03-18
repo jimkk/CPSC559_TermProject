@@ -47,10 +47,10 @@ public class BackupServer {
 
 			while(!isDone){
 				if(in.ready()){
-					message = read(in).toString();
+					message = IOUtilities.read(in);
 					String [] messageParts = message.split(" ");
 					int gameID = Integer.parseInt(messageParts[1]);
-					String backup = rebuildString(messageParts, 2, messageParts.length);
+					String backup = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
 
 					System.out.printf("%s: Received backup from server for game %d\n", new Date(), gameID);
 
@@ -68,7 +68,7 @@ public class BackupServer {
 					}
 				}
 				else if(managerIn.ready()){
-					String managerMessage = read(managerIn).toString();
+					String managerMessage = IOUtilities.read(managerIn);
 					int gameID = Integer.parseInt(managerMessage.split(" ")[1]);
 					System.out.printf("Recovering %d from backup\n", gameID);
 					//TODO Recover backup for gameID
@@ -88,22 +88,6 @@ public class BackupServer {
 		catch (Exception e) {e.printStackTrace();}
 	}
 
-	private StringBuffer read(InputStreamReader in){
-		try{
-			StringBuffer buffer = new StringBuffer();
-			int c;
-			while((c = in.read()) != -1){
-				if(c == (int) '\f'){
-					break;
-				}
-				buffer.append((char) c);
-			}
-			return buffer;
-		} catch (IOException e) {e.printStackTrace();}
-		return null;
-	}
-
-
 	public String restoreBackup(int gameID){
 		StringBuffer restoredMessage = new StringBuffer();
 		try{
@@ -116,15 +100,6 @@ public class BackupServer {
 			}		
 		} catch (Exception e) {e.printStackTrace();}
 		return restoredMessage.toString();
-	}
-
-	private String rebuildString(String [] parts, int start, int end){
-		StringBuffer buffer = new StringBuffer();
-		for(int i = start; i < end; i++){
-			buffer.append(parts[i]);
-		}
-		return buffer.toString();
-
 	}
 
 	public static void main (String [] args){

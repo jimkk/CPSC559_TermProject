@@ -79,7 +79,7 @@ public class ServerThread implements Runnable{
 		while(!isDone){
 			try{
 				if(in.ready()){
-					String messageIn = read(in).toString();
+					String messageIn = IOUtilities.read(in);
 					System.out.printf("Message from %d: %s\n", clientID, messageIn);
 					gameOut.write(clientID + " " + messageIn + "\n");
 					gameOut.flush();
@@ -89,7 +89,7 @@ public class ServerThread implements Runnable{
 						Thread.sleep(100);
 						continue;
 					}
-					message = read(gameIn).toString();
+					message = IOUtilities.read(gameIn);
 					System.out.printf("Message from game server: \"%s\"\n", message);
 					int ID = Integer.parseInt(message.split(" ")[0]);
 					if(ID == clientID){
@@ -119,20 +119,6 @@ public class ServerThread implements Runnable{
 
 		} catch (Exception e) {e.printStackTrace();}
 
-	}
-	private StringBuffer read(InputStreamReader in){
-		try{
-			StringBuffer buffer = new StringBuffer();
-			int c;
-			while((c = in.read()) != -1){
-				if(c == (int) '\n'){
-					break;
-				}
-				buffer.append((char) c);
-			}
-			return buffer;
-		} catch (IOException e) {e.printStackTrace();}
-		return null;
 	}
 
 }

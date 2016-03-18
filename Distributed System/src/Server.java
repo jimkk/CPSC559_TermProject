@@ -115,10 +115,10 @@ public class Server implements Runnable{
 
 								while(!backupIn.ready());
 
-								String backupMessage = read(backupIn).toString();
+								String backupMessage = IOUtilities.read(backupIn);
 								String [] messageParts = backupMessage.split(" ");
 								int receivedGameID = Integer.parseInt(messageParts[1]);
-								String contents = rebuildString(messageParts, 2, messageParts.length);
+								String contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
 								if(gameID == receivedGameID){
 									System.out.printf("Received backup for game %d: \"%s\"\n", gameID, contents);
 									backupIDs.add(gameID);
@@ -147,31 +147,6 @@ public class Server implements Runnable{
 			} catch (Exception e) {e.printStackTrace();}
 		}
 	};
-
-	private String rebuildString(String [] parts, int start, int end){
-		StringBuffer buffer = new StringBuffer();
-		for(int i = start; i < end; i++){
-			buffer.append(parts[i]);
-		}
-		return buffer.toString();
-	}
-
-
-	private StringBuffer read(InputStreamReader in){
-		try{
-			StringBuffer buffer = new StringBuffer();
-			int c;
-			while((c = in.read()) != -1){
-				if(c == (int) '\f'){
-					break;
-				}
-				buffer.append((char) c);
-			}
-			return buffer;
-		} catch (IOException e) {e.printStackTrace();}
-		return null;
-	}
-
 
 	/**
 	 * This function will check for a backup server and connect to it if it exists.

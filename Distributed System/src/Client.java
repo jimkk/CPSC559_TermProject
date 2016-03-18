@@ -31,13 +31,13 @@ public class Client{
 			//Scanner userIn = new Scanner(System.in);
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-			StringBuffer buffer = new StringBuffer();
+			String buffer = "";
 
 			System.out.print("Enter Command: ");
 
 			while(!isDone){
 				if(in.ready()){
-					buffer = read(in);
+					buffer = IOUtilities.read(in);
 					String messageType;
 					if(buffer.indexOf(" ") != -1){
 						messageType = buffer.substring(0, buffer.indexOf(" "));
@@ -92,7 +92,7 @@ public class Client{
 							out.write("set_message_request\n");
 							out.flush();
 							while(!in.ready()){;}
-							buffer = read(in);
+							buffer = IOUtilities.read(in);
 							String messageType;
 							if(buffer.indexOf(" ") != -1){
 								messageType = buffer.substring(0, buffer.indexOf(" "));
@@ -150,22 +150,8 @@ public class Client{
 	 * @param in The stream to read from
 	 * @return StringBuffer The received message
 	 */
-	private StringBuffer read(InputStreamReader in){
-		try{
-			StringBuffer buffer = new StringBuffer();
-			int c;
-			while((c = in.read()) != -1){
-				if(c == (int) '\n'){
-					break;
-				}
-				buffer.append((char) c);
-			}
-			return buffer;
-		} catch (IOException e) {e.printStackTrace();}
-		return null;
-	}
 
-	private void message(StringBuffer buffer){
+	private void message(String buffer){
 		String message = buffer.substring(buffer.indexOf(" "));
 		System.out.printf("\rServer says: %s\n", message);
 		System.out.print("Enter Command: ");

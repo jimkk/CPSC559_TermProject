@@ -67,11 +67,11 @@ public class GameThread {
 			   game.getPlayerList().displayGameState();
 			   */
 			
-			String startMessage = read(in).toString();
+			String startMessage = IOUtilities.read(in);
 			String [] startMessageParts = startMessage.split(" ");
 			int gameID = Integer.parseInt(startMessageParts[1]);
 			game.setGameID(gameID);
-			String startContents = rebuildString(startMessageParts, 2, startMessageParts.length);
+			String startContents = IOUtilities.rebuildString(startMessageParts, 2, startMessageParts.length);
 			System.out.printf("Game ID: %d\n", gameID);
 
 			if(startMessageParts.length > 2){
@@ -81,7 +81,7 @@ public class GameThread {
 			}
 
 			
-			StringBuffer buffer = new StringBuffer();
+			String buffer = "";
 			String messageType = "";
 
 			while(!isDone){
@@ -126,13 +126,13 @@ public class GameThread {
 					String [] messageParts;
 					String contents;
 
-					buffer = read(in);
+					buffer = IOUtilities.read(in);
 
 
 					messageParts = buffer.toString().split(" ");
 					playerID = Integer.parseInt(messageParts[0]);
 					messageType = messageParts[1];
-					contents = rebuildString(messageParts, 2, messageParts.length);
+					contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
 
 					// Check if it is that player's turn; if not reply accordingly
 					// Note: only check if the player has requested something that cannot
@@ -257,20 +257,6 @@ public class GameThread {
 	 * @param in The stream to read from
 	 * @return StringBuffer The received message
 	 */
-	private StringBuffer read(InputStreamReader in){
-		try{
-			StringBuffer buffer = new StringBuffer();
-			int c;
-			while((c = in.read()) != -1){
-				if(c == (int) '\n'){
-					break;
-				}
-				buffer.append((char) c);
-			}
-			return buffer;
-		} catch (IOException e) {e.printStackTrace();}
-		return null;
-	}
 
 	//TODO Move this method to the Card class
 	private String determineCardSuit(int randCard){
@@ -387,14 +373,6 @@ public class GameThread {
 			System.err.println("Error sending message to " + playerID);
 			e.printStackTrace();
 		}
-	}
-
-	private String rebuildString(String [] parts, int start, int end){
-		StringBuffer buffer = new StringBuffer();
-		for(int i = start; i < end; i++){
-			buffer.append(parts[i]);
-		}
-		return buffer.toString();
 	}
 
 
