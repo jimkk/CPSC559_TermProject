@@ -12,7 +12,7 @@ public class Server implements Runnable{
 	public static final int SERVER = 0;
 	public static final int CLIENT = 1;
 	public static final int BACKUP = 2;
-	
+
 	private static int clientPort = 7777;
 	private static int serverPort = 7776;
 	private static int backupPort = 7775;
@@ -34,11 +34,16 @@ public class Server implements Runnable{
 	private int nextGameID = 1;
 	private int nextClientID = 1;
 
+	private static ArrayList<Integer> backupIDs;
+	private static HashMap<Integer, String> backups;
+
 	public Server(int port, int type){
 		this.port = port;
 		this.type = type;
 		servers = new HashMap<Integer, Socket>();
 		backupServers = new ArrayList<Socket>();
+		backupIDs = new ArrayList<Integer>();
+		backups = new HashMap<Integer, String>();
 	}
 
 
@@ -55,17 +60,31 @@ public class Server implements Runnable{
 			System.exit(-1);
 		}
 
+		try{
+			serverSocket.setSoTimeout(1000);
+		} catch (Exception e){e.printStackTrace();}
+
 		while(!isDone){
 			try{
 				Socket clientSocket = serverSocket.accept();
 				if(type == SERVER){
-					servers.put(nextGameID, clientSocket);
 					System.out.println("Server added to list");
-
 					BufferedOutputStream bufOut = new BufferedOutputStream(clientSocket.getOutputStream());
 					OutputStreamWriter out = new OutputStreamWriter(bufOut);
-					out.write("gameid " + nextGameID++ + "\n");
-					out.flush();
+					System.out.printf("There are currently %d backups\n", backups.size());
+					if(backups.size() > 0){
+						System.out.println("New server is being repurposed as crashed server");
+						int gameID = backupIDs.remove(0);
+						System.out.printf("Game ID: %d\n", gameID);
+						servers.put(gameID, clientSocket);
+						out.write("gameid " + gameID + " " + backups.remove(gameID) + "\n");
+
+						out.flush();
+					} else {
+						servers.put(nextGameID, clientSocket);
+						out.write("gameid " + nextGameID++ + "\n");
+						out.flush();
+					}
 				} else if (type == CLIENT){
 					new Thread(new ServerThread(clientSocket, nextClientID++, servers)).start();
 				} else if (type == BACKUP){
@@ -73,8 +92,48 @@ public class Server implements Runnable{
 					System.out.println("Backup server added to list");
 				}
 
-				//TODO Detect a server down
 
+
+			} catch (SocketTimeoutException e){
+				Iterator it = servers.keySet().iterator();
+				while(it.hasNext()){
+					int key = (int) it.next();
+					if(key < 0){
+						System.out.println("Found crashed server!");
+						int gameID = -key;
+						Socket socket = servers.remove(key);
+						if(backupServers.size() > 0){
+							Socket backupSocket = backupServers.get(0);
+							try{
+								BufferedOutputStream bufBackupOut = new BufferedOutputStream(backupSocket.getOutputStream());
+								OutputStreamWriter backupOut = new OutputStreamWriter(bufBackupOut);
+								BufferedInputStream bufBackupIn = new BufferedInputStream(backupSocket.getInputStream());
+								InputStreamReader backupIn = new InputStreamReader(bufBackupIn);
+
+								backupOut.write("backup_request " + gameID + "\f");
+								backupOut.flush();
+
+								while(!backupIn.ready());
+
+								String backupMessage = IOUtilities.read(backupIn);
+								String [] messageParts = backupMessage.split(" ");
+								int receivedGameID = Integer.parseInt(messageParts[1]);
+								String contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
+								if(gameID == receivedGameID){
+									System.out.printf("Received backup for game %d: \"%s\"\n", gameID, contents);
+									backupIDs.add(gameID);
+									backups.put(gameID, contents);	
+									servers.remove(key);
+								}
+
+								
+							} catch (Exception e2){e2.printStackTrace();}
+						} else {
+							System.out.println("Sadly there are no backup servers right now :(");
+						}
+
+					}
+				}
 			} catch (Exception e){
 				if(type == SERVER){
 					System.out.println("Error accepting server\n");
@@ -83,6 +142,9 @@ public class Server implements Runnable{
 				}
 				e.printStackTrace();
 			}
+			try{
+			Thread.sleep(10);
+			} catch (Exception e) {e.printStackTrace();}
 		}
 	};
 

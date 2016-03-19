@@ -2,6 +2,7 @@ import java.net.*;
 import java.lang.*;
 import java.io.*;
 import java.util.*;
+import com.google.gson.*;
 
 /**
  * The main processing thread on the server side for communications with a
@@ -66,12 +67,21 @@ public class GameThread {
 			   game.getPlayerList().displayGameState();
 			   */
 			
-			String message = read(in).toString();
-			int gameID = Integer.parseInt(message.split(" ")[1]);
+			String startMessage = IOUtilities.read(in);
+			String [] startMessageParts = startMessage.split(" ");
+			int gameID = Integer.parseInt(startMessageParts[1]);
 			game.setGameID(gameID);
+			String startContents = IOUtilities.rebuildString(startMessageParts, 2, startMessageParts.length);
 			System.out.printf("Game ID: %d\n", gameID);
+
+			if(startMessageParts.length > 2){
+				System.out.println("Restoring from backup");
+				Gson gson = new GsonBuilder().create();
+				game = gson.fromJson(startContents, GameManager.class);
+			}
+
 			
-			StringBuffer buffer = new StringBuffer();
+			String buffer = "";
 			String messageType = "";
 
 			while(!isDone){
@@ -91,7 +101,6 @@ public class GameThread {
 					new Thread(game).start();
 				}
 				
-				// moved to it's own method... 
 				sendCards();
 
 				// game play
@@ -113,19 +122,13 @@ public class GameThread {
 					String [] messageParts;
 					String contents;
 
-					buffer = read(in);
+					buffer = IOUtilities.read(in);
 
-					//if(buffer.indexOf(" ") != -1){
-					//messageType = buffer.substring(0, buffer.indexOf(" "));
+
 					messageParts = buffer.toString().split(" ");
 					playerID = Integer.parseInt(messageParts[0]);
 					messageType = messageParts[1];
-					contents = rebuildString(messageParts, 2, messageParts.length);
-					//TODO Rebuild the rest
-					//} else {
-					//	messageType = buffer.toString();
-					//}
-
+					contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
 
 					// Check if it is that player's turn; if not reply accordingly
 					// Note: only check if the player has requested something that cannot
@@ -237,8 +240,10 @@ public class GameThread {
 				Card [] hand = player.getHand();
 				int playerID = player.getPlayerID();
 				sendMessage(out, playerID, "Game Started!");
-				sendMessage(out, playerID, "message Hand: " + hand[0] + " " + hand[1]);
+
 				System.out.println("PlayerID: " + playerID + " Hand: " + hand[0] + " " + hand[1]);
+				sendMessage(out, playerID, "Hand: " + hand[0] + " " + hand[1]);
+
 				//out.write("message Game Started!\n");
 				//out.write("message Hand: " + hand[0] + " " + hand[1] + "\n");
 				//out.flush();
@@ -252,20 +257,6 @@ public class GameThread {
 	 * @param in The stream to read from
 	 * @return StringBuffer The received message
 	 */
-	private StringBuffer read(InputStreamReader in){
-		try{
-			StringBuffer buffer = new StringBuffer();
-			int c;
-			while((c = in.read()) != -1){
-				if(c == (int) '\n'){
-					break;
-				}
-				buffer.append((char) c);
-			}
-			return buffer;
-		} catch (IOException e) {e.printStackTrace();}
-		return null;
-	}
 
 	//TODO Move this method to the Card class
 	private String determineCardSuit(int randCard){
@@ -387,6 +378,7 @@ public class GameThread {
 		}
 	}
 
+
 	private String rebuildString(String [] parts, int start, int end){
 		StringBuffer buffer = new StringBuffer();
 		for(int i = start; i < end; i++){
@@ -394,6 +386,7 @@ public class GameThread {
 		}
 		return buffer.toString();
 	}
+
 /*
 	private void setMessageRequest(){
 		try{

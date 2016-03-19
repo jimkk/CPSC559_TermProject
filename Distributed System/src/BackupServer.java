@@ -37,19 +37,20 @@ public class BackupServer {
 			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
 			InputStreamReader in = new InputStreamReader(bufIn);
 			
-			BufferedInputStream bufManagerIn = new BufferedInputStream(socket.getInputStream());
+			BufferedInputStream bufManagerIn = new BufferedInputStream(serverManagerSocket.getInputStream());
 			InputStreamReader managerIn = new InputStreamReader(bufManagerIn);
 
+			BufferedOutputStream bufManagerOut = new BufferedOutputStream(serverManagerSocket.getOutputStream());
+			OutputStreamWriter managerOut = new OutputStreamWriter(bufManagerOut);
 
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			Gson gson = new GsonBuilder().create();
 
 			while(!isDone){
 				if(in.ready()){
-					message = read(in).toString();
-					System.out.printf("Message: \"%s\"\n", message);
+					message = IOUtilities.read(in);
 					String [] messageParts = message.split(" ");
 					int gameID = Integer.parseInt(messageParts[1]);
-					String backup = rebuildString(messageParts, 2, messageParts.length);
+					String backup = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
 
 					System.out.printf("%s: Received backup from server for game %d\n", new Date(), gameID);
 
@@ -57,8 +58,9 @@ public class BackupServer {
 					fw.write(backup);
 					fw.close();
 
-					//System.out.println(backup);
+					System.out.println(backup);
 					game = gson.fromJson(backup, GameManager.class);
+					System.out.printf("Number of players: %d\n", game.getPlayerCount());
 					if(game.getPlayerCount() > 0){
 						list = game.getPlayerList();
 						list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
@@ -66,10 +68,15 @@ public class BackupServer {
 					}
 				}
 				else if(managerIn.ready()){
-					message = read(in).toString();
-					int gameID = Integer.parseInt(message.split(" ")[1]);
+					String managerMessage = IOUtilities.read(managerIn);
+					int gameID = Integer.parseInt(managerMessage.split(" ")[1]);
+					System.out.printf("Recovering %d from backup\n", gameID);
 					//TODO Recover backup for gameID
-					restoreBackup(gameID);
+					
+					String restoredString = restoreBackup(gameID);
+					managerOut.write("backup_response " + gameID + " " + restoredString + "\f");
+					managerOut.flush();
+					System.out.println("Sent backup!");
 				}
 			}
 		} catch(NullPointerException e){
@@ -81,43 +88,18 @@ public class BackupServer {
 		catch (Exception e) {e.printStackTrace();}
 	}
 
-	private StringBuffer read(InputStreamReader in){
+	public String restoreBackup(int gameID){
+		StringBuffer restoredMessage = new StringBuffer();
 		try{
-			StringBuffer buffer = new StringBuffer();
-			int c;
-			while((c = in.read()) != -1){
-				if(c == (int) '\f'){
-					break;
-				}
-				buffer.append((char) c);
-			}
-			return buffer;
-		} catch (IOException e) {e.printStackTrace();}
-		return null;
-	}
-
-
-	public void restoreBackup(int gameID){
-		try{
-			StringBuffer restoredMessage = new StringBuffer();
+			System.out.println("In restoreBackup()");
 			int c;
 			FileReader fr = new FileReader("backup" + gameID +".bck");
 			
-
 			while((c = fr.read()) != -1){
 				restoredMessage.append((char) c);
-			}
-			
+			}		
 		} catch (Exception e) {e.printStackTrace();}
-	}
-
-	private String rebuildString(String [] parts, int start, int end){
-		StringBuffer buffer = new StringBuffer();
-		for(int i = start; i < end; i++){
-			buffer.append(parts[i]);
-		}
-		return buffer.toString();
-
+		return restoredMessage.toString();
 	}
 
 	public static void main (String [] args){

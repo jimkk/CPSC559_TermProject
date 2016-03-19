@@ -6,30 +6,34 @@ import java.util.*;
  */
 
 public class GameManager implements Runnable {
+	
+	private volatile int gameID;
+	private volatile int pot = 0;
+	private volatile int currentBetCall = 0;
+	private volatile int playerCount = 0;
+	private volatile int playerID = 0;
+	private volatile int turn = -1;
+	private volatile int bigBlindAmount = 100;
+	private volatile int smallBlindAmount = 50;
+	
+	private volatile int currentPlayerIDTurn;
+	private volatile int currentPlayerBetAmount;
+	
+	private volatile int counter = 0;
+	private volatile boolean gameOn = false;
+	private volatile boolean gameStart = true;
+	private volatile boolean handDealt = false;
+	private volatile boolean currentPlayerBeginTurn = false;
+	private volatile boolean currentPlayerDoneTurn = false;
+	private volatile boolean currentPlayerTurn = false;
+	private volatile boolean currentPlayerBetFlag = false;
+	private volatile boolean turnSent = false;
+	
+	
+	private volatile Deck deck;
+	private volatile Card[] communityCards = new Card[5];
+	private volatile LinkedPlayerList playerList = new LinkedPlayerList();
 
-	private static int gameID;
-	private static int pot = 0;
-	private static int currentBetCall = 0;
-	private static int playerCount = 0;
-	private static int playerID = 0;
-	private static int turn = -1;
-	private static int bigBlindAmount = 100;
-	private static int smallBlindAmount = 50;
-	private static int currentPlayerIDTurn;
-	private static int currentPlayerBetAmount;
-	private static int counter = 0;
-	private static boolean gameOn = false;
-	private static boolean gameStart = true;
-	private static boolean handDealt = false;
-	private static boolean currentPlayerBeginTurn = false;
-	private static boolean currentPlayerDoneTurn = false;
-	private static boolean currentPlayerTurn = false;
-	private static boolean currentPlayerBetFlag = false;
-	private static boolean turnSent = false;
-
-	private static Deck deck;
-	private static Card[] communityCards = new Card[5];
-	private static LinkedPlayerList playerList = new LinkedPlayerList();
 
 
 	// When all players have joined, the game manager will deal the cards and assign the first

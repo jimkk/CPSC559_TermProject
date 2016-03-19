@@ -61,6 +61,10 @@ public class ServerThread implements Runnable{
 			gameIndex = 1;
 			gameServerSocket = servers.get(gameIndex);
 			gameServerChosen = true;
+			if(gameServerSocket == null){
+				System.err.println("Something went wrong, the GameServer chosen does not exist");
+				System.exit(-1);
+			}
 		}
 
 		bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
@@ -75,7 +79,7 @@ public class ServerThread implements Runnable{
 		while(!isDone){
 			try{
 				if(in.ready()){
-					String messageIn = read(in).toString();
+					String messageIn = IOUtilities.read(in);
 					System.out.printf("Message from %d: %s\n", clientID, messageIn);
 					gameOut.write(clientID + " " + messageIn + "\n");
 					gameOut.flush();
@@ -83,8 +87,9 @@ public class ServerThread implements Runnable{
 				if(gameIn.ready()){
 					while(!message.equals("")){
 						Thread.sleep(100);
+						continue;
 					}
-					message = read(gameIn).toString();
+					message = IOUtilities.read(gameIn);
 					System.out.printf("Message from game server: \"%s\"\n", message);
 					int ID = Integer.parseInt(message.split(" ")[0]);
 					if(ID == clientID){
@@ -103,7 +108,10 @@ public class ServerThread implements Runnable{
 				}
 
 			} catch(SocketException e){
-				System.err.println("Game server has crashed. Recovering...(but not really)");
+				Socket socket = servers.remove(gameIndex);
+				servers.put(-gameIndex, socket);
+				while(servers.get(gameIndex) == null);
+				gameServerSocket = servers.get(gameIndex);
 			} catch(Exception e){e.printStackTrace(); isDone = true;}
 			
 			Thread.sleep(100);
@@ -111,20 +119,6 @@ public class ServerThread implements Runnable{
 
 		} catch (Exception e) {e.printStackTrace();}
 
-	}
-	private StringBuffer read(InputStreamReader in){
-		try{
-			StringBuffer buffer = new StringBuffer();
-			int c;
-			while((c = in.read()) != -1){
-				if(c == (int) '\n'){
-					break;
-				}
-				buffer.append((char) c);
-			}
-			return buffer;
-		} catch (IOException e) {e.printStackTrace();}
-		return null;
 	}
 
 }
