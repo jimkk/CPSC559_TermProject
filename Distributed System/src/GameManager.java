@@ -15,9 +15,17 @@ public class GameManager implements Runnable {
 	private static int turn = -1;
 	private static int bigBlindAmount = 100;
 	private static int smallBlindAmount = 50;
+	private static int currentPlayerIDTurn;
+	private static int currentPlayerBetAmount;
+	private static int counter = 0;
 	private static boolean gameOn = false;
 	private static boolean gameStart = true;
 	private static boolean handDealt = false;
+	private static boolean currentPlayerBeginTurn = false;
+	private static boolean currentPlayerDoneTurn = false;
+	private static boolean currentPlayerTurn = false;
+	private static boolean currentPlayerBetFlag = false;
+	private static boolean turnSent = false;
 
 	private static Deck deck;
 	private static Card[] communityCards = new Card[5];
@@ -36,7 +44,6 @@ public class GameManager implements Runnable {
 		/**
 		 * Need to have a state-machine to manage the turns required of each player 
 		 */
-
 		//rotatePlayers();		 
 		// Set the blinds and the turns
 		setBlinds();
@@ -53,24 +60,53 @@ public class GameManager implements Runnable {
 		// Traverse through player list, prompting each player for their turns
 		for(int i = 0; i < playerCount; i++){
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
+			
+			setCurrentPlayerIDTurn(player.playerID);
+			setCurrentPlayerTurn(true);
+			setCurrentPlayerDoneTurn(false);
+			setTurnSent(false);
+			
 			System.out.println("Current player's turn " + player.playerNumber);
+			System.out.println("Turn: " + currentPlayerTurn);
+			System.out.println("DoneTurn: " + currentPlayerDoneTurn);
+			System.out.println("sentTurn: " + turnSent);
 			
+			System.out.println("Begin Turn State:");
 			this.getPlayerList().displayGameState();
-			
-			while (player.getDoneTurn() == false && player.getTurn() == true ){
+			while (getCurrentPlayerDoneTurn() == false && getCurrentPlayerTurn() == true ){
+				
+				//System.out.println("Counter: " + counter);
 				// Now we need to notify the player that it is their turn
 				// Setting the flag below, lets the serverthread know that it's now
 				// that player's turn, and the serverthread will notify them accordingly
-				player.setBeginTurn(true);
+				//player.setBeginTurn(true);
+				setCurrentPlayerBeginTurn(true);
 				
 				
-				if(player.getDoneTurn() == true && player.getTurn() == true) {
+				if (getCurrentPlayerBetFlag() == true && getCurrentPlayerBeginTurn() == true) {
+					setCurrentPlayerBeginTurn(false);
+					System.out.println("Player: " + getCurrentPlayerIDTurn() + " has chosed to bet: " + getCurrentPlayerBetAmount());
+					bet(getCurrentPlayerIDTurn(), getCurrentPlayerBetAmount());
+					setCurrentPlayerBetFlag(false);
+					System.out.println("CurrentPlayerBetFlag set to: " + getCurrentPlayerBetFlag());
+					System.out.println("CurrentPlayerBetFlag set to: " + currentPlayerBetFlag);
+					setCurrentPlayerDoneTurn(true);
+					System.out.println("CurrentPlayerDoneTurn set to: " + currentPlayerDoneTurn);
+				}
+				
+				if(getCurrentPlayerDoneTurn() == true && player.getTurn() == true) {
 					// Set the next player's turn to true
+					setCurrentPlayerTurn(false);
 					player.setTurn(false);
-					player.setDoneTurn(false);
+					//player.setDoneTurn(false);
 					player.nextPlayer.setTurn(true);
 				}
+				
 			}
+			
+			System.out.println("\nEnd Turn State:");
+			this.getPlayerList().displayGameState();
+			
 		}
 
 		//set various flags 
@@ -320,4 +356,69 @@ public class GameManager implements Runnable {
 	public int getGameID(){
 		return gameID;
 	}
+	
+	/**
+	 * Call to set the currentPlayerIDTurn
+	 * @param ID
+	 */
+	public void setCurrentPlayerIDTurn(int ID){
+		currentPlayerIDTurn = ID;
+	}
+	
+	/**
+	 * Call to get the currentPlayerIDTurn
+	 * @return
+	 */
+	public int getCurrentPlayerIDTurn(){
+		return currentPlayerIDTurn;
+	}
+	
+	public void setCurrentPlayerBeginTurn(boolean b){
+		currentPlayerBeginTurn = b;
+	}
+	
+	public boolean getCurrentPlayerBeginTurn(){
+		return currentPlayerBeginTurn;
+	}
+	
+	public void setCurrentPlayerDoneTurn(boolean b){
+		currentPlayerDoneTurn = b;
+	}
+	
+	public boolean getCurrentPlayerDoneTurn(){
+		return currentPlayerDoneTurn;
+	}
+	
+	public void setCurrentPlayerTurn(boolean b){
+		currentPlayerTurn = b;
+	}
+	
+	public boolean getCurrentPlayerTurn(){
+		return currentPlayerTurn;
+	}
+	
+	public void setCurrentPlayerBetFlag(boolean b){
+		currentPlayerBetFlag = b;
+	}
+	
+	public boolean getCurrentPlayerBetFlag(){
+		return currentPlayerBetFlag;
+	}
+	
+	public void setCurrentPlayerBetAmount(int i){
+		currentPlayerBetAmount = i;
+	}
+	
+	public int getCurrentPlayerBetAmount(){
+		return currentPlayerBetAmount;
+	}
+	
+	public void setTurnSent(boolean b){
+		turnSent = b;
+	}
+	
+	public boolean getTurnSent(){
+		return turnSent;
+	}
+	
 }

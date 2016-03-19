@@ -14,7 +14,7 @@ public class GameThread {
 
 
 	private int randomCardNumber;
-
+	
 	private boolean isDone = false;
 	private boolean folded = false;
 	private boolean handSent = false;
@@ -89,38 +89,22 @@ public class GameThread {
 				if(game.getPlayerCount() > 2 && !game.isGameOn()){
 					game.setGameOn(true);
 					new Thread(game).start();
-					System.out.println("AKJSLDFHJASDHFASDKLJFHHKLJHSDAF.");
-					
 				}
 				
 				// moved to it's own method... 
-				if(game.isGameOn() && !handSent && game.getHandDealt()){
-					for(int i = 0; i < game.getPlayerCount(); i++){
-						PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
-						Card [] hand = player.getHand();
-						int playerID = player.getPlayerID();
-						sendMessage(out, playerID, "Game Started!");
-						sendMessage(out, playerID, "message Hand: " + hand[0] + " " + hand[1] + "\n");
-						System.out.println("PlayerID: " + playerID + "Hand: " + hand[0] + " " + hand[1]);
-						//out.write("message Game Started!\n");
-						//out.write("message Hand: " + hand[0] + " " + hand[1] + "\n");
-						//out.flush();
-					}
-					handSent = true;
-				}
+				sendCards();
 
 				// game play
 				// begin round
 				//playerPort = socket.getPort();
 				//player = game.getPlayerList().findPlayerByPort(playerPort);
-				/*if (player.getBeginTurn() == true && turnSent == false) {
-				  out.write("message It's now your turn...\n");
-				  out.write("message You can either bet, call, or fold\n");
-				  out.flush();
-				  player.setBeginTurn(false);
-				  turnSent = true;
+				if (game.getCurrentPlayerBeginTurn() == true && game.getTurnSent() == false) {
+				  sendMessage(out, game.getCurrentPlayerIDTurn(), "It's now your turn...");
+				  sendMessage(out, game.getCurrentPlayerIDTurn(), "You can either bet, call, or fold");
+				  //game.setCurrentPlayerBeginTurn(false);
+				  game.setTurnSent(true);
 
-				  }*/
+				}
 				// notify player of their turn
 
 				// notifyPlayer();
@@ -168,7 +152,8 @@ public class GameThread {
 						case("fold"):
 							fold(playerID);
 							break;
-						case("deal"):
+						/* We don't need this case statement either anymore
+						 * case("deal"):
 							System.out.println("Player's Turn? Deal?");
 							if (game.checkTurn(playerID) == false) break;
 
@@ -177,7 +162,7 @@ public class GameThread {
 								 break;
 							}
 							deal(playerID);
-							break;
+							break;*/
 						case("message"):
 							System.out.printf("Message from %s: %s\n", playerID, contents);
 							break;
@@ -244,15 +229,16 @@ public class GameThread {
 		} catch(Exception e) {e.printStackTrace();}
 
 	}
-
+	
 	public void sendCards(){
-		if(game.isGameOn() && !handSent){
+		if(game.isGameOn() && !handSent && game.getHandDealt()){
 			for(int i = 0; i < game.getPlayerCount(); i++){
 				PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
 				Card [] hand = player.getHand();
 				int playerID = player.getPlayerID();
 				sendMessage(out, playerID, "Game Started!");
-				sendMessage(out, playerID, "message Hand: " + hand[0] + " " + hand[1] + "\n");
+				sendMessage(out, playerID, "message Hand: " + hand[0] + " " + hand[1]);
+				System.out.println("PlayerID: " + playerID + " Hand: " + hand[0] + " " + hand[1]);
 				//out.write("message Game Started!\n");
 				//out.write("message Hand: " + hand[0] + " " + hand[1] + "\n");
 				//out.flush();
@@ -329,13 +315,15 @@ public class GameThread {
 				out.flush();
 			}
 			else {
-				System.out.printf("Bet amount from %d: %s\n", playerID, betAmount);		
-				game.bet(playerID, betAmount);
+				System.out.printf("Bet amount from %d: %s\n", playerID, betAmount);
+				game.setCurrentPlayerBetFlag(true);
+				game.setCurrentPlayerBetAmount(betAmount);
+				//game.bet(playerID, betAmount);
 				PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
 				int stack = player.getStack();
 				System.out.println("This player's new stack total: " + stack);
-				player.setTurn(false);
-				System.out.println("No longer this players turn. Confirmation: " + player.getTurn());
+				game.setCurrentPlayerDoneTurn(true);
+				System.out.println("No longer this players turn. Confirmation: " + game.getCurrentPlayerDoneTurn());
 			}
 		} catch (IOException e) {e.printStackTrace();}
 	}
@@ -372,6 +360,7 @@ public class GameThread {
 		} catch (IOException e){e.printStackTrace();}
 	}
 
+	/* NOTE: I don't think we need this anymore....
 	private void deal(int playerID){
 		randomCardNumber = rand.nextInt(52) + 1;
 		String deal = String.valueOf(randomCardNumber);
@@ -386,7 +375,7 @@ public class GameThread {
 
 		sendMessage(out, playerID, "message Card dealt: " + randCard + "\n");
 		//out.write("message Card dealt: " + randCard + "\n");
-	}
+	}*/
 
 	private void sendMessage(OutputStreamWriter out, int playerID, String message){
 		try{
@@ -405,8 +394,6 @@ public class GameThread {
 		}
 		return buffer.toString();
 	}
-
-
 /*
 	private void setMessageRequest(){
 		try{
