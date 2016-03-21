@@ -73,6 +73,10 @@ public class Client{
 							String betAmount = br.readLine();
 							out.write("bet " + betAmount + '\n');
 							break;
+						case("fold"):
+							System.out.println("You have chosen to fold...");
+							out.write("fold " + '\n');
+							break;
 						case("deal"):
 							/* THis was the client side deal code
 							   randomCardNumber = rand.nextInt(52) + 1;

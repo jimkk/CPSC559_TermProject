@@ -22,6 +22,8 @@ public class GameThread {
 	private boolean turnSent = false;
 
 	private static String serverMessage = "";
+	private static String buffer;
+	private static String messageType;
 	private static boolean serverMessageLock = false;
 	private static int key = -1;
 	private static boolean debug = true;
@@ -81,11 +83,11 @@ public class GameThread {
 			}
 
 			
-			String buffer = "";
-			String messageType = "";
+			buffer = "";
+			messageType = "";
 
 			while(!isDone){
-
+			
 
 
 				/*if(game.getPlayerList().findPlayerByPort(playerPort).getTurn() 
@@ -97,133 +99,21 @@ public class GameThread {
 
 				
 				if(game.getPlayerCount() > 2 && !game.isGameOn()){
+					// Start game
 					game.setGameOn(true);
-					new Thread(game).start();
+					
+					// Set blinds
+					game.setBlinds();
+					game.subtractBlinds();
+					// Deal cards and send them to their respective players
+					game.deal();
+					sendCards();
+					beginRound();
+					//new Thread(game).start();
 				}
 				
-				sendCards();
-
-				// game play
-				// begin round
-				//playerPort = socket.getPort();
-				//player = game.getPlayerList().findPlayerByPort(playerPort);
-				if (game.getCurrentPlayerBeginTurn() == true && game.getTurnSent() == false) {
-				  sendMessage(out, game.getCurrentPlayerIDTurn(), "It's now your turn...");
-				  sendMessage(out, game.getCurrentPlayerIDTurn(), "You can either bet, call, or fold");
-				  //game.setCurrentPlayerBeginTurn(false);
-				  game.setTurnSent(true);
-
-				}
-				// notify player of their turn
-
-				// notifyPlayer();
-				if(in.ready()){
-					int playerID;
-					String [] messageParts;
-					String contents;
-
-					buffer = IOUtilities.read(in);
-
-
-					messageParts = buffer.toString().split(" ");
-					playerID = Integer.parseInt(messageParts[0]);
-					messageType = messageParts[1];
-					contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
-
-					// Check if it is that player's turn; if not reply accordingly
-					// Note: only check if the player has requested something that cannot
-					// be done if it is not his or her turn; i.e. betting, folding, calling
-
-
-					switch(messageType){
-						case("addplayer"):
-							int stack = Integer.parseInt(messageParts[2]);
-							System.out.println("ADDING NEW PLAYER");
-							game.addPlayerToGame(stack, playerID);
-							System.out.println("playerCount: " + game.getPlayerCount());
-							break;
-						case("checkTurn"):
-							checkTurn(playerID);
-							break;
-						case("bet"):
-							int betAmount = Integer.parseInt(contents);
-							bet(betAmount, playerID);
-							break;
-						case("call"):
-							call(playerID);
-							break;
-						case("fold"):
-							fold(playerID);
-							break;
-						/* We don't need this case statement either anymore
-						 * case("deal"):
-							System.out.println("Player's Turn? Deal?");
-							if (game.checkTurn(playerID) == false) break;
-
-							if (game.checkTurn(playerID) == false){
-								 sendMessage(out, playerID, "It is not your turn");
-								 break;
-							}
-							deal(playerID);
-							break;*/
-						case("message"):
-							System.out.printf("Message from %s: %s\n", playerID, contents);
-							break;
-							/*
-							   case("set_message_request"):
-							   setMessageRequest();
-							   break;
-							   case("set_message"):
-							   String smessage = buffer.substring(buffer.indexOf(" ")+1);
-							   String [] messageParts = smessage.split(" ");
-							   int keyResponse = Integer.parseInt(messageParts[0]);
-							   if(keyResponse == key){
-							   StringBuffer smBuf = new StringBuffer();
-							   for(int i = 1; i < messageParts.length; i++){
-							   smBuf.append(messageParts[i]);
-							   if(i != messageParts.length-1){
-							   smBuf.append(" ");
-							   }
-							   }
-							   serverMessage = smBuf.toString();
-							   serverMessageLock = false;
-							   key = -1;
-							   out.write("message Message Set!\n");
-							   out.flush();
-							   System.out.printf("Server message set by %s: %s\n", socket.getInetAddress(), serverMessage);
-							   } else {
-							   out.write("message INVALID KEY\n");
-							   out.flush();
-							   }
-
-							   break;
-							   case("get_message"):
-							   getMessage();
-							   break;
-							   */
-						case("display game"):
-							game.getPlayerList().displayGameState();
-							break;
-						case("close"):
-
-							System.out.printf("Player %d has left the game\n", playerID);
-							// return the playerID
-							game.removePlayerFromGame(playerID);
-							isDone = true;
-							break;
-						case("destroy"):
-							System.out.println("Server shut down at client's request");
-							//TODO
-							break;
-						case(""):
-							break;
-						default:
-							System.out.println("ERROR: Unknown Message Type");
-							System.out.println("\t" + buffer);
-							System.exit(-1);
-							break;
-					}
-				}
+				// read incoming messages
+				readMessage(buffer, messageType);
 				Thread.sleep(10);
 			}
 		} catch(SocketException e) {
@@ -235,6 +125,7 @@ public class GameThread {
 	
 	public void sendCards(){
 		if(game.isGameOn() && !handSent && game.getHandDealt()){
+			System.out.println("Round has started; dealing cards to players");
 			for(int i = 0; i < game.getPlayerCount(); i++){
 				PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
 				Card [] hand = player.getHand();
@@ -295,6 +186,206 @@ public class GameThread {
 		return finalCardNumber;
 	}  
 
+	/**
+	 * Starts a single round of the Poker Game
+	 */
+	private void beginRound(){
+		// Begin the game loop
+		// Loop through all players, and on each player, keep looping until their turn is
+		// confirmed done, reading all inputs/messages from other players
+		for(int i = 0; i < game.getPlayerCount(); i++){
+			
+			// Step 1:
+			// Find the current player's turn 
+			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
+			
+			
+			// Note that we skip players who have folded
+			if (player.getFolded() == false) continue;
+			
+			
+			game.setCurrentPlayerIDTurn(player.playerID);
+			game.setCurrentPlayerTurn(true);
+			game.setCurrentPlayerDoneTurn(false);
+			game.setTurnSent(false);
+			
+			System.out.println("Current player's turn " + player.playerNumber);
+			System.out.println("Turn: " + game.getCurrentPlayerTurn());
+			System.out.println("DoneTurn: " + game.getCurrentPlayerDoneTurn());
+			System.out.println("sentTurn: " + turnSent);
+			
+			System.out.println("Begin Turn State:");
+			game.getPlayerList().displayGameState();
+			
+			// Step 2:
+			// Wait on that player's response/move for their turn
+			// all the while, processing other player's messages
+			while (game.getCurrentPlayerDoneTurn() == false && game.getCurrentPlayerTurn() == true){
+				
+				
+				game.setCurrentPlayerBeginTurn(true);
+				
+				// Notify the player that it is their turn
+				if (game.getCurrentPlayerBeginTurn() == true && game.getTurnSent() == false) {
+					  sendMessage(out, game.getCurrentPlayerIDTurn(), "It's now your turn...");
+					  sendMessage(out, game.getCurrentPlayerIDTurn(), "You can either bet, call, or fold");
+					  //game.setCurrentPlayerBeginTurn(false);
+					  game.setTurnSent(true);
+
+				}
+				
+				// Step 3:
+				// process all incoming messages from all clients.
+				// Only the client, whose current turn it is, can actually
+				// complete a turn. 
+				readMessage(buffer, messageType);
+				
+				if (game.getCurrentPlayerBetFlag() == true && game.getCurrentPlayerBeginTurn() == true) {
+					game.setCurrentPlayerBeginTurn(false);
+					System.out.println("Player: " + game.getCurrentPlayerIDTurn() + " has chosed to bet: " + game.getCurrentPlayerBetAmount());
+					// I believe this is already called in the 'bet' switch case
+					//bet(game.getCurrentPlayerIDTurn(), game.getCurrentPlayerBetAmount());
+					game.setCurrentPlayerBetFlag(false);
+					System.out.println("CurrentPlayerBetFlag set to: " + game.getCurrentPlayerBetFlag());
+					System.out.println("CurrentPlayerBetFlag set to: " + game.getCurrentPlayerBetFlag());
+					game.setCurrentPlayerDoneTurn(true);
+					System.out.println("CurrentPlayerDoneTurn set to: " + game.getCurrentPlayerDoneTurn());
+				}
+				
+				if(game.getCurrentPlayerDoneTurn() == true && player.getTurn() == true) {
+					// Set the next player's turn to true
+					game.setCurrentPlayerTurn(false);
+					player.setTurn(false);
+					//player.setDoneTurn(false);
+					player.nextPlayer.setTurn(true);
+				}
+				
+			}
+			
+			System.out.println("\nEnd Turn State:");
+			game.getPlayerList().displayGameState();
+		}
+	}
+	/**
+	 * Read inputs from the Clients and branch according to the messageType
+	 * Note: those player's who make a request reqruiring it to be their turn
+	 *       and it's not their turn, are refused by the GameServer 
+	 */
+	private void readMessage(String buffer, String messageType){
+		try{
+			if(in.ready()){
+				int playerID;
+				String [] messageParts;
+				String contents;
+	
+				buffer = IOUtilities.read(in);
+	
+	
+				messageParts = buffer.toString().split(" ");
+				playerID = Integer.parseInt(messageParts[0]);
+				messageType = messageParts[1];
+				contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
+	
+				// Check if it is that player's turn; if not reply accordingly
+				// Note: only check if the player has requested something that cannot
+				// be done if it is not his or her turn; i.e. betting, folding, calling
+	
+	
+				switch(messageType){
+					case("addplayer"):
+						int stack = Integer.parseInt(messageParts[2]);
+						System.out.println("ADDING NEW PLAYER");
+						game.addPlayerToGame(stack, playerID);
+						System.out.println("playerCount: " + game.getPlayerCount());
+						break;
+					case("checkTurn"):
+						checkTurn(playerID);
+						break;
+					case("bet"):
+						int betAmount = Integer.parseInt(contents);
+						bet(betAmount, playerID);
+						break;
+					case("call"):
+						call(playerID);
+						break;
+					case("fold"):
+						fold(playerID);
+						break;
+					/* We don't need this case statement either anymore
+					 * case("deal"):
+						System.out.println("Player's Turn? Deal?");
+						if (game.checkTurn(playerID) == false) break;
+	
+						if (game.checkTurn(playerID) == false){
+							 sendMessage(out, playerID, "It is not your turn");
+							 break;
+						}
+						deal(playerID);
+						break;*/
+					case("message"):
+						System.out.printf("Message from %s: %s\n", playerID, contents);
+						break;
+						/*
+						   case("set_message_request"):
+						   setMessageRequest();
+						   break;
+						   case("set_message"):
+						   String smessage = buffer.substring(buffer.indexOf(" ")+1);
+						   String [] messageParts = smessage.split(" ");
+						   int keyResponse = Integer.parseInt(messageParts[0]);
+						   if(keyResponse == key){
+						   StringBuffer smBuf = new StringBuffer();
+						   for(int i = 1; i < messageParts.length; i++){
+						   smBuf.append(messageParts[i]);
+						   if(i != messageParts.length-1){
+						   smBuf.append(" ");
+						   }
+						   }
+						   serverMessage = smBuf.toString();
+						   serverMessageLock = false;
+						   key = -1;
+						   out.write("message Message Set!\n");
+						   out.flush();
+						   System.out.printf("Server message set by %s: %s\n", socket.getInetAddress(), serverMessage);
+						   } else {
+						   out.write("message INVALID KEY\n");
+						   out.flush();
+						   }
+	
+						   break;
+						   case("get_message"):
+						   getMessage();
+						   break;
+						   */
+					case("display game"):
+						game.getPlayerList().displayGameState();
+						break;
+					case("close"):
+	
+						System.out.printf("Player %d has left the game\n", playerID);
+						// return the playerID
+						game.removePlayerFromGame(playerID);
+						isDone = true;
+						break;
+					case("destroy"):
+						System.out.println("Server shut down at client's request");
+						//TODO
+						break;
+					case(""):
+						break;
+					default:
+						System.out.println("ERROR: Unknown Message Type");
+						System.out.println("\t" + buffer);
+						System.exit(-1);
+						break;
+				}
+			}
+		}
+		catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	
 	//message switch methods
 	private void bet(int betAmount, int playerID){
 
@@ -309,7 +400,7 @@ public class GameThread {
 				System.out.printf("Bet amount from %d: %s\n", playerID, betAmount);
 				game.setCurrentPlayerBetFlag(true);
 				game.setCurrentPlayerBetAmount(betAmount);
-				//game.bet(playerID, betAmount);
+				game.bet(playerID, betAmount);
 				PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
 				int stack = player.getStack();
 				System.out.println("This player's new stack total: " + stack);
@@ -347,6 +438,14 @@ public class GameThread {
 				System.out.println("Currently not this player's turn; cannot fold until it is");
 				sendMessage(out, playerID, "It's not your turn, you cannot fold until it is");
 				out.flush();
+			}
+			else {
+				System.out.println("Player: " + playerID + "has chosen to fold his/her hand...");
+				game.fold(playerID);
+				PlayerNode player = game.getPlayerList().findPlayerByIndex(playerID);
+				System.out.println("Player: " + playerID + "folded = " +  player.getFolded());
+				game.setCurrentPlayerDoneTurn(true);
+				sendMessage(out, playerID, "You have chosen to fold your hand for this round");
 			}
 		} catch (IOException e){e.printStackTrace();}
 	}

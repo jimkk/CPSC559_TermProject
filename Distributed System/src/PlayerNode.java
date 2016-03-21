@@ -93,4 +93,13 @@ public class PlayerNode {
 		betPerTurn += amount;
 		stack -= amount;
 	}
+	
+	public void setFolded(boolean b){
+		folded = b;
+	}
+	
+	public boolean getFolded(){
+		return folded;
+	}
+	
 }

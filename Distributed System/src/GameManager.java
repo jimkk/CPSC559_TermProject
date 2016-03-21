@@ -183,6 +183,7 @@ public class GameManager implements Runnable {
 		}
 		
 		gameOn = true;
+		handDealt = true;
 		turn = 0;
 	}
 	// Assign turn
@@ -290,6 +291,12 @@ public class GameManager implements Runnable {
 		// Will have to record each player's bet in their 'playerNode', setting the
 		// amount accordingly
 
+	}
+	
+	public void fold(int playerID){
+		PlayerNode player = getPlayerList().findPlayerByID(playerID);
+		player.setFolded(true);
+		
 	}
 
 	/**
