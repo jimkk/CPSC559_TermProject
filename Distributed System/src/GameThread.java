@@ -155,17 +155,6 @@ public class GameThread {
 						case("fold"):
 							fold(playerID);
 							break;
-						/* We don't need this case statement either anymore
-						 * case("deal"):
-							System.out.println("Player's Turn? Deal?");
-							if (game.checkTurn(playerID) == false) break;
-
-							if (game.checkTurn(playerID) == false){
-								 sendMessage(out, playerID, "It is not your turn");
-								 break;
-							}
-							deal(playerID);
-							break;*/
 						case("message"):
 							System.out.printf("Message from %s: %s\n", playerID, contents);
 							break;
@@ -218,9 +207,8 @@ public class GameThread {
 						case(""):
 							break;
 						default:
-							System.out.println("ERROR: Unknown Message Type");
-							System.out.println("\t" + buffer);
-							System.exit(-1);
+							System.out.print("ERROR: Unknown Message Type");
+							System.out.printf(" (%s)\n", messageType);
 							break;
 					}
 				}
