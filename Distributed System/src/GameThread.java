@@ -112,8 +112,6 @@ public class GameThread {
 					//new Thread(game).start();
 				}
 				
-				// read incoming messages
-				readMessage(buffer, messageType);
 				Thread.sleep(10);
 			}
 		} catch(SocketException e) {

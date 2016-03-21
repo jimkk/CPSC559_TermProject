@@ -101,7 +101,6 @@ public class Server implements Runnable{
 					if(key < 0){
 						System.out.println("Found crashed server!");
 						int gameID = -key;
-						Socket socket = servers.remove(key);
 						if(backupServers.size() > 0){
 							Socket backupSocket = backupServers.get(0);
 							try{
@@ -130,6 +129,7 @@ public class Server implements Runnable{
 							} catch (Exception e2){e2.printStackTrace();}
 						} else {
 							System.out.println("Sadly there are no backup servers right now :(");
+							servers.remove(key);
 						}
 
 					}

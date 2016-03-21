@@ -59,13 +59,21 @@ public class ServerThread implements Runnable{
 			//TODO Ask which game server to join
 			//For now, it's the first one
 			gameIndex = 1;
-			gameServerSocket = servers.get(gameIndex);
+			do{
+				gameServerSocket = servers.get(gameIndex);
+				gameIndex++;
+				if(gameIndex > 100){
+					System.err.println("Can't find a valid game server");
+					System.exit(-1);
+				}
+			} while (gameServerSocket == null);
 			gameServerChosen = true;
 			if(gameServerSocket == null){
 				System.err.println("Something went wrong, the GameServer chosen does not exist");
 				System.exit(-1);
 			}
 		}
+		gameIndex--;
 
 		bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
 		gameIn = new InputStreamReader(bufGameIn);
