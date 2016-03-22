@@ -168,10 +168,9 @@ public class Server implements Runnable{
 			InputStreamReader in = new InputStreamReader(bufIn);
 			System.out.println("Connected to main server!");
 			//TODO Received backups from the main server
+			while(!mainServerDown){
+			}
 		} catch (Exception e){e.printStackTrace();}
-		while(!mainServerDown){
-			//TODO Read game state messages
-		}
 		//TODO Become the main server in the case where the main server goes down
 		//TODO Start the other threads required for server
 	}
@@ -180,23 +179,6 @@ public class Server implements Runnable{
 	public HashMap<Integer, Socket> getServersInfo(){
 		return servers;
 	}
-
-	/*
-	public String [][] getServersInfo(){
-		String [][] serversInfo = new String[servers.size()][3];
-		Iterator it = servers.keySet().iterator();
-		int i = 0;
-		while(it.hasNext()){
-			int gameID = (int) it.next();
-			Socket socket = servers.get(gameID);
-			serversInfo[i][0] = Integer.toString(gameID);
-			serversInfo[i][1] = socket.getInetAddress().toString();
-			serversInfo[i][2] = Integer.toString(socket.getPort());
-			i++;
-		}
-		return serversInfo;
-	}
-	*/
 
 	public int getNextGameID(){
 		return nextGameID;
@@ -218,24 +200,7 @@ public class Server implements Runnable{
 		return backups;
 	}
 	
-	/*
-	public String [][] getBackupsInfo(){
-		String [][] serversInfo = new String[backups.size()][3];
-		Iterator it = backups.keySet().iterator();
-		int i = 0;
-		while(it.hasNext()){
-			int gameID = (int) it.next();
-			Socket socket = servers.get(gameID);
-			serversInfo[i][0] = Integer.toString(gameID);
-			serversInfo[i][1] = socket.getInetAddress().toString();
-			serversInfo[i][2] = Integer.toString(socket.getPort());
-			i++;
-		}
-		return serversInfo;
-	}
-	*/
-
-
+	
 	public static void main(String[] args) {
 		if(args.length == 2 && args[0].equals("-b")){
 			System.out.println("Running as backup server");
