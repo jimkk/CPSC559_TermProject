@@ -16,6 +16,7 @@ public class Server implements Runnable{
 	private static int clientPort = 7777;
 	private static int serverPort = 7776;
 	private static int backupPort = 7775;
+	public static final int SYNCPORT = 7774;
 
 	private boolean isDone = false;
 	private static boolean isBackup = false;
@@ -29,9 +30,7 @@ public class Server implements Runnable{
 	private String backupServerAddress = "localhost";
 	private int backupServerPort = 5432;
 	private Socket backupServer;
-	//private OutputStreamWriter out = null;
 
-	//private static ArrayList<Socket> servers;
 	private static HashMap<Integer, Socket> servers;
 	private static ArrayList<Socket> backupServers;
 	private volatile int nextGameID = 1;
@@ -161,11 +160,81 @@ public class Server implements Runnable{
 	 * @param serverIP The IP address of the main server
 	 */
 	private void backupRun(String serverIP){
-		//TODO Connect to the main server
-		//TODO Received backups from the main server
+		boolean mainServerDown = false;
+
+		try{
+			Socket syncSocket = new Socket(serverIP, SYNCPORT);
+			BufferedInputStream bufIn = new BufferedInputStream(syncSocket.getInputStream());
+			InputStreamReader in = new InputStreamReader(bufIn);
+			System.out.println("Connected to main server!");
+			//TODO Received backups from the main server
+		} catch (Exception e){e.printStackTrace();}
+		while(!mainServerDown){
+			//TODO Read game state messages
+		}
 		//TODO Become the main server in the case where the main server goes down
 		//TODO Start the other threads required for server
 	}
+	
+
+	public HashMap<Integer, Socket> getServersInfo(){
+		return servers;
+	}
+
+	/*
+	public String [][] getServersInfo(){
+		String [][] serversInfo = new String[servers.size()][3];
+		Iterator it = servers.keySet().iterator();
+		int i = 0;
+		while(it.hasNext()){
+			int gameID = (int) it.next();
+			Socket socket = servers.get(gameID);
+			serversInfo[i][0] = Integer.toString(gameID);
+			serversInfo[i][1] = socket.getInetAddress().toString();
+			serversInfo[i][2] = Integer.toString(socket.getPort());
+			i++;
+		}
+		return serversInfo;
+	}
+	*/
+
+	public int getNextGameID(){
+		return nextGameID;
+	}
+
+	public int getNextClientID(){
+		return nextClientID;
+	}
+
+	public ArrayList<Socket> getBackupServers(){
+		return backupServers;
+	}
+
+	public ArrayList<Integer> getBackupIDs(){
+		return backupIDs;
+	}
+
+	public HashMap<Integer, String> getBackupsInfo(){
+		return backups;
+	}
+	
+	/*
+	public String [][] getBackupsInfo(){
+		String [][] serversInfo = new String[backups.size()][3];
+		Iterator it = backups.keySet().iterator();
+		int i = 0;
+		while(it.hasNext()){
+			int gameID = (int) it.next();
+			Socket socket = servers.get(gameID);
+			serversInfo[i][0] = Integer.toString(gameID);
+			serversInfo[i][1] = socket.getInetAddress().toString();
+			serversInfo[i][2] = Integer.toString(socket.getPort());
+			i++;
+		}
+		return serversInfo;
+	}
+	*/
+
 
 	public static void main(String[] args) {
 		if(args.length == 2 && args[0].equals("-b")){
@@ -173,12 +242,13 @@ public class Server implements Runnable{
 			String serverIP = args[1];
 			new Server(serverPort, Server.SERVER).backupRun(serverIP);
 		}
-		
-		new Thread(new Server(clientPort, Server.CLIENT)).start();
-		new Thread(new Server(backupPort, Server.BACKUP)).start();
-		Server server = new Server(serverPort, Server.SERVER);
-		new Thread(new ServerSync(server)).start();
-		server.run();
+		else{
+			new Thread(new Server(clientPort, Server.CLIENT)).start();
+			new Thread(new Server(backupPort, Server.BACKUP)).start();
+			Server server = new Server(serverPort, Server.SERVER);
+			new Thread(new ServerSync(server)).start();
+			server.run();
+		}
 	}
 
 }
