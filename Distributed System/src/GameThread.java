@@ -363,7 +363,6 @@ public class GameThread {
 						System.out.printf("Player %d has left the game\n", playerID);
 						// return the playerID
 						game.removePlayerFromGame(playerID);
-						isDone = true;
 						break;
 					case("destroy"):
 						System.out.println("Server shut down at client's request");
