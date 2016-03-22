@@ -18,6 +18,9 @@ public class Server implements Runnable{
 	private static int backupPort = 7775;
 
 	private boolean isDone = false;
+	private static boolean isBackup = false;
+	public static boolean changesMade = true;
+
 	private int port;
 	private int type;
 	private ServerSocket serverSocket;
@@ -26,13 +29,13 @@ public class Server implements Runnable{
 	private String backupServerAddress = "localhost";
 	private int backupServerPort = 5432;
 	private Socket backupServer;
-	private OutputStreamWriter out = null;
+	//private OutputStreamWriter out = null;
 
 	//private static ArrayList<Socket> servers;
 	private static HashMap<Integer, Socket> servers;
 	private static ArrayList<Socket> backupServers;
-	private int nextGameID = 1;
-	private int nextClientID = 1;
+	private volatile int nextGameID = 1;
+	private volatile int nextClientID = 1;
 
 	private static ArrayList<Integer> backupIDs;
 	private static HashMap<Integer, String> backups;
@@ -52,6 +55,7 @@ public class Server implements Runnable{
 	 */
 	public void run(){
 
+		//Socket Initialization
 		try{
 			serverSocket = new ServerSocket(port);
 		} catch (Exception e){
@@ -64,6 +68,8 @@ public class Server implements Runnable{
 			serverSocket.setSoTimeout(1000);
 		} catch (Exception e){e.printStackTrace();}
 
+		changesMade = true;
+		//Connection loop
 		while(!isDone){
 			try{
 				Socket clientSocket = serverSocket.accept();
@@ -92,7 +98,7 @@ public class Server implements Runnable{
 					System.out.println("Backup server added to list");
 				}
 
-
+				changesMade = true;
 
 			} catch (SocketTimeoutException e){
 				Iterator it = servers.keySet().iterator();
@@ -132,6 +138,7 @@ public class Server implements Runnable{
 							servers.remove(key);
 						}
 
+						changesMade = true;
 					}
 				}
 			} catch (Exception e){
@@ -147,15 +154,31 @@ public class Server implements Runnable{
 			} catch (Exception e) {e.printStackTrace();}
 		}
 	};
-
+	
 	/**
-	 * This function will check for a backup server and connect to it if it exists.
+	 * Recieved backups from a main server and then takes over for it in cases where
+	 * the main server goes down.
+	 * @param serverIP The IP address of the main server
 	 */
+	private void backupRun(String serverIP){
+		//TODO Connect to the main server
+		//TODO Received backups from the main server
+		//TODO Become the main server in the case where the main server goes down
+		//TODO Start the other threads required for server
+	}
 
 	public static void main(String[] args) {
+		if(args.length == 2 && args[0].equals("-b")){
+			System.out.println("Running as backup server");
+			String serverIP = args[1];
+			new Server(serverPort, Server.SERVER).backupRun(serverIP);
+		}
+		
 		new Thread(new Server(clientPort, Server.CLIENT)).start();
 		new Thread(new Server(backupPort, Server.BACKUP)).start();
-		new Server(serverPort, Server.SERVER).run();
+		Server server = new Server(serverPort, Server.SERVER);
+		new Thread(new ServerSync(server)).start();
+		server.run();
 	}
 
 }
