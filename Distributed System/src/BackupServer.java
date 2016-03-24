@@ -58,7 +58,6 @@ public class BackupServer {
 					fw.write(backup);
 					fw.close();
 
-					System.out.println(backup);
 					game = gson.fromJson(backup, GameManager.class);
 					System.out.printf("Number of players: %d\n", game.getPlayerCount());
 					if(game.getPlayerCount() > 0){
@@ -74,7 +73,7 @@ public class BackupServer {
 					//TODO Recover backup for gameID
 					
 					String restoredString = restoreBackup(gameID);
-					managerOut.write("backup_response " + gameID + " " + restoredString + "\f");
+					managerOut.write("backup_response " + gameID + " " + restoredString + "\n");
 					managerOut.flush();
 					System.out.println("Sent backup!");
 				}
