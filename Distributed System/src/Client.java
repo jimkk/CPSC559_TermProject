@@ -69,6 +69,10 @@ public class Client{
 							System.out.println("Checking turn...");
 							out.write("checkTurn " + '\n');
 							break;
+						case("checkStack"):
+							System.out.println("Checking stack...");
+							out.write("checkStack" + '\n');
+							break;
 						case("communityCards"):
 							System.out.println("Looking at community cards...");
 							out.write("communityCards " + '\n');
