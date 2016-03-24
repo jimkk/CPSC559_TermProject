@@ -350,9 +350,9 @@ public class GameThread {
 				switch(messageType){
 					case("addplayer"):
 						int stack = Integer.parseInt(messageParts[2]);
-						System.out.println("ADDING NEW PLAYER");
+						System.out.println("New player added");
 						game.addPlayerToGame(stack, playerID);
-						System.out.println("playerCount: " + game.getPlayerCount());
+						System.out.printf("There are %d players currently in the game\n", game.getPlayerCount());
 						break;
 					case("checkTurn"):
 						checkTurn(playerID);

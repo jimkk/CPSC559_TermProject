@@ -50,18 +50,21 @@ public class BackupManager implements Runnable{
 
 					//GSON
 					LinkedPlayerList list = game.getPlayerList();
-					list.findPlayerByIndex(list.getCount()-1).nextPlayer = null;
-					System.out.println(game);
+					if(list.getCount() > 0){
+						list.findPlayerByIndex(list.getCount()-1).nextPlayer = null;
+					}
 					message = gson.toJson(game);
-					list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
-						list.findPlayerByIndex(0);
+					if(list.getCount() > 0){
+						list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
+							list.findPlayerByIndex(0);
+					}
 
 					out.write("json_backup " + game.getGameID() + " " + message + "\n");
 					out.flush();
 					System.out.println("Backup Send");
-					System.out.printf("Player Count: %d\n", game.getPlayerCount());
-					System.out.printf("Pot: %d\n", game.getPot());
-					System.out.printf("Turn: %d\n", game.getTurn());
+					//System.out.printf("Player Count: %d\n", game.getPlayerCount());
+					//System.out.printf("Pot: %d\n", game.getPot());
+					//System.out.printf("Turn: %d\n", game.getTurn());
 					turn = game.getTurn();
 					pot = game.getPot();
 					playerCount = game.getPlayerList().getCount();

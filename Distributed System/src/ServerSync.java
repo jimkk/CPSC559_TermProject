@@ -2,6 +2,7 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 import com.google.gson.*;
+import java.lang.reflect.*;
 
 
 /**
@@ -30,6 +31,7 @@ public class ServerSync implements Runnable{
 
 		while(!isDone){
 			if(Server.changesMade){
+				printServerInfo();
 				if(out == null){
 					System.out.println("No sync server connected");
 					printServerInfo();
@@ -48,14 +50,11 @@ public class ServerSync implements Runnable{
 
 	private void sendServerInfo(){
 		try{
-		Gson gson = new GsonBuilder().create();
-		out.write(gson.toJson(server.getServersInfo()));
-		out.write(gson.toJson(server.getNextGameID()));
-		out.write(gson.toJson(server.getNextClientID()));
-		out.write(gson.toJson(server.getBackupServers()));
-		out.write(gson.toJson(server.getBackupIDs()));
-		out.write(gson.toJson(server.getBackupsInfo()));
-		out.flush();
+			Gson gson = new GsonBuilder().serializeNulls().
+				excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.FINAL).create();
+			gson.toJson(server, out);
+			out.write("\n");
+			out.flush();
 		} catch (IOException e){
 			System.err.println("Failed to send server info:");
 			e.printStackTrace();
@@ -64,6 +63,7 @@ public class ServerSync implements Runnable{
 
 	private void printServerInfo(){
 		System.out.println("Servers: " + Arrays.deepToString(toArrayFromSocket(server.getServersInfo())));
+		System.out.println("Clients: " + Arrays.deepToString(toArrayFromSocket(server.getClientsInfo())));
 		System.out.println("nextGameID: " + server.getNextGameID());
 		System.out.println("nextClientID: " + server.getNextClientID());
 		System.out.println("Backup Servers: " + server.getBackupServers());

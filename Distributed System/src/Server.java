@@ -1,6 +1,8 @@
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import com.google.gson.*;
+import java.lang.reflect.*;
 
 /**
  * The class from the server that will set up a connection to a backup server
@@ -13,9 +15,9 @@ public class Server implements Runnable{
 	public static final int CLIENT = 1;
 	public static final int BACKUP = 2;
 
-	private static int clientPort = 7777;
-	private static int serverPort = 7776;
-	private static int backupPort = 7775;
+	public static final int CLIENTPORT = 7777;
+	public static final int SERVERPORT = 7776;
+	public static final int BACKUPPORT = 7775;
 	public static final int SYNCPORT = 7774;
 
 	private boolean isDone = false;
@@ -24,16 +26,17 @@ public class Server implements Runnable{
 
 	private int port;
 	private int type;
-	private ServerSocket serverSocket;
+	private transient ServerSocket serverSocket;
 
 	//Backup stuff
 	private String backupServerAddress = "localhost";
 	private int backupServerPort = 5432;
-	private Socket backupServer;
 
 	private static HashMap<Integer, Socket> servers;
 	private static ArrayList<Socket> backupServers;
 	private volatile int nextGameID = 1;
+
+	private static HashMap<Integer, Socket> clients;
 	private volatile int nextClientID = 1;
 
 	private static ArrayList<Integer> backupIDs;
@@ -43,6 +46,7 @@ public class Server implements Runnable{
 		this.port = port;
 		this.type = type;
 		servers = new HashMap<Integer, Socket>();
+		clients = new HashMap<Integer, Socket>();
 		backupServers = new ArrayList<Socket>();
 		backupIDs = new ArrayList<Integer>();
 		backups = new HashMap<Integer, String>();
@@ -76,7 +80,7 @@ public class Server implements Runnable{
 					System.out.println("Server added to list");
 					BufferedOutputStream bufOut = new BufferedOutputStream(clientSocket.getOutputStream());
 					OutputStreamWriter out = new OutputStreamWriter(bufOut);
-					System.out.printf("There are currently %d backups\n", backups.size());
+					System.out.printf("There are currently %d backups to be restored\n", backups.size());
 					if(backups.size() > 0){
 						System.out.println("New server is being repurposed as crashed server");
 						int gameID = backupIDs.remove(0);
@@ -91,6 +95,7 @@ public class Server implements Runnable{
 						out.flush();
 					}
 				} else if (type == CLIENT){
+					clients.put(nextClientID, clientSocket);
 					new Thread(new ServerThread(clientSocket, nextClientID++, servers)).start();
 				} else if (type == BACKUP){
 					backupServers.add(clientSocket);
@@ -159,6 +164,7 @@ public class Server implements Runnable{
 	 * the main server goes down.
 	 * @param serverIP The IP address of the main server
 	 */
+	@SuppressWarnings("unchecked")
 	private void backupRun(String serverIP){
 		boolean mainServerDown = false;
 
@@ -168,8 +174,16 @@ public class Server implements Runnable{
 			InputStreamReader in = new InputStreamReader(bufIn);
 			System.out.println("Connected to main server!");
 			//TODO Received backups from the main server
+			Gson gson = new GsonBuilder().serializeNulls().
+				excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
+			Server server;
 			while(!mainServerDown){
+				String message = IOUtilities.read(in);	
+				server = gson.fromJson(message, Server.class);
+				Thread.sleep(100);
 			}
+		} catch (SocketException se){
+			System.err.println("Unable to connect to main server");
 		} catch (Exception e){e.printStackTrace();}
 		//TODO Become the main server in the case where the main server goes down
 		//TODO Start the other threads required for server
@@ -179,6 +193,9 @@ public class Server implements Runnable{
 	public HashMap<Integer, Socket> getServersInfo(){
 		return servers;
 	}
+	 public HashMap<Integer, Socket> getClientsInfo(){
+		 return clients;
+	 }
 
 	public int getNextGameID(){
 		return nextGameID;
@@ -205,12 +222,12 @@ public class Server implements Runnable{
 		if(args.length == 2 && args[0].equals("-b")){
 			System.out.println("Running as backup server");
 			String serverIP = args[1];
-			new Server(serverPort, Server.SERVER).backupRun(serverIP);
+			new Server(SERVERPORT, Server.SERVER).backupRun(serverIP);
 		}
 		else{
-			new Thread(new Server(clientPort, Server.CLIENT)).start();
-			new Thread(new Server(backupPort, Server.BACKUP)).start();
-			Server server = new Server(serverPort, Server.SERVER);
+			new Thread(new Server(CLIENTPORT, Server.CLIENT)).start();
+			new Thread(new Server(BACKUPPORT, Server.BACKUP)).start();
+			Server server = new Server(SERVERPORT, Server.SERVER);
 			new Thread(new ServerSync(server)).start();
 			server.run();
 		}

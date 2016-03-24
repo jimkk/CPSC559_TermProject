@@ -47,7 +47,7 @@ public class Client{
 
 					switch(messageType){
 						case("message"):
-							System.out.println("\nReading message from Sever");
+							//System.out.println("\nReading message from Server");
 							message(buffer);
 							break;
 						case("full"):

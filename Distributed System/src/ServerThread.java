@@ -9,10 +9,9 @@ import java.util.*;
  */
 public class ServerThread implements Runnable{
 
-	private Socket clientSocket;
-	private Socket gameServerSocket;
-	//private ArrayList<Socket> servers;
-	private HashMap<Integer, Socket> servers;
+	private transient Socket clientSocket;
+	private transient Socket gameServerSocket;
+	private transient HashMap<Integer, Socket> servers;
 
 	private BufferedInputStream bufIn;
 	private InputStreamReader in;

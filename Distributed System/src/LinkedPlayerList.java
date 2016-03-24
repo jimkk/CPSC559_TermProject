@@ -31,7 +31,6 @@ public class LinkedPlayerList {
 		writeLock = true;
 
 		if(rootPlayer == null){
-			System.out.println("Root set");
 
 			rootPlayer = player;
 			// ** could have the line directly below if we wanted to set player 1's turn to true

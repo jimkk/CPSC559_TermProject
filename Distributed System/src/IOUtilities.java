@@ -24,6 +24,7 @@ public class IOUtilities {
 	public static String rebuildString(String [] parts, int start, int end){
 		StringBuffer buffer = new StringBuffer();
 		for(int i = start; i < end; i++){
+			if(i != start){buffer.append(" ");}
 			buffer.append(parts[i]);
 		}
 		return buffer.toString();
