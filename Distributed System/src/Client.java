@@ -65,6 +65,9 @@ public class Client{
 					String input = br.readLine();
 
 					switch(input){
+						case("help"):
+							System.out.println("\nPossible commands:\ncheckTurn \ncheckStack \ncommunityCards \nseeHand \nbet \nfold \ncheck message \nget message \ndisplay game \nclose \n");
+							break;
 						case("checkTurn"):
 							System.out.println("Checking turn...");
 							out.write("checkTurn " + '\n');
@@ -143,7 +146,7 @@ public class Client{
 					out.flush();
 
 					if(!isDone){
-						System.out.print("Enter Command: ");
+						System.out.print("Enter Command (try 'help' if you are lost): ");
 					}
 				}
 
@@ -165,7 +168,7 @@ public class Client{
 	private void message(String buffer){
 		String message = buffer.substring(buffer.indexOf(" "));
 		System.out.printf("\rServer says: %s\n", message);
-		System.out.print("Enter Command: ");
+		System.out.print("Enter Command (try 'help' if you are lost): ");
 	}
 
 	public static void main(String [] args){
