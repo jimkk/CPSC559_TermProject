@@ -84,6 +84,8 @@ public class ServerThread implements Runnable{
 		gameOut.write(clientID + " addplayer " + stack + "\n");
 		gameOut.flush();
 
+		System.out.printf("Client %d added to game %d\n", clientID, gameIndex);
+
 		while(!isDone){
 			try{
 				if(in.ready()){

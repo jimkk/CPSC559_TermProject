@@ -34,21 +34,14 @@ public class BackupManager implements Runnable{
 		String message;
 
 		try{
-			//FileOutputStream fos = new FileOutputStream("serialize.tmp");
-			//ObjectOutputStream oos = new ObjectOutputStream(fos);
-			FileWriter fw = new FileWriter("backup.json");
-			//out.writeObject(game);
-			//out.flush();
-
 			turn = game.getTurn();
 			pot = game.getPot();
 			playerCount = game.getPlayerCount();
 
 			Gson gson = new GsonBuilder().create();
 			message = gson.toJson(game);
-			out.write("json_backup " + game.getGameID() + " " + message + "\f");
+			out.write("json_backup " + game.getGameID() + " " + message + "\n");
 			out.flush();
-			fw.close();
 
 			while(!isDone){
 				if(turn != game.getTurn() || pot != game.getPot() ||
@@ -56,25 +49,19 @@ public class BackupManager implements Runnable{
 					System.out.printf("Game State Changed.\n");
 
 					//GSON
-					fw = new FileWriter("backup.json");
 					LinkedPlayerList list = game.getPlayerList();
 					list.findPlayerByIndex(list.getCount()-1).nextPlayer = null;
 					System.out.println(game);
 					message = gson.toJson(game);
-					System.out.printf("Backup message is: %s\n", message);
 					list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
 						list.findPlayerByIndex(0);
-					fw.close();
 
-					out.write("json_backup " + game.getGameID() + " " + message + "\f");
+					out.write("json_backup " + game.getGameID() + " " + message + "\n");
 					out.flush();
-
-					//out.writeObject(new Date());
-					//out.writeObject(game);
+					System.out.println("Backup Send");
 					System.out.printf("Player Count: %d\n", game.getPlayerCount());
 					System.out.printf("Pot: %d\n", game.getPot());
 					System.out.printf("Turn: %d\n", game.getTurn());
-					//oos.writeObject(game);
 					turn = game.getTurn();
 					pot = game.getPot();
 					playerCount = game.getPlayerList().getCount();
