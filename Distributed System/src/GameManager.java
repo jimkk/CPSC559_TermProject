@@ -30,7 +30,7 @@ public class GameManager implements Runnable {
 	private volatile boolean turnSent = false;
 	
 	
-	private volatile Deck deck;
+	private volatile Deck deck = new Deck();
 	private volatile Card[] communityCards = new Card[5];
 	private volatile LinkedPlayerList playerList = new LinkedPlayerList();
 
@@ -171,10 +171,33 @@ public class GameManager implements Runnable {
 	// traverse the list of players by playerNumber and prompt each player for their turn
 
 	/**
+	 * Draws the first three community cards
+	 */
+	public void flop(){
+		communityCards[0] = deck.Draw();
+		communityCards[1] = deck.Draw();
+		communityCards[2] = deck.Draw();
+	}
+	
+	public void turn(){
+		communityCards[3] = deck.Draw();
+	}
+	
+	public void river(){
+		communityCards[4] = deck.Draw();
+	}
+	
+	public void initializeCommunityCards(){
+		for(int i = 0; i < communityCards.length; i++){
+			communityCards[i] = null;
+		}		
+	}
+	
+	/**
 	 * Deals each players their hands.
 	 */
 	public void deal(){	
-		deck = new Deck();
+		//deck = new Deck();
 	
 		for(int i = 0; i < playerCount; i++){
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
@@ -282,7 +305,11 @@ public class GameManager implements Runnable {
 			} else if (amount == player.stack) { //All in
 				player.bet(amount);
 				pot += amount;
-			} else {
+			} else if (amount == 0){
+				// player has chosen to check
+				player.bet(amount);
+			}
+			else {
 				;//TODO Illegal bet
 			}
 		}
@@ -299,6 +326,20 @@ public class GameManager implements Runnable {
 		
 	}
 
+	/**
+	 * Resolve the winner of the game and assign the current pot value to += that player's stack
+	 */
+	private void resolveWinner(){
+		
+	}
+
+	/**
+	 * Reset the game to its starting points
+	 */
+	private void resetGame(){
+		
+	}
+	
 	/**
 	 * Check if the game is currently on.
 	 * @return boolean - True if the game is on, False if the game is not on.
@@ -430,6 +471,10 @@ public class GameManager implements Runnable {
 	
 	public boolean getTurnSent(){
 		return turnSent;
+	}
+	
+	public Card[] getCommunityCards(){
+		return communityCards;
 	}
 	
 }

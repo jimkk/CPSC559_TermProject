@@ -101,17 +101,55 @@ public class GameThread {
 				if(game.getPlayerCount() > 2 && !game.isGameOn()){
 					// Start game
 					game.setGameOn(true);
-					
+					game.initializeCommunityCards();
 					// Set blinds
 					game.setBlinds();
 					game.subtractBlinds();
 					// Deal cards and send them to their respective players
 					game.deal();
 					sendCards();
+					
+					// Round 1
+					System.out.println("===============================================");
+					System.out.println("Starting round 1");
 					beginRound();
+					// Check if all folded
+					// Check if all player bets are equal
+					
+					
+					// Round 2
+					System.out.println("===============================================");
+					System.out.println("Starting round 2");
+					game.flop();
+					sendCommunityCards();
+					beginRound();
+					// Check if all folded
+					// Check if all player bets are equal
+					
+					System.out.println("===============================================");
+					System.out.println("Starting round 3");
+					// Round 3
+					game.turn();
+					sendCommunityCards();
+					beginRound();
+					// Check if all folded
+					// Check if all player bets are equal
+					
+					System.out.println("===============================================");
+					System.out.println("Starting round 4");
+					// Round 4
+					game.river();
+					sendCommunityCards();
+					beginRound();
+					// Check if all folded
+					// Check if all player bets are equal
+				
+					// Resolve winner 
+					// Reset game
+					
 					//new Thread(game).start();
 				}
-				
+				readMessage(buffer, messageType);
 				Thread.sleep(10);
 			}
 		} catch(SocketException e) {
@@ -119,6 +157,28 @@ public class GameThread {
 			//TODO Remove player from game
 		} catch(Exception e) {e.printStackTrace();}
 
+	}
+	
+	public String buildCommunityCards(){
+		Card [] communityCards = game.getCommunityCards();
+		String comCards = "";
+		int x = 0;
+		while (communityCards[x] != null && x < communityCards.length) {
+			comCards += communityCards[x] + " ";
+			x++;
+		}
+		
+		return comCards;
+	}
+	
+	public void sendCommunityCards(){
+		System.out.println("Displaying community cards to players");
+		for(int i = 0; i < game.getPlayerCount(); i++){
+			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
+			int playerID = player.getPlayerID();
+			String cardList = buildCommunityCards();
+			sendMessage(out, playerID, "Community cards: " + cardList);
+  		}
 	}
 	
 	public void sendCards(){
@@ -192,14 +252,13 @@ public class GameThread {
 		// Loop through all players, and on each player, keep looping until their turn is
 		// confirmed done, reading all inputs/messages from other players
 		for(int i = 0; i < game.getPlayerCount(); i++){
-			
 			// Step 1:
 			// Find the current player's turn 
 			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
 			
 			
 			// Note that we skip players who have folded
-			if (player.getFolded() == false) continue;
+			//if (player.getFolded() == true) continue;
 			
 			
 			game.setCurrentPlayerIDTurn(player.playerID);
@@ -220,13 +279,12 @@ public class GameThread {
 			// all the while, processing other player's messages
 			while (game.getCurrentPlayerDoneTurn() == false && game.getCurrentPlayerTurn() == true){
 				
-				
 				game.setCurrentPlayerBeginTurn(true);
 				
 				// Notify the player that it is their turn
 				if (game.getCurrentPlayerBeginTurn() == true && game.getTurnSent() == false) {
 					  sendMessage(out, game.getCurrentPlayerIDTurn(), "It's now your turn...");
-					  sendMessage(out, game.getCurrentPlayerIDTurn(), "You can either bet, call, or fold");
+					  sendMessage(out, game.getCurrentPlayerIDTurn(), "You can either bet, call, check, or fold");
 					  //game.setCurrentPlayerBeginTurn(false);
 					  game.setTurnSent(true);
 
@@ -240,7 +298,7 @@ public class GameThread {
 				
 				if (game.getCurrentPlayerBetFlag() == true && game.getCurrentPlayerBeginTurn() == true) {
 					game.setCurrentPlayerBeginTurn(false);
-					System.out.println("Player: " + game.getCurrentPlayerIDTurn() + " has chosed to bet: " + game.getCurrentPlayerBetAmount());
+					System.out.println("Player: " + game.getCurrentPlayerIDTurn() + " has chosen to bet: " + game.getCurrentPlayerBetAmount());
 					// I believe this is already called in the 'bet' switch case
 					//bet(game.getCurrentPlayerIDTurn(), game.getCurrentPlayerBetAmount());
 					game.setCurrentPlayerBetFlag(false);
@@ -299,6 +357,13 @@ public class GameThread {
 					case("checkTurn"):
 						checkTurn(playerID);
 						break;
+					case("seeHand"):
+						seeHand(playerID);
+						break;
+					case("communityCards"):
+						String cardList = buildCommunityCards();
+						sendMessage(out, playerID, "Community Cards: " + cardList);
+						break;
 					case("bet"):
 						int betAmount = Integer.parseInt(contents);
 						bet(betAmount, playerID);
@@ -306,20 +371,13 @@ public class GameThread {
 					case("call"):
 						call(playerID);
 						break;
+					case("check"):
+						System.out.println("Player: " + playerID + "checks");
+						bet(0, playerID);
+						break;
 					case("fold"):
 						fold(playerID);
 						break;
-					/* We don't need this case statement either anymore
-					 * case("deal"):
-						System.out.println("Player's Turn? Deal?");
-						if (game.checkTurn(playerID) == false) break;
-	
-						if (game.checkTurn(playerID) == false){
-							 sendMessage(out, playerID, "It is not your turn");
-							 break;
-						}
-						deal(playerID);
-						break;*/
 					case("message"):
 						System.out.printf("Message from %s: %s\n", playerID, contents);
 						break;
@@ -382,6 +440,12 @@ public class GameThread {
 		catch (IOException e){
 			e.printStackTrace();
 		}
+	}
+	
+	private void seeHand(int playerID){
+		PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
+		Card[] hand = player.getHand();
+		sendMessage(out, playerID, "Hand: " + hand[0] + " " + hand[1]);
 	}
 	
 	//message switch methods
@@ -447,24 +511,7 @@ public class GameThread {
 			}
 		} catch (IOException e){e.printStackTrace();}
 	}
-
-	/* NOTE: I don't think we need this anymore....
-	private void deal(int playerID){
-		randomCardNumber = rand.nextInt(52) + 1;
-		String deal = String.valueOf(randomCardNumber);
-		System.out.printf("Dealt card from %s: %s\n", socket.getInetAddress(), deal);
-		System.out.printf("Assigning card to player: %s\n", playerID);
-		//attempt at integrating Card class to deal command
-		//String randomSuit = determineCardSuit(randomCardNumber);
-
-		//int finalCardValue = determineCardValue(randomCardNumber, randomSuit);
-		Card randCard = new Card(randomCardNumber);														
-		System.out.println("This is the card: " + randCard);
-
-		sendMessage(out, playerID, "message Card dealt: " + randCard + "\n");
-		//out.write("message Card dealt: " + randCard + "\n");
-	}*/
-
+	
 	private void sendMessage(OutputStreamWriter out, int playerID, String message){
 		try{
 			out.write(playerID + " message " + message + "\n");

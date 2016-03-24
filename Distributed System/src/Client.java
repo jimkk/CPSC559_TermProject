@@ -47,6 +47,7 @@ public class Client{
 
 					switch(messageType){
 						case("message"):
+							System.out.println("\nReading message from Sever");
 							message(buffer);
 							break;
 						case("full"):
@@ -68,6 +69,14 @@ public class Client{
 							System.out.println("Checking turn...");
 							out.write("checkTurn " + '\n');
 							break;
+						case("communityCards"):
+							System.out.println("Looking at community cards...");
+							out.write("communityCards " + '\n');
+							break;
+						case("seeHand"):
+							System.out.println("Looking at hand...");
+							out.write("seeHand " + '\n');
+							break;
 						case("bet"):
 							System.out.print("Enter bet: ");
 							String betAmount = br.readLine();
@@ -76,6 +85,10 @@ public class Client{
 						case("fold"):
 							System.out.println("You have chosen to fold...");
 							out.write("fold " + '\n');
+							break;
+						case("check"):
+							System.out.println("You have chosen to check; i.e. bet 0");
+							out.write("check " + '\n');
 							break;
 						case("message"):
 							System.out.print("Enter message: ");
