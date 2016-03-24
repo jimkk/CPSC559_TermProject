@@ -357,6 +357,9 @@ public class GameThread {
 					case("checkTurn"):
 						checkTurn(playerID);
 						break;
+					case("checkStack"):
+						checkStack(playerID);
+						break;
 					case("seeHand"):
 						seeHand(playerID);
 						break;
@@ -480,6 +483,15 @@ public class GameThread {
 			}
 			else
 				System.out.println("It is your turn.");
+		} catch (IOException e) {e.printStackTrace();}
+	}
+
+	private void checkStack(int playerID){
+		try{
+			PlayerNode player = game.getPlayerList().findPlayerByIndex(playerID);
+			System.out.println("This players current stack: " + player.getStack());
+			sendMessage(out, playerID, "This players current stack: " + player.getStack());
+			out.flush();
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
