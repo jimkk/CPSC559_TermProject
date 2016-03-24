@@ -34,11 +34,6 @@ public class BackupManager implements Runnable{
 		String message;
 
 		try{
-			//FileOutputStream fos = new FileOutputStream("serialize.tmp");
-			//ObjectOutputStream oos = new ObjectOutputStream(fos);
-			//out.writeObject(game);
-			//out.flush();
-
 			turn = game.getTurn();
 			pot = game.getPot();
 			playerCount = game.getPlayerCount();
@@ -49,7 +44,6 @@ public class BackupManager implements Runnable{
 			out.flush();
 
 			while(!isDone){
-				System.out.println("checking...");
 				if(turn != game.getTurn() || pot != game.getPot() ||
 						playerCount != game.getPlayerList().getCount()){
 					System.out.printf("Game State Changed.\n");
@@ -65,9 +59,9 @@ public class BackupManager implements Runnable{
 					out.write("json_backup " + game.getGameID() + " " + message + "\n");
 					out.flush();
 					System.out.println("Backup Send");
-					//System.out.printf("Player Count: %d\n", game.getPlayerCount());
-					//System.out.printf("Pot: %d\n", game.getPot());
-					//System.out.printf("Turn: %d\n", game.getTurn());
+					System.out.printf("Player Count: %d\n", game.getPlayerCount());
+					System.out.printf("Pot: %d\n", game.getPot());
+					System.out.printf("Turn: %d\n", game.getTurn());
 					turn = game.getTurn();
 					pot = game.getPot();
 					playerCount = game.getPlayerList().getCount();
