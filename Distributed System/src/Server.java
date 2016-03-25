@@ -119,7 +119,7 @@ public class Server implements Runnable{
 								BufferedInputStream bufBackupIn = new BufferedInputStream(backupSocket.getInputStream());
 								InputStreamReader backupIn = new InputStreamReader(bufBackupIn);
 
-								backupOut.write("backup_request " + gameID + "\f");
+								backupOut.write("backup_request " + gameID + "\n");
 								backupOut.flush();
 
 								while(!backupIn.ready());
@@ -174,14 +174,18 @@ public class Server implements Runnable{
 			InputStreamReader in = new InputStreamReader(bufIn);
 			System.out.println("Connected to main server!");
 			//TODO Received backups from the main server
-			Gson gson = new GsonBuilder().serializeNulls().
-				excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
-			Server server;
+			Gson gson = new GsonBuilder().serializeNulls()
+				.excludeFieldsWithModifiers(Modifier.TRANSIENT)
+				.registerTypeAdapter(Socket.class, new SocketDeserializer())
+				.create();
+			
+			String message = "";
 			while(!mainServerDown){
-				String message = IOUtilities.read(in);	
-				server = gson.fromJson(message, Server.class);
+				message = IOUtilities.read(in);	
+				System.out.println(message);
 				Thread.sleep(100);
 			}
+			Server server = gson.fromJson(message, Server.class);
 		} catch (SocketException se){
 			System.err.println("Unable to connect to main server");
 		} catch (Exception e){e.printStackTrace();}
