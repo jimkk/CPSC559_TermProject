@@ -416,7 +416,7 @@ public class GameThread {
 						   getMessage();
 						   break;
 						   */
-					case("display game"):
+					case("displayGame"):
 						game.getPlayerList().displayGameState();
 						break;
 					case("close"):

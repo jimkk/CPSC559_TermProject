@@ -66,7 +66,7 @@ public class Client{
 
 					switch(input){
 						case("help"):
-							System.out.println("\nPossible commands:\ncheckTurn \ncheckStack \ncommunityCards \nseeHand \nbet \nfold \ncheck message \nget message \ndisplay game \nclose \n");
+							System.out.println("\nPossible commands:\ncheckTurn \ncheckStack \ncommunityCards \nseeHand \nbet \nfold \ncheck message \nget message \ndisplayGame \nclose \n");
 							break;
 						case("checkTurn"):
 							System.out.println("Checking turn...");
@@ -135,8 +135,8 @@ public class Client{
 						case("destroy"):
 							//TODO
 							break;
-						case("display game"):
-							out.write("display game\n");
+						case("displayGame"):
+							out.write("displayGame\n");
 							out.flush();
 							break;
 						default:
@@ -168,7 +168,7 @@ public class Client{
 	private void message(String buffer){
 		String message = buffer.substring(buffer.indexOf(" "));
 		System.out.printf("\rServer says: %s\n", message);
-		System.out.print("\nEnter Command (try 'help' if you are lost): ");
+		System.out.print("\nEnter Command (try 'help'): ");
 	}
 
 	public static void main(String [] args){
