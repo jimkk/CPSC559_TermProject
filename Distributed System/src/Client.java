@@ -146,7 +146,7 @@ public class Client{
 					out.flush();
 
 					if(!isDone){
-						System.out.print("Enter Command (try 'help' if you are lost): ");
+						System.out.print("Enter Command: ");
 					}
 				}
 
@@ -168,7 +168,7 @@ public class Client{
 	private void message(String buffer){
 		String message = buffer.substring(buffer.indexOf(" "));
 		System.out.printf("\rServer says: %s\n", message);
-		System.out.print("Enter Command (try 'help' if you are lost): ");
+		System.out.print("\nEnter Command (try 'help' if you are lost): ");
 	}
 
 	public static void main(String [] args){
