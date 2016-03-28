@@ -58,6 +58,11 @@ public class ServerThread implements Runnable{
 			//TODO Ask which game server to join
 			//For now, it's the first one
 			gameIndex = 1;
+			Scanner scanner = new Scanner(System.in);
+			System.out.print("Which game number would you like to join?: ");
+			gameIndex = scanner.nextInt();
+
+			
 			do{
 				gameServerSocket = servers.get(gameIndex);
 				gameIndex++;
