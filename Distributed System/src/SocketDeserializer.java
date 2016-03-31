@@ -8,7 +8,6 @@ public class SocketDeserializer implements JsonDeserializer<Socket>{
 	@Override
 		public Socket deserialize(JsonElement json, Type typeOfSrc, JsonDeserializationContext context){
 			String combined = json.getAsJsonObject().get("Socket").getAsString();
-			System.out.printf("Socket: %s\n", combined);
 			String address = combined.split("/")[1];
 			int port = Integer.parseInt(combined.split("/")[2]);
 			try{

@@ -58,9 +58,9 @@ public class ServerThread implements Runnable{
 			//TODO Ask which game server to join
 			//For now, it's the first one
 			gameIndex = 1;
-			Scanner scanner = new Scanner(System.in);
-			System.out.print("Which game number would you like to join?: ");
-			gameIndex = scanner.nextInt();
+			//Scanner scanner = new Scanner(System.in);
+			//System.out.print("Which game number would you like to join?: ");
+			//gameIndex = scanner.nextInt();
 
 			
 			do{
@@ -94,9 +94,11 @@ public class ServerThread implements Runnable{
 			try{
 				if(in.ready()){
 					String messageIn = IOUtilities.read(in);
-					System.out.printf("Message from %d: %s\n", clientID, messageIn);
-					gameOut.write(clientID + " " + messageIn + "\n");
-					gameOut.flush();
+					if(!messageIn.equals("ping")){
+						System.out.printf("Message from %d: %s\n", clientID, messageIn);
+						gameOut.write(clientID + " " + messageIn + "\n");
+						gameOut.flush();
+					}
 				}
 				if(gameIn.ready()){
 					while(!message.equals("")){

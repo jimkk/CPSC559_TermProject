@@ -19,6 +19,7 @@ public class Server implements Runnable{
 	public static final int SERVERPORT = 7776;
 	public static final int BACKUPPORT = 7775;
 	public static final int SYNCPORT = 7774;
+	public static final int RECONNECTPORT = 7773;
 
 	private boolean isDone = false;
 	private static boolean isBackup = false;
@@ -59,12 +60,15 @@ public class Server implements Runnable{
 	public void run(){
 
 		//Socket Initialization
-		try{
-			serverSocket = new ServerSocket(port);
-		} catch (Exception e){
-			System.out.println("Failed to initialize server socket");
-			e.printStackTrace();
-			System.exit(-1);
+		while(serverSocket == null){
+			try{
+				serverSocket = new ServerSocket(port);
+			} catch (Exception e){
+				System.out.println("Failed to initialize server socket...");
+				try{
+					Thread.sleep(3000);
+				} catch (Exception te){te.printStackTrace();}
+			}
 		}
 
 		try{
@@ -72,6 +76,19 @@ public class Server implements Runnable{
 		} catch (Exception e){e.printStackTrace();}
 
 		changesMade = true;
+
+		if(type == CLIENT){
+			try{
+				Thread.sleep(1000);
+			} catch (Exception etc) {etc.printStackTrace();}
+			if(clients.size() > 0){
+				Iterator<Map.Entry<Integer, Socket>> clientIterator = clients.entrySet().iterator();
+				while(clientIterator.hasNext()){
+					Map.Entry<Integer, Socket> client = clientIterator.next();
+					new Thread(new ServerThread(client.getValue(), client.getKey(), servers)).start();
+				}
+			}
+		}
 		//Connection loop
 		while(!isDone){
 			try{
@@ -135,7 +152,7 @@ public class Server implements Runnable{
 									servers.remove(key);
 								}
 
-								
+
 							} catch (Exception e2){e2.printStackTrace();}
 						} else {
 							System.out.println("Sadly there are no backup servers right now :(");
@@ -154,11 +171,11 @@ public class Server implements Runnable{
 				e.printStackTrace();
 			}
 			try{
-			Thread.sleep(10);
+				Thread.sleep(10);
 			} catch (Exception e) {e.printStackTrace();}
 		}
 	};
-	
+
 	/**
 	 * Recieved backups from a main server and then takes over for it in cases where
 	 * the main server goes down.
@@ -167,39 +184,61 @@ public class Server implements Runnable{
 	@SuppressWarnings("unchecked")
 	private void backupRun(String serverIP){
 		boolean mainServerDown = false;
+		Server server = null;
+		String message = "";
+		Gson gson = new GsonBuilder().serializeNulls()
+			.excludeFieldsWithModifiers(Modifier.TRANSIENT)
+			.registerTypeAdapter(Socket.class, new SocketDeserializer())
+			.create();
 
 		try{
 			Socket syncSocket = new Socket(serverIP, SYNCPORT);
 			BufferedInputStream bufIn = new BufferedInputStream(syncSocket.getInputStream());
 			InputStreamReader in = new InputStreamReader(bufIn);
+			BufferedOutputStream bufOut = new BufferedOutputStream(syncSocket.getOutputStream());
+			OutputStreamWriter out = new OutputStreamWriter(bufOut);
 			System.out.println("Connected to main server!");
-			//TODO Received backups from the main server
-			Gson gson = new GsonBuilder().serializeNulls()
-				.excludeFieldsWithModifiers(Modifier.TRANSIENT)
-				.registerTypeAdapter(Socket.class, new SocketDeserializer())
-				.create();
-			
-			String message = "";
+
 			while(!mainServerDown){
-				message = IOUtilities.read(in);	
-				System.out.println(message);
+				if(in.ready()){
+					message = IOUtilities.read(in);	
+					System.out.printf("%s: Backup Received\n", new Date());
+				}else{
+					try{
+						out.write("ping\n");
+						out.flush();
+						Thread.sleep(1000);
+					} catch(Exception e){
+						System.err.println("Server is down. Taking over...");
+						mainServerDown = true;
+					}
+				}
 				Thread.sleep(100);
 			}
-			Server server = gson.fromJson(message, Server.class);
+			Thread.sleep(1000);
 		} catch (SocketException se){
 			System.err.println("Unable to connect to main server");
 		} catch (Exception e){e.printStackTrace();}
-		//TODO Become the main server in the case where the main server goes down
-		//TODO Start the other threads required for server
+		if(!message.equals("")){
+			new Thread(new Server(CLIENTPORT, Server.CLIENT)).start();
+			new Thread(new Server(BACKUPPORT, Server.BACKUP)).start();
+			new Thread(new ServerSync(server)).start();
+			server = gson.fromJson(message, Server.class);
+			server.run();
+		} else {
+			System.out.println("ERROR: Did not receive any backups from server before it went down.");
+			System.out.println("Exiting...");
+			System.exit(0);
+		}
 	}
-	
+
 
 	public HashMap<Integer, Socket> getServersInfo(){
 		return servers;
 	}
-	 public HashMap<Integer, Socket> getClientsInfo(){
-		 return clients;
-	 }
+	public HashMap<Integer, Socket> getClientsInfo(){
+		return clients;
+	}
 
 	public int getNextGameID(){
 		return nextGameID;
@@ -220,8 +259,8 @@ public class Server implements Runnable{
 	public HashMap<Integer, String> getBackupsInfo(){
 		return backups;
 	}
-	
-	
+
+
 	public static void main(String[] args) {
 		if(args.length == 2 && args[0].equals("-b")){
 			System.out.println("Running as backup server");
