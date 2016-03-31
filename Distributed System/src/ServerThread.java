@@ -42,96 +42,100 @@ public class ServerThread implements Runnable{
 
 		try{
 
-		bufIn = new BufferedInputStream(clientSocket.getInputStream());
-		in = new InputStreamReader(bufIn);
-		bufOut = new BufferedOutputStream(clientSocket.getOutputStream());
-		out = new OutputStreamWriter(bufOut);
+			bufIn = new BufferedInputStream(clientSocket.getInputStream());
+			in = new InputStreamReader(bufIn);
+			bufOut = new BufferedOutputStream(clientSocket.getOutputStream());
+			out = new OutputStreamWriter(bufOut);
 
-		out.write("message Welcome to the Poker server!\n");
-		out.flush();
-		while(!gameServerChosen){
-			if(servers.size() == 0){
-				System.out.println("Currently no active servers...");
-				Thread.sleep(1000);
-				continue;
-			}
-			//TODO Ask which game server to join
-			//For now, it's the first one
-			gameIndex = 1;
-			//Scanner scanner = new Scanner(System.in);
-			//System.out.print("Which game number would you like to join?: ");
-			//gameIndex = scanner.nextInt();
+			out.write("message Welcome to the Poker server!\n");
+			out.flush();
+			while(!gameServerChosen){
+				if(servers.size() == 0){
+					System.out.println("Currently no active servers...");
+					Thread.sleep(1000);
+					continue;
+				}
+				//TODO Ask which game server to join
+				//For now, it's the first one
+				gameIndex = 1;
+				//Scanner scanner = new Scanner(System.in);
+				//System.out.print("Which game number would you like to join?: ");
+				//gameIndex = scanner.nextInt();
 
-			
-			do{
-				gameServerSocket = servers.get(gameIndex);
-				gameIndex++;
-				if(gameIndex > 100){
-					System.err.println("Can't find a valid game server");
+
+				do{
+					gameServerSocket = servers.get(gameIndex);
+					gameIndex++;
+					if(gameIndex > 100){
+						System.err.println("Can't find a valid game server");
+						System.exit(-1);
+					}
+				} while (gameServerSocket == null);
+				gameServerChosen = true;
+				if(gameServerSocket == null){
+					System.err.println("Something went wrong, the GameServer chosen does not exist");
 					System.exit(-1);
 				}
-			} while (gameServerSocket == null);
-			gameServerChosen = true;
-			if(gameServerSocket == null){
-				System.err.println("Something went wrong, the GameServer chosen does not exist");
-				System.exit(-1);
 			}
-		}
-		gameIndex--;
+			gameIndex--;
 
-		bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
-		gameIn = new InputStreamReader(bufGameIn);
-		bufGameOut = new BufferedOutputStream(gameServerSocket.getOutputStream());
-		gameOut = new OutputStreamWriter(bufGameOut);
+			bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
+			gameIn = new InputStreamReader(bufGameIn);
+			bufGameOut = new BufferedOutputStream(gameServerSocket.getOutputStream());
+			gameOut = new OutputStreamWriter(bufGameOut);
 
-		int stack = 1000; //TODO Custom stack
-		gameOut.write(clientID + " addplayer " + stack + "\n");
-		gameOut.flush();
+			int stack = 1000; //TODO Custom stack
+			gameOut.write(clientID + " addplayer " + stack + "\n");
+			gameOut.flush();
 
-		System.out.printf("Client %d added to game %d\n", clientID, gameIndex);
+			System.out.printf("Client %d added to game %d\n", clientID, gameIndex);
 
-		while(!isDone){
-			try{
-				if(in.ready()){
-					String messageIn = IOUtilities.read(in);
-					if(!messageIn.equals("ping")){
-						System.out.printf("Message from %d: %s\n", clientID, messageIn);
-						gameOut.write(clientID + " " + messageIn + "\n");
-						gameOut.flush();
+			while(!isDone){
+				try{
+					if(in.ready()){
+						String messageIn = IOUtilities.read(in);
+						if(!messageIn.equals("ping")){
+							System.out.printf("Message from %d: %s\n", clientID, messageIn);
+							gameOut.write(clientID + " " + messageIn + "\n");
+							gameOut.flush();
+						}
 					}
-				}
-				if(gameIn.ready()){
-					while(!message.equals("")){
-						Thread.sleep(100);
-						continue;
-					}
-					message = IOUtilities.read(gameIn);
-					System.out.printf("Message from game server: \"%s\"\n", message);
-					int ID = Integer.parseInt(message.split(" ")[0]);
-					if(ID == clientID){
-						out.write(message.substring(message.indexOf(" ")+1) + "\n");
-						out.flush();
-						message = "";
-					}
-				}
-				if(!message.equals("")){
-					int ID = Integer.parseInt(message.split(" ")[0]);
-					if(ID == clientID){
-						out.write(message.substring(message.indexOf(" ")+1) + "\n");
-						out.flush();
-						message = "";
-					}
-				}
+					if(gameIn.ready()){
+						String newMessage = IOUtilities.read(gameIn);
+						if(!newMessage.equals("ping")){
 
-			} catch(SocketException e){
-				Socket socket = servers.remove(gameIndex);
-				servers.put(-gameIndex, socket);
-				while(servers.get(gameIndex) == null);
-				gameServerSocket = servers.get(gameIndex);
-			} catch(Exception e){e.printStackTrace(); isDone = true;}
-			
-			Thread.sleep(100);
-		}
+							while(!message.equals("")){
+								Thread.sleep(100);
+								continue;
+							}
+							message = newMessage;
+							System.out.printf("Message from game server: \"%s\"\n", message);
+							int ID = Integer.parseInt(message.split(" ")[0]);
+							if(ID == clientID){
+								out.write(message.substring(message.indexOf(" ")+1) + "\n");
+								out.flush();
+								message = "";
+							}
+						}
+					}
+					if(!message.equals("")){
+						int ID = Integer.parseInt(message.split(" ")[0]);
+						if(ID == clientID){
+							out.write(message.substring(message.indexOf(" ")+1) + "\n");
+							out.flush();
+							message = "";
+						}
+					}
+
+				} catch(SocketException e){
+					Socket socket = servers.remove(gameIndex);
+					servers.put(-gameIndex, socket);
+					while(servers.get(gameIndex) == null);
+					gameServerSocket = servers.get(gameIndex);
+				} catch(Exception e){e.printStackTrace(); isDone = true;}
+
+				Thread.sleep(100);
+			}
 
 		} catch (Exception e) {e.printStackTrace();}
 

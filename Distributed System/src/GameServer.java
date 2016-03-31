@@ -46,6 +46,9 @@ public class GameServer {
 		}
 		
 		System.out.println("Number of players: " + game.getPlayerCount());
+		//TODO Thread this. And therefore move message receiving into this class with the threads
+		//reading a string variable containing messages that may pertain to them (processing and
+		//remove the messages if they do) similar to ServerThread.
 		new GameThread(serverManagerSocket, game).run();
 		
 

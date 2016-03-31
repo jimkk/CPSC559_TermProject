@@ -15,7 +15,7 @@ public class GameThread {
 
 
 	private int randomCardNumber;
-	
+
 	private boolean isDone = false;
 	private boolean folded = false;
 	private boolean handSent = false;
@@ -68,7 +68,7 @@ public class GameThread {
 			   System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
 			   game.getPlayerList().displayGameState();
 			   */
-			
+
 			String startMessage = IOUtilities.read(in);
 			String [] startMessageParts = startMessage.split(" ");
 			int gameID = Integer.parseInt(startMessageParts[1]);
@@ -82,12 +82,13 @@ public class GameThread {
 				game = gson.fromJson(startContents, GameManager.class);
 			}
 
-			
-			buffer = "";
-			messageType = "";
+		} catch (Exception e) {e.printStackTrace();}
 
-			while(!isDone){
-			
+		buffer = "";
+		messageType = "";
+
+		while(!isDone){
+			try{			
 
 
 				/*if(game.getPlayerList().findPlayerByPort(playerPort).getTurn() 
@@ -97,7 +98,7 @@ public class GameThread {
 				  turnSent = true;
 				  }*/
 
-				
+
 				if(game.getPlayerCount() > 2 && !game.isGameOn()){
 					// Start game
 					game.setGameOn(true);
@@ -108,15 +109,15 @@ public class GameThread {
 					// Deal cards and send them to their respective players
 					game.deal();
 					sendCards();
-					
+
 					// Round 1
 					System.out.println("===============================================");
 					System.out.println("Starting round 1");
 					beginRound();
 					// Check if all folded
 					// Check if all player bets are equal
-					
-					
+
+
 					// Round 2
 					System.out.println("===============================================");
 					System.out.println("Starting round 2");
@@ -125,7 +126,7 @@ public class GameThread {
 					beginRound();
 					// Check if all folded
 					// Check if all player bets are equal
-					
+
 					System.out.println("===============================================");
 					System.out.println("Starting round 3");
 					// Round 3
@@ -134,7 +135,7 @@ public class GameThread {
 					beginRound();
 					// Check if all folded
 					// Check if all player bets are equal
-					
+
 					System.out.println("===============================================");
 					System.out.println("Starting round 4");
 					// Round 4
@@ -143,22 +144,36 @@ public class GameThread {
 					beginRound();
 					// Check if all folded
 					// Check if all player bets are equal
-				
+
 					// Resolve winner 
 					// Reset game
-					
+
 					//new Thread(game).start();
 				}
 				readMessage(buffer, messageType);
+				out.write("ping\n");
+				out.flush();
 				Thread.sleep(10);
-			}
-		} catch(SocketException e) {
-			System.err.println("Lost connection to client");
-			//TODO Remove player from game
-		} catch(Exception e) {e.printStackTrace();}
+			} catch(SocketException e) {
+				System.err.println("Lost connection to server");
+				try{
+					socket.close();
+					ServerSocket reconnectSocket = new ServerSocket(socket.getLocalPort());
+					socket = reconnectSocket.accept();
+					reconnectSocket.close();
+					bufIn = new BufferedInputStream(socket.getInputStream());
+					in = new InputStreamReader(bufIn);
+					bufOut = new BufferedOutputStream(socket.getOutputStream());
+					out = new OutputStreamWriter(bufOut);
+				} catch (Exception reconnecte) {
+					reconnecte.printStackTrace();
+					isDone = true;			
+				}
+			} catch(Exception e) {e.printStackTrace();}
+		}
 
 	}
-	
+
 	public String buildCommunityCards(){
 		Card [] communityCards = game.getCommunityCards();
 		String comCards = "";
@@ -167,10 +182,10 @@ public class GameThread {
 			comCards += communityCards[x] + " ";
 			x++;
 		}
-		
+
 		return comCards;
 	}
-	
+
 	public void sendCommunityCards(){
 		System.out.println("Displaying community cards to players");
 		for(int i = 0; i < game.getPlayerCount(); i++){
@@ -178,9 +193,9 @@ public class GameThread {
 			int playerID = player.getPlayerID();
 			String cardList = buildCommunityCards();
 			sendMessage(out, playerID, "Community cards: " + cardList);
-  		}
+		}
 	}
-	
+
 	public void sendCards(){
 		if(game.isGameOn() && !handSent && game.getHandDealt()){
 			System.out.println("Round has started; dealing cards to players");
@@ -200,7 +215,7 @@ public class GameThread {
 			handSent = true;
 		}
 	}
-	
+
 	/**
 	 * Reads in a message from the stream, stopping on a -1 or a newline character
 	 * @param in The stream to read from
@@ -255,47 +270,47 @@ public class GameThread {
 			// Step 1:
 			// Find the current player's turn 
 			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
-			
-			
+
+
 			// Note that we skip players who have folded
 			//if (player.getFolded() == true) continue;
-			
-			
+
+
 			game.setCurrentPlayerIDTurn(player.playerID);
 			game.setCurrentPlayerTurn(true);
 			game.setCurrentPlayerDoneTurn(false);
 			game.setTurnSent(false);
-			
+
 			System.out.println("Current player's turn " + player.playerNumber);
 			System.out.println("Turn: " + game.getCurrentPlayerTurn());
 			System.out.println("DoneTurn: " + game.getCurrentPlayerDoneTurn());
 			System.out.println("sentTurn: " + turnSent);
-			
+
 			System.out.println("Begin Turn State:");
 			game.getPlayerList().displayGameState();
-			
+
 			// Step 2:
 			// Wait on that player's response/move for their turn
 			// all the while, processing other player's messages
 			while (game.getCurrentPlayerDoneTurn() == false && game.getCurrentPlayerTurn() == true){
-				
+
 				game.setCurrentPlayerBeginTurn(true);
-				
+
 				// Notify the player that it is their turn
 				if (game.getCurrentPlayerBeginTurn() == true && game.getTurnSent() == false) {
-					  sendMessage(out, game.getCurrentPlayerIDTurn(), "It's now your turn...");
-					  sendMessage(out, game.getCurrentPlayerIDTurn(), "You can either bet, call, check, or fold");
-					  //game.setCurrentPlayerBeginTurn(false);
-					  game.setTurnSent(true);
+					sendMessage(out, game.getCurrentPlayerIDTurn(), "It's now your turn...");
+					sendMessage(out, game.getCurrentPlayerIDTurn(), "You can either bet, call, check, or fold");
+					//game.setCurrentPlayerBeginTurn(false);
+					game.setTurnSent(true);
 
 				}
-				
+
 				// Step 3:
 				// process all incoming messages from all clients.
 				// Only the client, whose current turn it is, can actually
 				// complete a turn. 
 				readMessage(buffer, messageType);
-				
+
 				if (game.getCurrentPlayerBetFlag() == true && game.getCurrentPlayerBeginTurn() == true) {
 					game.setCurrentPlayerBeginTurn(false);
 					System.out.println("Player: " + game.getCurrentPlayerIDTurn() + " has chosen to bet: " + game.getCurrentPlayerBetAmount());
@@ -307,7 +322,7 @@ public class GameThread {
 					game.setCurrentPlayerDoneTurn(true);
 					System.out.println("CurrentPlayerDoneTurn set to: " + game.getCurrentPlayerDoneTurn());
 				}
-				
+
 				if(game.getCurrentPlayerDoneTurn() == true && player.getTurn() == true) {
 					// Set the next player's turn to true
 					game.setCurrentPlayerTurn(false);
@@ -315,9 +330,9 @@ public class GameThread {
 					//player.setDoneTurn(false);
 					player.nextPlayer.setTurn(true);
 				}
-				
+
 			}
-			
+
 			System.out.println("\nEnd Turn State:");
 			game.getPlayerList().displayGameState();
 		}
@@ -333,20 +348,20 @@ public class GameThread {
 				int playerID;
 				String [] messageParts;
 				String contents;
-	
+
 				buffer = IOUtilities.read(in);
-	
-	
+
+
 				messageParts = buffer.toString().split(" ");
 				playerID = Integer.parseInt(messageParts[0]);
 				messageType = messageParts[1];
 				contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
-	
+
 				// Check if it is that player's turn; if not reply accordingly
 				// Note: only check if the player has requested something that cannot
 				// be done if it is not his or her turn; i.e. betting, folding, calling
-	
-	
+
+
 				switch(messageType){
 					case("addplayer"):
 						int stack = Integer.parseInt(messageParts[2]);
@@ -384,43 +399,11 @@ public class GameThread {
 					case("message"):
 						System.out.printf("Message from %s: %s\n", playerID, contents);
 						break;
-						/*
-						   case("set_message_request"):
-						   setMessageRequest();
-						   break;
-						   case("set_message"):
-						   String smessage = buffer.substring(buffer.indexOf(" ")+1);
-						   String [] messageParts = smessage.split(" ");
-						   int keyResponse = Integer.parseInt(messageParts[0]);
-						   if(keyResponse == key){
-						   StringBuffer smBuf = new StringBuffer();
-						   for(int i = 1; i < messageParts.length; i++){
-						   smBuf.append(messageParts[i]);
-						   if(i != messageParts.length-1){
-						   smBuf.append(" ");
-						   }
-						   }
-						   serverMessage = smBuf.toString();
-						   serverMessageLock = false;
-						   key = -1;
-						   out.write("message Message Set!\n");
-						   out.flush();
-						   System.out.printf("Server message set by %s: %s\n", socket.getInetAddress(), serverMessage);
-						   } else {
-						   out.write("message INVALID KEY\n");
-						   out.flush();
-						   }
-	
-						   break;
-						   case("get_message"):
-						   getMessage();
-						   break;
-						   */
 					case("displayGame"):
 						game.getPlayerList().displayGameState();
 						break;
 					case("close"):
-	
+
 						System.out.printf("Player %d has left the game\n", playerID);
 						// return the playerID
 						game.removePlayerFromGame(playerID);
@@ -443,13 +426,13 @@ public class GameThread {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void seeHand(int playerID){
 		PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
 		Card[] hand = player.getHand();
 		sendMessage(out, playerID, "Hand: " + hand[0] + " " + hand[1]);
 	}
-	
+
 	//message switch methods
 	private void bet(int betAmount, int playerID){
 
@@ -522,7 +505,7 @@ public class GameThread {
 			}
 		} catch (IOException e){e.printStackTrace();}
 	}
-	
+
 	private void sendMessage(OutputStreamWriter out, int playerID, String message){
 		try{
 			out.write(playerID + " message " + message + "\n");
@@ -542,32 +525,32 @@ public class GameThread {
 		return buffer.toString();
 	}
 
-/*
-	private void setMessageRequest(){
-		try{
-			if(!serverMessageLock){
-				serverMessageLock = true;
-				key = rand.nextInt(10000);
-				sendMessage(out, playerID, "set_message_request_granted " + Integer.toString(key) + "\n");
-				out.flush();
-			} else {
-				sendMessage(out, playerID, "set_message_request_denied\n");
-				out.flush();
-			}
-		} catch (IOException e) {e.printStackTrace();}
-	}
+	/*
+	   private void setMessageRequest(){
+	   try{
+	   if(!serverMessageLock){
+	   serverMessageLock = true;
+	   key = rand.nextInt(10000);
+	   sendMessage(out, playerID, "set_message_request_granted " + Integer.toString(key) + "\n");
+	   out.flush();
+	   } else {
+	   sendMessage(out, playerID, "set_message_request_denied\n");
+	   out.flush();
+	   }
+	   } catch (IOException e) {e.printStackTrace();}
+	   }
 
-	private void getMessage(){
-		try{
-			if(!serverMessage.equals("")){
-				sendMessage(out, playerID, "message " + serverMessage + "\n");
-				out.flush();
-			} else {
-				sendMessage(out, playerID, "message No server message is set\n");
-				out.flush();
-			}
-		} catch (IOException e) {e.printStackTrace();}
-	}
-*/
+	   private void getMessage(){
+	   try{
+	   if(!serverMessage.equals("")){
+	   sendMessage(out, playerID, "message " + serverMessage + "\n");
+	   out.flush();
+	   } else {
+	   sendMessage(out, playerID, "message No server message is set\n");
+	   out.flush();
+	   }
+	   } catch (IOException e) {e.printStackTrace();}
+	   }
+	   */
 
 }

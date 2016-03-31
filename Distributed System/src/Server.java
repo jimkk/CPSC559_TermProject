@@ -215,7 +215,7 @@ public class Server implements Runnable{
 				}
 				Thread.sleep(100);
 			}
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 		} catch (SocketException se){
 			System.err.println("Unable to connect to main server");
 		} catch (Exception e){e.printStackTrace();}
