@@ -24,6 +24,7 @@ public class ServerThread implements Runnable{
 
 	private boolean gameServerChosen;
 	private boolean isDone;
+	private boolean isRecovery = false;
 
 	private int clientID;
 	private int gameIndex;
@@ -37,6 +38,16 @@ public class ServerThread implements Runnable{
 		gameServerChosen = false;
 		message = "";
 	}
+	
+	public ServerThread(Socket socket, int clientID, HashMap<Integer, Socket> servers, boolean isRecovery){
+		this.clientSocket = socket;
+		this.clientID = clientID;
+		this.servers = servers;
+		gameServerChosen = false;
+		message = "";
+		this.isRecovery = isRecovery;
+	}
+
 
 	public void run(){
 
@@ -85,10 +96,11 @@ public class ServerThread implements Runnable{
 			gameOut = new OutputStreamWriter(bufGameOut);
 
 			int stack = 1000; //TODO Custom stack
-			gameOut.write(clientID + " addplayer " + stack + "\n");
-			gameOut.flush();
-
-			System.out.printf("Client %d added to game %d\n", clientID, gameIndex);
+			if(!isRecovery){
+				gameOut.write(clientID + " addplayer " + stack + "\n");
+				gameOut.flush();
+				System.out.printf("Client %d added to game %d\n", clientID, gameIndex);
+			}
 
 			while(!isDone){
 				try{

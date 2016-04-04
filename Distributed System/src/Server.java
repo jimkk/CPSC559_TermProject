@@ -63,6 +63,8 @@ public class Server implements Runnable{
 		while(serverSocket == null){
 			try{
 				serverSocket = new ServerSocket(port);
+				//System.out.println("Server created");
+				//System.out.printf("The IP is %s\n", serverSocket.getLocalSocketAddress());
 			} catch (Exception e){
 				System.out.println("Failed to initialize server socket...");
 				try{
@@ -85,7 +87,7 @@ public class Server implements Runnable{
 				Iterator<Map.Entry<Integer, Socket>> clientIterator = clients.entrySet().iterator();
 				while(clientIterator.hasNext()){
 					Map.Entry<Integer, Socket> client = clientIterator.next();
-					new Thread(new ServerThread(client.getValue(), client.getKey(), servers)).start();
+					new Thread(new ServerThread(client.getValue(), client.getKey(), servers, true)).start();
 				}
 			}
 		}

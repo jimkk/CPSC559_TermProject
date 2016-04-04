@@ -31,7 +31,6 @@ public class ServerSync implements Runnable{
 
 		while(!isDone){
 			if(Server.changesMade){
-				printServerInfo();
 				if(out == null){
 					System.out.println("No sync server connected");
 					printServerInfo();
