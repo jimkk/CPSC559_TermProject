@@ -17,6 +17,8 @@ public class Client{
 	//Random rand = new Random();
 	//int randomCardNumber;
 
+	private long timeSincePing = new Date().getTime();
+
 	/**
 	 * The main function for the client that loops while reading input from the user if there is any and receives and processes messages from the server.
 	 */
@@ -149,8 +151,11 @@ public class Client{
 							System.out.print("Enter Command: ");
 						}
 					}
-					out.write("ping\n");
-					out.flush();
+					if(new Date().getTime() - timeSincePing > 3000){
+						out.write("ping\n");
+						out.flush();
+						timeSincePing = new Date().getTime();
+					}
 					Thread.sleep(100);
 				} catch (Exception e){
 					System.out.println("\nLost connection to server. Attempting to reconnect.");

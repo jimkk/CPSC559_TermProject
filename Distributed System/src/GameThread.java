@@ -33,6 +33,7 @@ public class GameThread implements Runnable{
 	Random rand = new Random();
 	Card[] hand;
 	GameManager game;
+	long timeSincePing = new Date().getTime();
 	//LinkedPlayerList playerList = new LinkedPlayerList();
 
 	BufferedInputStream bufIn;
@@ -73,12 +74,12 @@ public class GameThread implements Runnable{
 			String [] startMessageParts = startMessage.split(" ");
 			int gameID = Integer.parseInt(startMessageParts[1]);
 			game.setGameID(gameID);
-			String startContents = IOUtilities.rebuildString(startMessageParts, 2, startMessageParts.length);
 			System.out.printf("Game ID: %d\n", gameID);
 
 			if(startMessageParts.length > 2){
 				System.out.println("Restoring from backup");
 				Gson gson = new GsonBuilder().create();
+				String startContents = IOUtilities.rebuildString(startMessageParts, 2, startMessageParts.length);
 				game = gson.fromJson(startContents, GameManager.class);
 			}
 
@@ -150,21 +151,17 @@ public class GameThread implements Runnable{
 
 					//new Thread(game).start();
 				}
-				readMessage(buffer, messageType);
-				out.write("ping\n");
-				out.flush();
+				readMessage();
+				if(new Date().getTime() - timeSincePing > 3000){
+					out.write("ping\n");
+					out.flush();
+					timeSincePing = new Date().getTime();
+				}
 				Thread.sleep(10);
 			} catch(SocketException e) {
-				System.err.println("Lost connection to server");
+				System.err.println("Lost connection to server. Reconnecting...");
 				try{
-					socket.close();
-					ServerSocket reconnectSocket = new ServerSocket(socket.getLocalPort());
-					socket = reconnectSocket.accept();
-					reconnectSocket.close();
-					bufIn = new BufferedInputStream(socket.getInputStream());
-					in = new InputStreamReader(bufIn);
-					bufOut = new BufferedOutputStream(socket.getOutputStream());
-					out = new OutputStreamWriter(bufOut);
+					reconnect();
 				} catch (Exception reconnecte) {
 					reconnecte.printStackTrace();
 					isDone = true;			
@@ -309,7 +306,7 @@ public class GameThread implements Runnable{
 				// process all incoming messages from all clients.
 				// Only the client, whose current turn it is, can actually
 				// complete a turn. 
-				readMessage(buffer, messageType);
+				readMessage();
 
 				if (game.getCurrentPlayerBetFlag() == true && game.getCurrentPlayerBeginTurn() == true) {
 					game.setCurrentPlayerBeginTurn(false);
@@ -342,7 +339,10 @@ public class GameThread implements Runnable{
 	 * Note: those player's who make a request reqruiring it to be their turn
 	 *       and it's not their turn, are refused by the GameServer 
 	 */
-	private void readMessage(String buffer, String messageType){
+	private void readMessage(){
+		String buffer = "";
+		String messageType = "";
+
 		try{
 			if(in.ready()){
 				int playerID;
@@ -350,7 +350,6 @@ public class GameThread implements Runnable{
 				String contents;
 
 				buffer = IOUtilities.read(in);
-
 
 				messageParts = buffer.toString().split(" ");
 				playerID = Integer.parseInt(messageParts[0]);
@@ -510,6 +509,8 @@ public class GameThread implements Runnable{
 		try{
 			out.write(playerID + " message " + message + "\n");
 			out.flush();
+		} catch (SocketException se) {
+			reconnect();
 		} catch (Exception e){
 			System.err.println("Error sending message to " + playerID);
 			e.printStackTrace();
@@ -552,5 +553,19 @@ public class GameThread implements Runnable{
 	   } catch (IOException e) {e.printStackTrace();}
 	   }
 	   */
+	
+	private void reconnect(){
+		try{
+		socket.close();
+		ServerSocket reconnectSocket = new ServerSocket(socket.getLocalPort());
+		socket = reconnectSocket.accept();
+		reconnectSocket.close();
+		bufIn = new BufferedInputStream(socket.getInputStream());
+		in = new InputStreamReader(bufIn);
+		bufOut = new BufferedOutputStream(socket.getOutputStream());
+		out = new OutputStreamWriter(bufOut);
+		} catch (Exception e) {e.printStackTrace();}
+	}
+
 
 }

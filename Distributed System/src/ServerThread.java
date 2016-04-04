@@ -115,10 +115,12 @@ public class ServerThread implements Runnable{
 					if(gameIn.ready()){
 						String newMessage = IOUtilities.read(gameIn);
 						if(!newMessage.equals("ping")){
-
+							
+							System.out.println(newMessage);
+							
 							while(!message.equals("")){
+								System.out.printf("Waiting for \"%s\" to be removed\n", message);
 								Thread.sleep(100);
-								continue;
 							}
 							message = newMessage;
 							System.out.printf("Message from game server: \"%s\"\n", message);
