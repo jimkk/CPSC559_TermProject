@@ -11,7 +11,7 @@ import com.google.gson.*;
  * the server to the client.
  */
 
-public class GameThread {
+public class GameThread implements Runnable{
 
 
 	private int randomCardNumber;
