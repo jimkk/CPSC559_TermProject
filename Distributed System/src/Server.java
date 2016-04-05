@@ -99,6 +99,13 @@ public class Server implements Runnable{
 					System.out.println("Server added to list");
 					BufferedOutputStream bufOut = new BufferedOutputStream(clientSocket.getOutputStream());
 					OutputStreamWriter out = new OutputStreamWriter(bufOut);
+					BufferedInputStream bufIn = new BufferedInputStream(clientSocket.getInputStream());
+					InputStreamReader in = new InputStreamReader(bufIn);
+					while(!in.ready()){
+						Thread.sleep(100);
+					}
+					String message = IOUtilities.read(in);
+					int numGames = Integer.parseInt(message.split(" ")[1]);
 					System.out.printf("There are currently %d backups to be restored\n", backups.size());
 					if(backups.size() > 0){
 						System.out.println("New server is being repurposed as crashed server");
@@ -109,9 +116,11 @@ public class Server implements Runnable{
 
 						out.flush();
 					} else {
-						servers.put(nextGameID, clientSocket);
-						out.write("gameid " + nextGameID++ + "\n");
+						out.write("gameid " + nextGameID + "\n");
 						out.flush();
+						for(int i = 0; i < numGames; i++){
+							servers.put(nextGameID++, clientSocket);
+						}
 					}
 				} else if (type == CLIENT){
 					clients.put(nextClientID, clientSocket);

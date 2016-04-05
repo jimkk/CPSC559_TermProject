@@ -135,7 +135,7 @@ public class ServerThread implements Runnable{
 					}
 				}
 			} else {
-				gameOut.write(clientID + " addplayer " + stack + "\n");
+				gameOut.write(gameIndex + " " + clientID + " addplayer " + stack + "\n");
 				gameOut.flush();
 				System.out.printf("Client %d added to game %d\n", clientID, gameIndex);
 			}
@@ -157,7 +157,7 @@ public class ServerThread implements Runnable{
 							}
 						} else {
 							System.out.printf("Message from %d: %s\n", clientID, messageIn);
-							gameOut.write(clientID + " " + messageIn + "\n");
+							gameOut.write(gameIndex + " " + clientID + " " + messageIn + "\n");
 							gameOut.flush();
 							if(messageIn.equals("close")){
 								System.out.printf("Closing thread for client %d\n", clientID);
@@ -167,16 +167,13 @@ public class ServerThread implements Runnable{
 					}
 					if(gameIn.ready()){
 						while(readingStream){
-							System.out.println("Waiting for reading stream access");
 							Thread.sleep(10);
 						}
 						readingStream = true;
 						if(!gameIn.ready()){
 							readingStream = false;
 						} else {
-							System.out.printf("(%d)Read...", clientID);
 							String newMessage = IOUtilities.read(gameIn);
-							System.out.printf("(%d)Done.\n", clientID);
 							readingStream = false;
 							if(!newMessage.equals("ping")){
 
