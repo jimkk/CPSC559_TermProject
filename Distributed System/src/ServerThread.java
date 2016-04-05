@@ -32,6 +32,7 @@ public class ServerThread implements Runnable{
 	private Server server;
 
 	private static String message;
+	private static boolean readingStream = false;
 
 	/**
 	 * @param socket The client's socket
@@ -165,35 +166,48 @@ public class ServerThread implements Runnable{
 						}
 					}
 					if(gameIn.ready()){
-						String newMessage = IOUtilities.read(gameIn);
-						if(!newMessage.equals("ping")){
+						while(readingStream){
+							System.out.println("Waiting for reading stream access");
+							Thread.sleep(10);
+						}
+						readingStream = true;
+						if(!gameIn.ready()){
+							readingStream = false;
+						} else {
+							System.out.printf("(%d)Read...", clientID);
+							String newMessage = IOUtilities.read(gameIn);
+							System.out.printf("(%d)Done.\n", clientID);
+							readingStream = false;
+							if(!newMessage.equals("ping")){
 
-							System.out.println(newMessage);
+								System.out.println(newMessage);
 
-							while(!message.equals("")){
-								System.out.printf("Waiting for \"%s\" to be removed\n", message);
-								Thread.sleep(100);
-							}
-							message = newMessage;
-							System.out.printf("Message from game server: \"%s\"\n", message);
-							System.out.println(message.substring(message.indexOf(" ")+1) + "\n");
-							int ID = Integer.parseInt(message.split(" ")[0]);
-							System.out.printf("ID = %d, clientID = %d\n", ID, clientID);
-							if(ID == clientID){
-								try{
-									System.out.printf("Notifying Client (ID = %d, clientID = %d\n", ID, clientID);
-									out.write(message.substring(message.indexOf(" ")+1) + "\n");
-									out.flush();
-								} catch (SocketException se) {
-									System.err.println("Client disconnected.");
-									isDone = true;
+								while(!message.equals("")){
+									System.out.printf("Waiting for \"%s\" to be removed\n", message);
+									Thread.sleep(100);
 								}
-								message = "";
+								message = newMessage;
+								System.out.printf("Message from game server: \"%s\"\n", message);
+								System.out.println(message.substring(message.indexOf(" ")+1) + "\n");
+								int ID = Integer.parseInt(message.split(" ")[0]);
+								System.out.printf("ID = %d, clientID = %d\n", ID, clientID);
+								if(ID == clientID){
+									try{
+										System.out.printf("Notifying Client (ID = %d, clientID = %d\n", ID, clientID);
+										out.write(message.substring(message.indexOf(" ")+1) + "\n");
+										out.flush();
+									} catch (SocketException se) {
+										System.err.println("Client disconnected.");
+										isDone = true;
+									}
+									message = "";
+								}
 							}
 						}
 					}
 					if(!message.equals("")){
 						int ID = Integer.parseInt(message.split(" ")[0]);
+						System.out.printf("ID = %d, clientID = %d (type2)\n", ID, clientID);
 						if(ID == clientID){
 							try{
 								out.write(message.substring(message.indexOf(" ")+1) + "\n");
