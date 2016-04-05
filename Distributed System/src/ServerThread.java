@@ -110,8 +110,11 @@ public class ServerThread implements Runnable{
 							}
 							message = newMessage;
 							System.out.printf("Message from game server: \"%s\"\n", message);
+							System.out.println(message.substring(message.indexOf(" ")+1) + "\n");
 							int ID = Integer.parseInt(message.split(" ")[0]);
+							System.out.printf("ID = %d, clientID = %d\n", ID, clientID);
 							if(ID == clientID){
+								System.out.printf("Notifying Client (ID = %d, clientID = %d\n", ID, clientID);
 								out.write(message.substring(message.indexOf(" ")+1) + "\n");
 								out.flush();
 								message = "";
