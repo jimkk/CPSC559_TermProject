@@ -30,20 +30,25 @@ public class GameThread implements Runnable{
 	GameManager game;
 	long timeSincePing = new Date().getTime();
 
+	//Backup
+	private String backupServerAddress = "localhost";
+	private int backupServerPort = 5432;
+
 	BufferedInputStream bufIn;
 	InputStreamReader in;
 	BufferedOutputStream bufOut;
 	OutputStreamWriter out;
 
-	public GameThread(Socket socket, GameManager game){
+	public GameThread(Socket socket){
 		this.socket = socket;
-		this.game = game;
 	}
 
 	/**
 	 * The main function that runs in a loop and and will manage communications for the client and GameManager.
 	 */
 	public void run(){
+		game = new GameManager();
+		System.out.println("Number of players: " + game.getPlayerCount());
 		try{
 			bufIn = new BufferedInputStream(socket.getInputStream());
 			in = new InputStreamReader(bufIn);
@@ -346,7 +351,11 @@ public class GameThread implements Runnable{
 	private void seeHand(int playerID){
 		PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
 		Card[] hand = player.getHand();
-		sendMessage(out, playerID, "Hand: " + hand[0] + " " + hand[1]);
+		if(hand[0] == null){
+			sendMessage(out, playerID, "The hands have not been dealt yet.");
+		} else {
+			sendMessage(out, playerID, "Hand: " + hand[0] + " " + hand[1]);
+		}
 	}
 
 	//message switch methods
@@ -447,5 +456,18 @@ public class GameThread implements Runnable{
 		} catch (Exception e) {e.printStackTrace();}
 	}
 
+	/**
+	 * This function will check for a backup server and connect to it if it exists.
+	 */
+	private void setUpBackup(){
+		try{
+			Socket backupServer = new Socket(backupServerAddress, backupServerPort);
+			BufferedOutputStream bufOut = new BufferedOutputStream(backupServer.getOutputStream());
+			OutputStreamWriter out = new OutputStreamWriter(bufOut);
+			new Thread(new BackupManager(out, game)).start();
+		} catch (Exception e){
+			System.out.println("WARNING: Unable to connect to backup server");
+		}
+	}
 
 }

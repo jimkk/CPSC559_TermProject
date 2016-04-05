@@ -17,15 +17,6 @@ public class GameServer {
 	private String serverManagerAddress;
 	private int serverManagerPort;
 
-	//Backup stuff
-	private String backupServerAddress = "localhost";
-	private int backupServerPort = 5432;
-	private Socket backupServer;
-	private OutputStreamWriter out = null;
-
-
-	GameManager game = new GameManager();
-
 	public GameServer(String address, int port){
 		serverManagerAddress = address;
 		serverManagerPort = port;
@@ -36,8 +27,6 @@ public class GameServer {
 	 */
 	private void run(){
 
-		setUpBackup();
-
 		try{
 			serverManagerSocket = new Socket(serverManagerAddress, serverManagerPort);
 		} catch (Exception e) {
@@ -45,65 +34,24 @@ public class GameServer {
 			System.exit(-1);
 		}
 		
-		System.out.println("Number of players: " + game.getPlayerCount());
 		//TODO Thread this. And therefore move message receiving into this class with the threads
 		//reading a string variable containing messages that may pertain to them (processing and
 		//remove the messages if they do) similar to ServerThread.
 		//new GameThread(serverManagerSocket, game).run();
-		new Thread(new GameThread(serverManagerSocket, game)).start();
+		new Thread(new GameThread(serverManagerSocket)).start();
 
 		//TODO Create a stream reader that will process the messages and pass them to their 
 		//respective GameThreads. It's either that or have the GameThreads process the stream
 		//and then share the data between themselves
 
-		/*
-		try{
-			serverSocket = new ServerSocket(port);
-		} catch (Exception e){
-			System.out.println("Failed to initialize server socket");
-			e.printStackTrace();
-			System.exit(-1);
-		}
-
-		while(!isDone){
-			try{
-				System.out.println("Number of players: " + game.getPlayerCount());
-				Socket clientSocket = serverSocket.accept();
-				new GameThread(clientSocket, game).run();
-				game.setPlayerCountPlusOne(1);
-				
-				//System.out.println("Server Loop Test");
-				System.out.println("Number of players: " + game.getPlayerCount());
-				//System.out.println("Game on?: " + game.isGameOn());
-				if (game.getPlayerCount() == 3 && game.isGameOn() == false){
-					//System.out.println("Should only enter this once per game");
-					game.beginRound();
-					game.setGameOn(true);
-				}
-			} catch (Exception e){
-				System.out.println("Error accepting client\n");
-				e.printStackTrace();
-			}
-		}
-		*/
 	}
-
-	/**
-	 * This function will check for a backup server and connect to it if it exists.
-	 */
-	private void setUpBackup(){
-		try{
-			backupServer = new Socket(backupServerAddress, backupServerPort);
-			BufferedOutputStream bufOut = new BufferedOutputStream(backupServer.getOutputStream());
-			out = new OutputStreamWriter(bufOut);
-			new Thread(new BackupManager(out, game)).start();
-		} catch (Exception e){
-			System.out.println("WARNING: Unable to connect to backup server");
-		}
-	}
-
 
 	public static void main(String[] args) {	
+		if(args.length == 1){
+			String address = args[0];
+			int port = Server.SERVERPORT;
+			new GameServer(address, port).run();
+		}
 		if(args.length == 2){
 			String address = args[0];
 			int port = Integer.parseInt(args[1]);
