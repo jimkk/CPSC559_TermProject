@@ -16,10 +16,18 @@ public class ServerSync implements Runnable{
 	private boolean isDone = false;
 	private OutputStreamWriter out;
 
+	/**
+	 * @param server The server object to monitor for changes and back it up.
+	 */
 	public ServerSync(Server server){
 		this.server = server;
 	}
 
+	/**
+	 * The function that gets called when a thread of this class is run.
+	 * It will monitor the server object for changes and send them to a backup server
+	 * if one exists.
+	 */
 	public void run(){
 
 		try{
@@ -31,7 +39,6 @@ public class ServerSync implements Runnable{
 
 		while(!isDone){
 			if(Server.changesMade){
-				printServerInfo();
 				if(out == null){
 					System.out.println("No sync server connected");
 					printServerInfo();
@@ -47,7 +54,10 @@ public class ServerSync implements Runnable{
 		}
 
 	}
-
+	
+	/**
+	 * Sends a json string representation of the server object.
+	 */
 	private void sendServerInfo(){
 		try{
 			Gson gson = new GsonBuilder().serializeNulls()
@@ -64,6 +74,9 @@ public class ServerSync implements Runnable{
 		}
 	}
 
+	/**
+	 * Prints a human-readable version of the server object's data.
+	 */
 	private void printServerInfo(){
 		System.out.println("Servers: " + Arrays.deepToString(toArrayFromSocket(server.getServersInfo())));
 		System.out.println("Clients: " + Arrays.deepToString(toArrayFromSocket(server.getClientsInfo())));
@@ -73,8 +86,11 @@ public class ServerSync implements Runnable{
 		System.out.println("Backup IDs: " + server.getBackupIDs());
 		System.out.println("Backups: " + Arrays.deepToString(toArrayFromString(server.getBackupsInfo())));
 	}
-	
-	public String [][] toArrayFromSocket(HashMap<Integer, Socket> map){
+
+	/**
+	 * Creats a string array representation of a HashMap with socket values object for printing.
+	 */	
+	private String [][] toArrayFromSocket(HashMap<Integer, Socket> map){
 		String [][] mapArray = new String[map.size()][3];
 		Iterator it = map.keySet().iterator();
 		int i = 0;
@@ -88,7 +104,11 @@ public class ServerSync implements Runnable{
 		}
 		return mapArray;
 	}
-	public String [][] toArrayFromString(HashMap<Integer, String> map){
+
+	/**
+	 * Creates a string array representation of a HashMap with String values.
+	 */
+	private String [][] toArrayFromString(HashMap<Integer, String> map){
 		String [][] mapArray = new String[map.size()][2];
 		Iterator it = map.keySet().iterator();
 		int i = 0;

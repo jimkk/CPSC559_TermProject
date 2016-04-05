@@ -24,12 +24,18 @@ public class ServerThread implements Runnable{
 
 	private boolean gameServerChosen;
 	private boolean isDone;
+	private boolean isRecovery = false;
 
 	private int clientID;
 	private int gameIndex;
 
 	private static String message;
 
+	/**
+	 * @param socket The client's socket
+	 * @param clientID The client's ID
+	 * @param servers The list of available servers
+	 */
 	public ServerThread(Socket socket, int clientID, HashMap<Integer, Socket> servers){
 		this.clientSocket = socket;
 		this.clientID = clientID;
@@ -37,6 +43,22 @@ public class ServerThread implements Runnable{
 		gameServerChosen = false;
 		message = "";
 	}
+	
+	/**
+	 * @param socket The client's socket
+	 * @param clientID The client's ID
+	 * @param servers The list of available servers
+	 * @param isRecovery True if this is a new thread created during server recovery
+	 */
+	public ServerThread(Socket socket, int clientID, HashMap<Integer, Socket> servers, boolean isRecovery){
+		this.clientSocket = socket;
+		this.clientID = clientID;
+		this.servers = servers;
+		gameServerChosen = false;
+		message = "";
+		this.isRecovery = isRecovery;
+	}
+
 
 	public void run(){
 
@@ -85,10 +107,11 @@ public class ServerThread implements Runnable{
 			gameOut = new OutputStreamWriter(bufGameOut);
 
 			int stack = 1000; //TODO Custom stack
-			gameOut.write(clientID + " addplayer " + stack + "\n");
-			gameOut.flush();
-
-			System.out.printf("Client %d added to game %d\n", clientID, gameIndex);
+			if(!isRecovery){
+				gameOut.write(clientID + " addplayer " + stack + "\n");
+				gameOut.flush();
+				System.out.printf("Client %d added to game %d\n", clientID, gameIndex);
+			}
 
 			while(!isDone){
 				try{
@@ -103,10 +126,12 @@ public class ServerThread implements Runnable{
 					if(gameIn.ready()){
 						String newMessage = IOUtilities.read(gameIn);
 						if(!newMessage.equals("ping")){
-
+							
+							System.out.println(newMessage);
+							
 							while(!message.equals("")){
+								System.out.printf("Waiting for \"%s\" to be removed\n", message);
 								Thread.sleep(100);
-								continue;
 							}
 							message = newMessage;
 							System.out.printf("Message from game server: \"%s\"\n", message);

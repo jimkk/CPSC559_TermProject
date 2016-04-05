@@ -70,8 +70,6 @@ public class BackupServer {
 					String managerMessage = IOUtilities.read(managerIn);
 					int gameID = Integer.parseInt(managerMessage.split(" ")[1]);
 					System.out.printf("Recovering %d from backup\n", gameID);
-					//TODO Recover backup for gameID
-					
 					String restoredString = restoreBackup(gameID);
 					managerOut.write("backup_response " + gameID + " " + restoredString + "\n");
 					managerOut.flush();
@@ -82,7 +80,6 @@ public class BackupServer {
 			System.out.println("--------------------------");
 			System.err.println("Lost connection to GameServer. Please restart it to demonstrate Fault Tolerance."); 
 			System.out.println("--------------------------");
-			//System.exit(-1);
 		}
 		catch (Exception e) {e.printStackTrace();}
 	}

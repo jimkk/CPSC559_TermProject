@@ -49,8 +49,12 @@ public class GameServer {
 		//TODO Thread this. And therefore move message receiving into this class with the threads
 		//reading a string variable containing messages that may pertain to them (processing and
 		//remove the messages if they do) similar to ServerThread.
-		new GameThread(serverManagerSocket, game).run();
-		
+		//new GameThread(serverManagerSocket, game).run();
+		new Thread(new GameThread(serverManagerSocket, game)).start();
+
+		//TODO Create a stream reader that will process the messages and pass them to their 
+		//respective GameThreads. It's either that or have the GameThreads process the stream
+		//and then share the data between themselves
 
 		/*
 		try{
@@ -91,7 +95,6 @@ public class GameServer {
 		try{
 			backupServer = new Socket(backupServerAddress, backupServerPort);
 			BufferedOutputStream bufOut = new BufferedOutputStream(backupServer.getOutputStream());
-			//out = new ObjectOutputStream(bufOut);
 			out = new OutputStreamWriter(bufOut);
 			new Thread(new BackupManager(out, game)).start();
 		} catch (Exception e){

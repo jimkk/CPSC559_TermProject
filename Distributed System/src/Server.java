@@ -63,6 +63,8 @@ public class Server implements Runnable{
 		while(serverSocket == null){
 			try{
 				serverSocket = new ServerSocket(port);
+				//System.out.println("Server created");
+				//System.out.printf("The IP is %s\n", serverSocket.getLocalSocketAddress());
 			} catch (Exception e){
 				System.out.println("Failed to initialize server socket...");
 				try{
@@ -85,7 +87,7 @@ public class Server implements Runnable{
 				Iterator<Map.Entry<Integer, Socket>> clientIterator = clients.entrySet().iterator();
 				while(clientIterator.hasNext()){
 					Map.Entry<Integer, Socket> client = clientIterator.next();
-					new Thread(new ServerThread(client.getValue(), client.getKey(), servers)).start();
+					new Thread(new ServerThread(client.getValue(), client.getKey(), servers, true)).start();
 				}
 			}
 		}
@@ -232,30 +234,57 @@ public class Server implements Runnable{
 		}
 	}
 
-
+	/**
+	 * Gets the servers
+	 * @return HashMap<Integer, Socket>
+	 */
 	public HashMap<Integer, Socket> getServersInfo(){
 		return servers;
 	}
+	/**
+	 * Gets the clients
+	 * @return HashMap<Integer, Socket>
+	 */
 	public HashMap<Integer, Socket> getClientsInfo(){
 		return clients;
 	}
 
+	/**
+	 * Gets the next game ID.
+	 * @return int - the ID
+	 */
 	public int getNextGameID(){
 		return nextGameID;
 	}
 
+	/**
+	 * Gets the next client ID.
+	 * @return int - the ID
+	 */
 	public int getNextClientID(){
 		return nextClientID;
 	}
 
+	/**
+	 * Gets the backup servers
+	 * @return ArrayList<Socket>
+	 */
 	public ArrayList<Socket> getBackupServers(){
 		return backupServers;
 	}
 
+	/**
+	 * Gets the backup IDs
+	 * @return ArrayList<Integer>
+	 */
 	public ArrayList<Integer> getBackupIDs(){
 		return backupIDs;
 	}
 
+	/**
+	 * Gets the backup info
+	 * @return HashMap<Integer, String>
+	 */
 	public HashMap<Integer, String> getBackupsInfo(){
 		return backups;
 	}
