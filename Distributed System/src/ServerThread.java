@@ -130,25 +130,33 @@ public class ServerThread implements Runnable{
 							System.out.println(newMessage);
 							
 							while(!message.equals("")){
+								if (clientID == 1) System.out.printf("***** Thread %d *****\n\n", clientID);
 								System.out.printf("Waiting for \"%s\" to be removed\n", message);
 								Thread.sleep(100);
 							}
 							message = newMessage;
-							System.out.printf("Message from game server: \"%s\"\n", message);
-							System.out.println(message.substring(message.indexOf(" ")+1) + "\n");
+							int random = (int )(Math.random() * 50 + 1);
+							//System.out.printf("Message from game server: \"%s\"\n", message);
+							//System.out.println(message.substring(message.indexOf(" ")+1) + " " + random + "\n");
 							int ID = Integer.parseInt(message.split(" ")[0]);
-							System.out.printf("ID = %d, clientID = %d\n", ID, clientID);
+							//System.out.printf("<><><><> ID = %d, clientID = %d <><><><>\n", ID, clientID);
 							if(ID == clientID){
-								System.out.printf("Notifying Client (ID = %d, clientID = %d\n", ID, clientID);
-								out.write(message.substring(message.indexOf(" ")+1) + "\n");
+								if (clientID == 1) System.out.printf("***** Thread %d *****\n\n", clientID);
+								
+								//System.out.printf("Message from game server: \"%s\"\n", message);
+								//System.out.println(message.substring(message.indexOf(" ")+1) + " " + random + "\n");
+								//System.out.printf("==== ID = %d, clientID = %d ====\n", ID, clientID);
+								out.write(message.substring(message.indexOf(" ")+1) + " " + random + "\n");
 								out.flush();
 								message = "";
 							}
 						}
 					}
 					if(!message.equals("")){
+						if (clientID == 1) System.out.printf("***** Thread %d *****\n\n", clientID);
 						int ID = Integer.parseInt(message.split(" ")[0]);
 						if(ID == clientID){
+							if (clientID == 1) System.out.printf("***** Thread %d *****\n\n", clientID);
 							out.write(message.substring(message.indexOf(" ")+1) + "\n");
 							out.flush();
 							message = "";
