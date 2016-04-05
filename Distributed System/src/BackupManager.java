@@ -62,9 +62,6 @@ public class BackupManager implements Runnable{
 					out.write("json_backup " + game.getGameID() + " " + message + "\n");
 					out.flush();
 					System.out.println("Backup Send");
-					//System.out.printf("Player Count: %d\n", game.getPlayerCount());
-					//System.out.printf("Pot: %d\n", game.getPot());
-					//System.out.printf("Turn: %d\n", game.getTurn());
 					turn = game.getTurn();
 					pot = game.getPot();
 					playerCount = game.getPlayerList().getCount();

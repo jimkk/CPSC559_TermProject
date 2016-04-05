@@ -79,11 +79,9 @@ public class GameManager implements Runnable {
 			this.getPlayerList().displayGameState();
 			while (getCurrentPlayerDoneTurn() == false && getCurrentPlayerTurn() == true ){
 				
-				//System.out.println("Counter: " + counter);
 				// Now we need to notify the player that it is their turn
 				// Setting the flag below, lets the serverthread know that it's now
 				// that player's turn, and the serverthread will notify them accordingly
-				//player.setBeginTurn(true);
 				setCurrentPlayerBeginTurn(true);
 				
 				
@@ -102,7 +100,6 @@ public class GameManager implements Runnable {
 					// Set the next player's turn to true
 					setCurrentPlayerTurn(false);
 					player.setTurn(false);
-					//player.setDoneTurn(false);
 					player.nextPlayer.setTurn(true);
 				}
 				
@@ -128,8 +125,6 @@ public class GameManager implements Runnable {
 		for(int i = 0; i < playerCount; i++){
 			// pass in i+1 so that the index matches up with the player number
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
-			//System.out.println("index: " + i);
-			//System.out.println("player.playerNumber: " + player.playerNumber);
 			if(player.playerNumber == 1 && player.folded == false && gameStart == true){
 				// initial state of the game
 				player.bigBlind = true;
@@ -197,8 +192,6 @@ public class GameManager implements Runnable {
 	 * Deals each players their hands.
 	 */
 	public void deal(){	
-		//deck = new Deck();
-	
 		for(int i = 0; i < playerCount; i++){
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
 			player.setHand(deck.Draw(), deck.Draw());
@@ -231,12 +224,6 @@ public class GameManager implements Runnable {
 		playerCount++;
 		getPlayerList().addPlayers(playerCount, playerID, stack);
 
-		//this.getPlayerList().displayGameState();
-		
-		/*if(playerCount > 2){
-			beginRound();
-		}*/
-
 		return 0;
 	}
 
@@ -256,7 +243,7 @@ public class GameManager implements Runnable {
 		return 0;
 	}
 
-	//TODO Add javadoc comment because I don't understand this comment
+	//TODO Add javadoc comment because I don't understand this method
 	public void rotatePlayers(){
 		PlayerNode currentPlayer = getPlayerList().findPlayerByIndex(0);
 		currentPlayer.setTurn(true);
@@ -397,7 +384,6 @@ public class GameManager implements Runnable {
 	}
 
 	public void run() {
-		// TODO Auto-generated method stub
 		beginRound();
 	}
 	

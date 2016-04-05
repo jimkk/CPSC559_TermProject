@@ -21,11 +21,6 @@ public class GameThread implements Runnable{
 	private boolean handSent = false;
 	private boolean turnSent = false;
 
-	private static String serverMessage = "";
-	private static String buffer;
-	private static String messageType;
-	private static boolean serverMessageLock = false;
-	private static int key = -1;
 	private static boolean debug = true;
 
 	// Instance variables
@@ -34,7 +29,6 @@ public class GameThread implements Runnable{
 	Card[] hand;
 	GameManager game;
 	long timeSincePing = new Date().getTime();
-	//LinkedPlayerList playerList = new LinkedPlayerList();
 
 	BufferedInputStream bufIn;
 	InputStreamReader in;
@@ -44,8 +38,6 @@ public class GameThread implements Runnable{
 	public GameThread(Socket socket, GameManager game){
 		this.socket = socket;
 		this.game = game;
-
-		//this.game.setTurnToCurrentPlayer(playerPort);
 	}
 
 	/**
@@ -57,18 +49,6 @@ public class GameThread implements Runnable{
 			in = new InputStreamReader(bufIn);
 			bufOut = new BufferedOutputStream(socket.getOutputStream());
 			out = new OutputStreamWriter(bufOut);
-
-			/*
-			   returnCode = game.addPlayerToGame(1000, playerID);		//TODO Set custom stack amount
-			   if (returnCode == -1) {
-			   out.write("Game is full; connection denied");
-			   out.flush();
-			   socket.close();
-
-			   }
-			   System.out.printf("New Client Connected, IP=%s, Port=%d\n", socket.getInetAddress(), socket.getPort());
-			   game.getPlayerList().displayGameState();
-			   */
 
 			String startMessage = IOUtilities.read(in);
 			String [] startMessageParts = startMessage.split(" ");
@@ -85,21 +65,8 @@ public class GameThread implements Runnable{
 
 		} catch (Exception e) {e.printStackTrace();}
 
-		buffer = "";
-		messageType = "";
-
 		while(!isDone){
 			try{			
-
-
-				/*if(game.getPlayerList().findPlayerByPort(playerPort).getTurn() 
-				  && !turnSent){
-				  out.write("message It's your turn!\n");
-				  out.flush();
-				  turnSent = true;
-				  }*/
-
-
 				if(game.getPlayerCount() > 2 && !game.isGameOn()){
 					// Start game
 					game.setGameOn(true);
@@ -204,57 +171,10 @@ public class GameThread implements Runnable{
 
 				System.out.println("PlayerID: " + playerID + " Hand: " + hand[0] + " " + hand[1]);
 				sendMessage(out, playerID, "Hand: " + hand[0] + " " + hand[1]);
-
-				//out.write("message Game Started!\n");
-				//out.write("message Hand: " + hand[0] + " " + hand[1] + "\n");
-				//out.flush();
 			}
 			handSent = true;
 		}
 	}
-
-	/**
-	 * Reads in a message from the stream, stopping on a -1 or a newline character
-	 * @param in The stream to read from
-	 * @return StringBuffer The received message
-	 */
-
-	//TODO Move this method to the Card class
-	private String determineCardSuit(int randCard){
-		String foundSuit = "default suit";
-		if(randCard > 0 && randCard < 14){
-			foundSuit = "Spades";
-		}
-		if(randCard > 13 && randCard < 27){
-			foundSuit = "Hearts";
-		}
-		if(randCard > 26 && randCard < 40){
-			foundSuit = "Clubs";
-		}
-		if(randCard > 39 && randCard < 53){
-			foundSuit = "Diamonds";
-		}
-		return foundSuit;
-
-	}
-
-	//TODO Move this method to the Card class
-	private int determineCardValue(int randCard, String suit){
-		int finalCardNumber = 0;
-		if(suit == "Spades"){
-			finalCardNumber = randCard + 1;
-		}
-		if(suit == "Hearts"){
-			finalCardNumber = randCard - 12;
-		}
-		if(suit == "Clubs"){
-			finalCardNumber = randCard - 25;
-		}
-		if(suit == "Diamonds"){
-			finalCardNumber = randCard - 38;
-		}
-		return finalCardNumber;
-	}  
 
 	/**
 	 * Starts a single round of the Poker Game
@@ -270,8 +190,6 @@ public class GameThread implements Runnable{
 
 
 			// Note that we skip players who have folded
-			//if (player.getFolded() == true) continue;
-
 
 			game.setCurrentPlayerIDTurn(player.playerID);
 			game.setCurrentPlayerTurn(true);
@@ -324,7 +242,6 @@ public class GameThread implements Runnable{
 					// Set the next player's turn to true
 					game.setCurrentPlayerTurn(false);
 					player.setTurn(false);
-					//player.setDoneTurn(false);
 					player.nextPlayer.setTurn(true);
 				}
 
@@ -517,43 +434,6 @@ public class GameThread implements Runnable{
 		}
 	}
 
-
-	private String rebuildString(String [] parts, int start, int end){
-		StringBuffer buffer = new StringBuffer();
-		for(int i = start; i < end; i++){
-			buffer.append(parts[i]);
-		}
-		return buffer.toString();
-	}
-
-	/*
-	   private void setMessageRequest(){
-	   try{
-	   if(!serverMessageLock){
-	   serverMessageLock = true;
-	   key = rand.nextInt(10000);
-	   sendMessage(out, playerID, "set_message_request_granted " + Integer.toString(key) + "\n");
-	   out.flush();
-	   } else {
-	   sendMessage(out, playerID, "set_message_request_denied\n");
-	   out.flush();
-	   }
-	   } catch (IOException e) {e.printStackTrace();}
-	   }
-
-	   private void getMessage(){
-	   try{
-	   if(!serverMessage.equals("")){
-	   sendMessage(out, playerID, "message " + serverMessage + "\n");
-	   out.flush();
-	   } else {
-	   sendMessage(out, playerID, "message No server message is set\n");
-	   out.flush();
-	   }
-	   } catch (IOException e) {e.printStackTrace();}
-	   }
-	   */
-	
 	private void reconnect(){
 		try{
 		socket.close();

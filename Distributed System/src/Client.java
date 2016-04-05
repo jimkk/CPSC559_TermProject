@@ -50,7 +50,6 @@ public class Client{
 
 						switch(messageType){
 							case("message"):
-								//System.out.println("\nReading message from Server");
 								message(buffer);
 								break;
 							case("full"):
@@ -105,33 +104,6 @@ public class Client{
 								String message = br.readLine();
 								out.write("message " + message + '\n');
 								break;
-								/*
-								   case("set message"):
-								   out.write("set_message_request\n");
-								   out.flush();
-								   while(!in.ready()){;}
-								   buffer = IOUtilities.read(in);
-								   String messageType;
-								   if(buffer.indexOf(" ") != -1){
-								   messageType = buffer.substring(0, buffer.indexOf(" "));
-								   } else {
-								   messageType = buffer.toString();
-								   }
-								   if(messageType.equals("set_message_request_granted")){
-								   int key = Integer.parseInt(buffer.toString().split(" ")[1]);
-								   System.out.print("Enter message: ");
-								   String smessage = br.readLine();
-								   out.write("set_message " + Integer.toString(key) + " " + smessage + "\n");
-								   out.flush();
-								   } else {
-								   System.out.println("Request Denied\n");
-								   } 
-								   break;
-								   case("get message"):
-								   out.write("get_message\n");
-								   out.flush();
-								   break;
-								   */
 							case("close"):
 								System.out.println("Socket closed");
 								isDone = true;

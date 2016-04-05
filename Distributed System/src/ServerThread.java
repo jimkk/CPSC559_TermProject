@@ -31,6 +31,11 @@ public class ServerThread implements Runnable{
 
 	private static String message;
 
+	/**
+	 * @param socket The client's socket
+	 * @param clientID The client's ID
+	 * @param servers The list of available servers
+	 */
 	public ServerThread(Socket socket, int clientID, HashMap<Integer, Socket> servers){
 		this.clientSocket = socket;
 		this.clientID = clientID;
@@ -39,6 +44,12 @@ public class ServerThread implements Runnable{
 		message = "";
 	}
 	
+	/**
+	 * @param socket The client's socket
+	 * @param clientID The client's ID
+	 * @param servers The list of available servers
+	 * @param isRecovery True if this is a new thread created during server recovery
+	 */
 	public ServerThread(Socket socket, int clientID, HashMap<Integer, Socket> servers, boolean isRecovery){
 		this.clientSocket = socket;
 		this.clientID = clientID;

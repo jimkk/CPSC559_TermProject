@@ -6,6 +6,14 @@ import java.lang.reflect.*;
 public class SocketDeserializer implements JsonDeserializer<Socket>{
 
 	@Override
+	/**
+	 * An custom deserializer for Socket objects. The GSON library cannot handle
+	 * circular references so custom serialization is required for our purposes.
+	 * @param JsonElement
+	 * @param typeOfSrc
+	 * @param context
+	 * @return Socket - the recreated socket
+	 */
 		public Socket deserialize(JsonElement json, Type typeOfSrc, JsonDeserializationContext context){
 			String combined = json.getAsJsonObject().get("Socket").getAsString();
 			String address = combined.split("/")[1];

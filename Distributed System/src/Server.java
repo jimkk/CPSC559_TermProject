@@ -234,30 +234,57 @@ public class Server implements Runnable{
 		}
 	}
 
-
+	/**
+	 * Gets the servers
+	 * @return HashMap<Integer, Socket>
+	 */
 	public HashMap<Integer, Socket> getServersInfo(){
 		return servers;
 	}
+	/**
+	 * Gets the clients
+	 * @return HashMap<Integer, Socket>
+	 */
 	public HashMap<Integer, Socket> getClientsInfo(){
 		return clients;
 	}
 
+	/**
+	 * Gets the next game ID.
+	 * @return int - the ID
+	 */
 	public int getNextGameID(){
 		return nextGameID;
 	}
 
+	/**
+	 * Gets the next client ID.
+	 * @return int - the ID
+	 */
 	public int getNextClientID(){
 		return nextClientID;
 	}
 
+	/**
+	 * Gets the backup servers
+	 * @return ArrayList<Socket>
+	 */
 	public ArrayList<Socket> getBackupServers(){
 		return backupServers;
 	}
 
+	/**
+	 * Gets the backup IDs
+	 * @return ArrayList<Integer>
+	 */
 	public ArrayList<Integer> getBackupIDs(){
 		return backupIDs;
 	}
 
+	/**
+	 * Gets the backup info
+	 * @return HashMap<Integer, String>
+	 */
 	public HashMap<Integer, String> getBackupsInfo(){
 		return backups;
 	}
