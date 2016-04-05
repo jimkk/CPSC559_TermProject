@@ -14,8 +14,7 @@ public class Client{
 	private Socket socket;
 	private boolean isDone = false;
 	private boolean isTurn = false;
-	//Random rand = new Random();
-	//int randomCardNumber;
+	private int clientID;
 
 	private long timeSincePing = new Date().getTime();
 
@@ -55,6 +54,9 @@ public class Client{
 							case("full"):
 								System.out.println("Server is full. Exiting.");
 								isDone = true;
+								break;
+							case("clientID"):
+								clientID = Integer.parseInt(buffer.substring(buffer.indexOf(" ") + 1, buffer.length()));
 								break;
 							default:
 								System.out.printf("UNKNOWN MESSAGE: %s\n", buffer);
@@ -129,18 +131,34 @@ public class Client{
 						timeSincePing = new Date().getTime();
 					}
 					Thread.sleep(100);
-				} catch (Exception e){
-					System.out.println("\nLost connection to server. Attempting to reconnect.");
+				} catch (SocketException e){
+					System.out.print("\nLost connection to server. Attempting to reconnect.");
 					try{
 						socket.close();
+						/*
 						ServerSocket reconnectSocket = new ServerSocket(socket.getLocalPort());
 						socket = reconnectSocket.accept();
 						reconnectSocket.close();
+						*/
+						boolean reconnected = false;
+						while(!reconnected){
+							try{
+								socket = new Socket(address, port);
+								reconnected = true;
+							} catch (SocketException socketTimeOutException){
+								System.out.print(".");
+								Thread.sleep(5000);
+							}
+						}
+						
 						bufIn = new BufferedInputStream(socket.getInputStream());
 						in = new InputStreamReader(bufIn);
 						bufOut = new BufferedOutputStream(socket.getOutputStream());
 						out = new OutputStreamWriter(bufOut);
 						br = new BufferedReader(new InputStreamReader(System.in));
+
+						out.write("changeClientID" + clientID + "\n");
+						out.flush();
 					} catch (Exception reconnecte) {
 						reconnecte.printStackTrace();
 						isDone = true;			
@@ -166,13 +184,16 @@ public class Client{
 	}
 
 	public static void main(String [] args){
-		if(args.length == 2){
-
+		if(args.length == 1){
 			Client client = new Client();
-
+			client.address = args[0];
+			client.port = Server.CLIENTPORT;
+			client.run();
+		}
+		else if(args.length == 2){
+			Client client = new Client();
 			client.address = args[0];
 			client.port = Integer.parseInt(args[1]);
-
 			client.run();
 		}
 	}

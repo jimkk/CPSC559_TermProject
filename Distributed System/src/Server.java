@@ -87,7 +87,7 @@ public class Server implements Runnable{
 				Iterator<Map.Entry<Integer, Socket>> clientIterator = clients.entrySet().iterator();
 				while(clientIterator.hasNext()){
 					Map.Entry<Integer, Socket> client = clientIterator.next();
-					new Thread(new ServerThread(client.getValue(), client.getKey(), servers, true)).start();
+					new Thread(new ServerThread(client.getValue(), client.getKey(), this, true)).start();
 				}
 			}
 		}
@@ -115,7 +115,7 @@ public class Server implements Runnable{
 					}
 				} else if (type == CLIENT){
 					clients.put(nextClientID, clientSocket);
-					new Thread(new ServerThread(clientSocket, nextClientID++, servers)).start();
+					new Thread(new ServerThread(clientSocket, nextClientID++, this)).start();
 				} else if (type == BACKUP){
 					backupServers.add(clientSocket);
 					System.out.println("Backup server added to list");
