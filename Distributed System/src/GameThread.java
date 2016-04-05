@@ -189,6 +189,7 @@ public class GameThread implements Runnable{
 		// Loop through all players, and on each player, keep looping until their turn is
 		// confirmed done, reading all inputs/messages from other players
 		for(int i = 0; i < game.getPlayerCount(); i++){
+			readMessage();
 			// Step 1:
 			// Find the current player's turn 
 			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
@@ -213,7 +214,7 @@ public class GameThread implements Runnable{
 			// Wait on that player's response/move for their turn
 			// all the while, processing other player's messages
 			while (game.getCurrentPlayerDoneTurn() == false && game.getCurrentPlayerTurn() == true){
-
+				readMessage();
 				game.setCurrentPlayerBeginTurn(true);
 
 				// Notify the player that it is their turn
@@ -249,8 +250,9 @@ public class GameThread implements Runnable{
 					player.setTurn(false);
 					player.nextPlayer.setTurn(true);
 				}
-
+				readMessage();
 			}
+			readMessage();
 
 			System.out.println("\nEnd Turn State:");
 			game.getPlayerList().displayGameState();
