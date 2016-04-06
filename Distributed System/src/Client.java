@@ -11,6 +11,7 @@ public class Client{
 
 	private String address;
 	private int port;
+	private int desiredGame = 1;
 	private Socket socket;
 	private boolean isDone = false;
 	private boolean isTurn = false;
@@ -25,6 +26,7 @@ public class Client{
 		try{
 			socket = new Socket(address, port);
 			System.out.printf("Connected to %s on port %d\n", socket.getInetAddress(), socket.getPort());
+			System.out.println("Attempting to join game " + desiredGame  + "...");
 			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
 			InputStreamReader in = new InputStreamReader(bufIn);
 			BufferedOutputStream bufOut = new BufferedOutputStream(socket.getOutputStream());
@@ -194,6 +196,13 @@ public class Client{
 			Client client = new Client();
 			client.address = args[0];
 			client.port = Integer.parseInt(args[1]);
+			client.run();
+		}
+		else if(args.length == 3){
+			Client client = new Client();
+			client.address = args[0];
+			client.port = Integer.parseInt(args[1]);
+			client.desiredGame = Integer.parseInt(args[2]);
 			client.run();
 		}
 	}
