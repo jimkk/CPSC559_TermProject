@@ -141,6 +141,10 @@ public class GameThread implements Runnable{
 
 	}
 
+	/**
+	*Build community cards.
+	*@return String - comCards The community cards.
+	*/
 	public String buildCommunityCards(){
 		Card [] communityCards = game.getCommunityCards();
 		String comCards = "";
@@ -152,7 +156,9 @@ public class GameThread implements Runnable{
 
 		return comCards;
 	}
-
+	/**
+	*Send community cards.
+	*/
 	public void sendCommunityCards(){
 		System.out.println("Displaying community cards to players");
 		for(int i = 0; i < game.getPlayerCount(); i++){
@@ -163,6 +169,9 @@ public class GameThread implements Runnable{
 		}
 	}
 
+	/**
+	*Send cards to players.
+	*/
 	public void sendCards(){
 		if(game.isGameOn() && !handSent && game.getHandDealt()){
 			System.out.println("Round has started; dealing cards to players");
@@ -351,7 +360,9 @@ public class GameThread implements Runnable{
 			}
 		}
 	}
-
+	/**
+	*Show player their hand.
+	*/
 	private void seeHand(int playerID){
 		PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
 		Card[] hand = player.getHand();
@@ -386,6 +397,10 @@ public class GameThread implements Runnable{
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
+	/**
+	*Check if it's current player's turn.
+	*@param playerID Integer representing current player.
+	*/
 	private void checkTurn(int playerID){
 		try{
 			if (game.checkTurn(playerID) == false) {
@@ -398,6 +413,10 @@ public class GameThread implements Runnable{
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
+	/**
+	*Check current player's stack.
+	*@param playerID Integer representating current player.
+	*/
 	private void checkStack(int playerID){
 		try{
 			PlayerNode player = game.getPlayerList().findPlayerByIndex(playerID);
@@ -407,6 +426,10 @@ public class GameThread implements Runnable{
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
+	/**
+	*Current player calls.
+	*@param playerID Integer representating current player.
+	*/
 	private void call(int playerID){
 		try{
 			if (game.checkTurn(playerID) == false) {
@@ -417,6 +440,10 @@ public class GameThread implements Runnable{
 		} catch (IOException e){e.printStackTrace();}
 	}
 
+	/**
+	*Fold current player.
+	*@param playerID Integer representating current player.
+	*/
 	private void fold(int playerID){
 		try{
 			if (game.checkTurn(playerID) == false) {
@@ -435,6 +462,12 @@ public class GameThread implements Runnable{
 		} catch (IOException e){e.printStackTrace();}
 	}
 
+	/**
+	*Send message to current player.
+	*@param out OutputStreamWriter object.
+	*@param playerID Integer representating current player. 
+	*@param message String representing the message.
+	*/
 	private void sendMessage(OutputStreamWriter out, int playerID, String message){
 		try{
 			out.write(playerID + " message " + message + "\n");
@@ -447,6 +480,9 @@ public class GameThread implements Runnable{
 		}
 	}
 
+	/**
+	*Reconnect.
+	*/
 	private void reconnect(){
 		try{
 			socket.close();

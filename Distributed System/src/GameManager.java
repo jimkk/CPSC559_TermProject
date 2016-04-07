@@ -243,7 +243,10 @@ public class GameManager implements Runnable {
 		return 0;
 	}
 
-	//TODO Add javadoc comment because I don't understand this method
+	/**
+	*Rotates through players.
+	*
+	*/
 	public void rotatePlayers(){
 		PlayerNode currentPlayer = getPlayerList().findPlayerByIndex(0);
 		currentPlayer.setTurn(true);
@@ -307,6 +310,10 @@ public class GameManager implements Runnable {
 
 	}
 	
+	/**
+	*Folds a player.
+	*@param playerID The ID of the player that is folding.
+	*/
 	public void fold(int playerID){
 		PlayerNode player = getPlayerList().findPlayerByID(playerID);
 		player.setFolded(true);
