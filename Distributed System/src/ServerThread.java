@@ -107,9 +107,8 @@ public class ServerThread implements Runnable{
 				//gameIndex = 1;
 				try{
 					//if(in.ready()){
-						System.out.println("--Reached ready--");
 						String gameIndexString = IOUtilities.read(in);
-						gameIndex = Integer.parseInt(gameIndexString);
+						gameIndex = Integer.parseInt(gameIndexString.split(" ")[1]);
 				//}
 				} catch(Exception e){e.printStackTrace();}
 	
@@ -117,23 +116,28 @@ public class ServerThread implements Runnable{
 				//Scanner scanner = new Scanner(System.in);
 				//System.out.print("Which game number would you like to join?: ");
 				//gameIndex = scanner.nextInt();
-
-
-				do{
+				if(servers.containsKey(gameIndex)){
+					System.out.printf("Client %d is joining game %d\n", clientID, gameIndex);
 					gameServerSocket = servers.get(gameIndex);
-					gameIndex++;
-					if(gameIndex > 100){
-						System.err.println("Can't find a valid game server");
+					gameServerChosen = true;
+				} else {
+
+					do{
+						gameServerSocket = servers.get(gameIndex);
+						gameIndex++;
+						if(gameIndex > 100){
+							System.err.println("Can't find a valid game server");
+							System.exit(-1);
+						}
+					} while (gameServerSocket == null);
+					gameServerChosen = true;
+					if(gameServerSocket == null){
+						System.err.println("Something went wrong, the GameServer chosen does not exist");
 						System.exit(-1);
 					}
-				} while (gameServerSocket == null);
-				gameServerChosen = true;
-				if(gameServerSocket == null){
-					System.err.println("Something went wrong, the GameServer chosen does not exist");
-					System.exit(-1);
+					gameIndex--;
 				}
 			}
-			gameIndex--;
 
 			bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
 			gameIn = new InputStreamReader(bufGameIn);
