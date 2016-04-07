@@ -306,6 +306,15 @@ public class GameThread implements Runnable{
 					int betAmount = Integer.parseInt(contents);
 					bet(betAmount, playerID);
 					break;
+/*
+				case("gameRequest"):
+					int desiredGame = Integer.parseInt(contents);
+					try{
+
+					} catch(IOException e) {e.printStackTrace();}
+					}
+					break;
+*/
 				case("call"):
 					call(playerID);
 					break;

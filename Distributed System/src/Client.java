@@ -24,6 +24,7 @@ public class Client{
 	 */
 	public void run(){
 		try{
+			//message("gameRequest " + desiredGame + '\n');
 			socket = new Socket(address, port);
 			System.out.printf("Connected to %s on port %d\n", socket.getInetAddress(), socket.getPort());
 			System.out.println("Attempting to join game " + desiredGame  + "...");
@@ -33,6 +34,11 @@ public class Client{
 			OutputStreamWriter out = new OutputStreamWriter(bufOut);
 			//Scanner userIn = new Scanner(System.in);
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+			//message("desiredGame ");
+			System.out.println("At write...");
+			out.write("message " + desiredGame + '\n');
+			//out.flush();	
 
 			String buffer = "";
 
@@ -50,6 +56,9 @@ public class Client{
 						}
 
 						switch(messageType){
+							//case("desiredGame"):
+								//desiredGame = Integer.parseInt(buffer.substring(buffer.indexOf(" ") + 1, buffer.length()));
+								//break;
 							case("message"):
 								message(buffer);
 								break;
@@ -115,6 +124,10 @@ public class Client{
 								break;
 							case("displayGame"):
 								out.write("displayGame\n");
+								out.flush();
+								break;
+							case("desiredGame"):
+								out.write("desiredGame\n");
 								out.flush();
 								break;
 							default:

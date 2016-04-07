@@ -67,6 +67,8 @@ public class ServerThread implements Runnable{
 
 	public void run(){
 
+		
+
 		try{
 
 			bufIn = new BufferedInputStream(clientSocket.getInputStream());
@@ -79,6 +81,13 @@ public class ServerThread implements Runnable{
 
 			out.write("clientID " + clientID + "\n");
 			out.flush();
+/*
+			while(in.ready()){
+				System.out.println("Input ready");
+				gameIndex = in.read();
+			}
+*/
+
 
 			while(!gameServerChosen){
 				if(servers.size() == 0){
@@ -95,7 +104,16 @@ public class ServerThread implements Runnable{
 				}
 				//TODO Ask which game server to join
 				//For now, it's the first one
-				gameIndex = 1;
+				//gameIndex = 1;
+				try{
+					//if(in.ready()){
+						System.out.println("--Reached ready--");
+						String gameIndexString = IOUtilities.read(in);
+						gameIndex = Integer.parseInt(gameIndexString);
+				//}
+				} catch(Exception e){e.printStackTrace();}
+	
+				System.out.println("Current gameIndex: " + gameIndex);
 				//Scanner scanner = new Scanner(System.in);
 				//System.out.print("Which game number would you like to join?: ");
 				//gameIndex = scanner.nextInt();
