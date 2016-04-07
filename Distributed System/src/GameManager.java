@@ -335,6 +335,10 @@ public class GameManager implements Runnable {
 		return gameOn;
 	}
 
+	/**
+	*Set game to on.
+	*@param b Boolean value to set if true or not.
+	*/
 	public void setGameOn(boolean b){
 		this.gameOn = b;
 	}
@@ -379,18 +383,33 @@ public class GameManager implements Runnable {
 		return playerCount;
 	}
 	
+	/**
+	*Increment player count.
+	*@param i Amount to increment player count by.
+	*/
 	public void setPlayerCountPlusOne (int i){
 		this.playerCount += i;
 	}
 
+	/**
+	*Run game.
+	*/
 	public void run() {
 		beginRound();
 	}
-	
+
+	/**
+	*Set game ID.
+	*@param ID Integer representing game ID.
+	*/	
 	public void setGameID(int ID){
 		gameID = ID;
 	}
 
+	/**
+	*Get game ID.
+	*@return int - The value of the game ID.
+	*/
 	public int getGameID(){
 		return gameID;
 	}
@@ -411,54 +430,106 @@ public class GameManager implements Runnable {
 		return currentPlayerIDTurn;
 	}
 	
+	/**
+	*Set players turn to beginning.
+	*@param b Boolean value to set if true or not.
+	*/
 	public void setCurrentPlayerBeginTurn(boolean b){
 		currentPlayerBeginTurn = b;
 	}
 	
+	/**
+	*Get if current player is beginning their turn.
+	*@return Boolean - If the current player is beginning their turn.
+	*/
 	public boolean getCurrentPlayerBeginTurn(){
 		return currentPlayerBeginTurn;
 	}
 	
+	/**
+	*Set players turn to done.
+	*@param b Boolean value to set if their turn is done or not.
+	*/
 	public void setCurrentPlayerDoneTurn(boolean b){
 		currentPlayerDoneTurn = b;
 	}
 	
+	/**
+	*Get if current player is done their turn.
+	*@return Boolean - If current player is done their turn.
+	*/
 	public boolean getCurrentPlayerDoneTurn(){
 		return currentPlayerDoneTurn;
 	}
 	
+	/**
+	*Set current players turn.
+	*@param b Boolean value to set if it's their turn or not.
+	*/
 	public void setCurrentPlayerTurn(boolean b){
 		currentPlayerTurn = b;
 	}
 	
+	/**
+	*Get current players turn.
+	*@return Boolean - If current players turn or not.
+	*/
 	public boolean getCurrentPlayerTurn(){
 		return currentPlayerTurn;
 	}
 	
+	/**
+	*Set current players bet flag.
+	*@param b Boolean value to set if true or not.
+	*/
 	public void setCurrentPlayerBetFlag(boolean b){
 		currentPlayerBetFlag = b;
 	}
-	
+
+	/**
+	*Get current players bet flag.
+	*@return Boolean - If current players bet flag is set or not.
+	*/	
 	public boolean getCurrentPlayerBetFlag(){
 		return currentPlayerBetFlag;
 	}
 	
+	/**
+	*Set current players bet amount.
+	*@param i Amount to set bet to.
+	*/
 	public void setCurrentPlayerBetAmount(int i){
 		currentPlayerBetAmount = i;
 	}
 	
+	/**
+	*Get current players bet amount.
+	*@return int - Amount of current players bet.
+	*/
 	public int getCurrentPlayerBetAmount(){
 		return currentPlayerBetAmount;
 	}
 	
+	/**
+	*Set turn sent.
+	*@param b Boolean value to set if sent or not.
+	*/
 	public void setTurnSent(boolean b){
 		turnSent = b;
 	}
 	
+	/**
+	*Get turn sent.
+	*@return Boolean - If turn has been sent or not.
+	*/
 	public boolean getTurnSent(){
 		return turnSent;
 	}
 	
+	/**
+	*Get community cards.
+	*@return Card[] - Array of current community cards.
+	*/
 	public Card[] getCommunityCards(){
 		return communityCards;
 	}

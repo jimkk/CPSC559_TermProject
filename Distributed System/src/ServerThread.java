@@ -102,9 +102,7 @@ public class ServerThread implements Runnable{
 					Thread.sleep(5000);
 					continue;
 				}
-				//TODO Ask which game server to join
-				//For now, it's the first one
-				//gameIndex = 1;
+				//Ask which game server to join
 				try{
 					//if(in.ready()){
 						String gameIndexString = IOUtilities.read(in);
@@ -113,9 +111,6 @@ public class ServerThread implements Runnable{
 				} catch(Exception e){e.printStackTrace();}
 	
 				System.out.println("Current gameIndex: " + gameIndex);
-				//Scanner scanner = new Scanner(System.in);
-				//System.out.print("Which game number would you like to join?: ");
-				//gameIndex = scanner.nextInt();
 				if(servers.containsKey(gameIndex)){
 					System.out.printf("Client %d is joining game %d\n", clientID, gameIndex);
 					gameServerSocket = servers.get(gameIndex);
