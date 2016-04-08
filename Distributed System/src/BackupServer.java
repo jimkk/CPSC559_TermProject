@@ -85,6 +85,10 @@ public class BackupServer {
 		catch (Exception e) {e.printStackTrace();}
 	}
 
+	/**
+	*Restore a backup.
+	*@param gameID Integer representating the gameID.
+	*/
 	public String restoreBackup(int gameID){
 		StringBuffer restoredMessage = new StringBuffer();
 		try{
