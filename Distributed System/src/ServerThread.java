@@ -81,13 +81,6 @@ public class ServerThread implements Runnable{
 
 			out.write("clientID " + clientID + "\n");
 			out.flush();
-/*
-			while(in.ready()){
-				System.out.println("Input ready");
-				gameIndex = in.read();
-			}
-*/
-
 
 			while(!gameServerChosen){
 				if(servers.size() == 0){
@@ -102,20 +95,11 @@ public class ServerThread implements Runnable{
 					Thread.sleep(5000);
 					continue;
 				}
-				//TODO Ask which game server to join
-				//For now, it's the first one
-				//gameIndex = 1;
 				try{
-					//if(in.ready()){
-						String gameIndexString = IOUtilities.read(in);
-						gameIndex = Integer.parseInt(gameIndexString.split(" ")[1]);
-				//}
+					String gameIndexString = IOUtilities.read(in);
+					gameIndex = Integer.parseInt(gameIndexString.split(" ")[1]);
 				} catch(Exception e){e.printStackTrace();}
 	
-				System.out.println("Current gameIndex: " + gameIndex);
-				//Scanner scanner = new Scanner(System.in);
-				//System.out.print("Which game number would you like to join?: ");
-				//gameIndex = scanner.nextInt();
 				if(servers.containsKey(gameIndex)){
 					System.out.printf("Client %d is joining game %d\n", clientID, gameIndex);
 					gameServerSocket = servers.get(gameIndex);
@@ -164,6 +148,7 @@ public class ServerThread implements Runnable{
 
 			while(!isDone){
 				try{
+					System.out.print(".");
 					if(in.ready()){
 						String messageIn = IOUtilities.read(in);
 						if(messageIn.equals("ping")){
@@ -202,17 +187,14 @@ public class ServerThread implements Runnable{
 								System.out.println(newMessage);
 
 								while(!message.equals("")){
-									System.out.printf("Waiting for \"%s\" to be removed\n", message);
 									Thread.sleep(100);
 								}
 								message = newMessage;
 								System.out.printf("Message from game server: \"%s\"\n", message);
 								System.out.println(message.substring(message.indexOf(" ")+1) + "\n");
 								int ID = Integer.parseInt(message.split(" ")[0]);
-								System.out.printf("ID = %d, clientID = %d\n", ID, clientID);
 								if(ID == clientID){
 									try{
-										System.out.printf("Notifying Client (ID = %d, clientID = %d\n", ID, clientID);
 										out.write(message.substring(message.indexOf(" ")+1) + "\n");
 										out.flush();
 									} catch (SocketException se) {
@@ -225,9 +207,7 @@ public class ServerThread implements Runnable{
 						}
 					}
 					if(!message.equals("")){
-						if (clientID == 1) System.out.printf("***** Thread %d *****\n\n", clientID);
 						int ID = Integer.parseInt(message.split(" ")[0]);
-						System.out.printf("ID = %d, clientID = %d (type2)\n", ID, clientID);
 						if(ID == clientID){			
 							try{
 								out.write(message.substring(message.indexOf(" ")+1) + "\n");
@@ -241,6 +221,7 @@ public class ServerThread implements Runnable{
 					}
 
 				} catch(SocketException e){
+					System.out.println("ServerThread found crashed server");
 					Socket socket = servers.remove(gameIndex);
 					servers.put(-gameIndex, socket);
 					while(servers.get(gameIndex) == null);
@@ -249,6 +230,7 @@ public class ServerThread implements Runnable{
 
 				Thread.sleep(100);
 			}
+			System.out.println("Closing thread");
 
 		} catch (Exception e) {e.printStackTrace();}
 

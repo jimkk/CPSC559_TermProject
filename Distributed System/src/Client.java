@@ -34,6 +34,7 @@ public class Client{
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
 			out.write("desiredgame " + desiredGame + '\n');
+			out.flush();
 
 			String buffer = "";
 

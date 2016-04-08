@@ -75,6 +75,7 @@ public class BackupServer {
 					managerOut.flush();
 					System.out.println("Sent backup!");
 				}
+				Thread.sleep(100);
 			}
 		} catch(NullPointerException e){
 			System.out.println("--------------------------");

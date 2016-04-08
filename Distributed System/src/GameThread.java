@@ -2,7 +2,6 @@ import java.net.*;
 import java.lang.*;
 import java.io.*;
 import java.util.*;
-import com.google.gson.*;
 
 /**
  * The main processing thread on the server side for communications with a
@@ -44,13 +43,20 @@ public class GameThread implements Runnable{
 		this.socket = socket;
 		this.gameID = gameID;
 		this.inboxes = inboxes;
+		game = new GameManager();
 	}
 
+	public GameThread(Socket socket, int gameID, HashMap<Integer, String> inboxes, GameManager game){
+		this.socket = socket;
+		this.gameID = gameID;
+		this.inboxes = inboxes;
+		this.game = game; 
+	}
 	/**
 	 * The main function that runs in a loop and and will manage communications for the client and GameManager.
 	 */
 	public void run(){
-		game = new GameManager();
+		setUpBackup();
 		System.out.println("Number of players: " + game.getPlayerCount());
 		game.setGameID(gameID);
 		System.out.printf("Game ID: %d\n", gameID);
@@ -58,15 +64,6 @@ public class GameThread implements Runnable{
 			bufOut = new BufferedOutputStream(socket.getOutputStream());
 			out = new OutputStreamWriter(bufOut);
 		} catch (Exception e){e.printStackTrace();}
-		//TODO Fix this.
-		/*
-		   if(startMessageParts.length > 2){
-		   System.out.println("Restoring from backup");
-		   Gson gson = new GsonBuilder().create();
-		   String startContents = IOUtilities.rebuildString(startMessageParts, 2, startMessageParts.length);
-		   game = gson.fromJson(startContents, GameManager.class);
-		   }
-		   */
 
 		while(!isDone){
 			try{			
@@ -122,21 +119,8 @@ public class GameThread implements Runnable{
 					//new Thread(game).start();
 				}
 				readMessage();
-				if(new Date().getTime() - timeSincePing > 3000){
-					out.write("ping\n");
-					out.flush();
-					timeSincePing = new Date().getTime();
-				}
 				Thread.sleep(10);
-			} catch(SocketException e) {
-				System.err.println("Lost connection to server. Reconnecting...");
-				try{
-					reconnect();
-				} catch (Exception reconnecte) {
-					reconnecte.printStackTrace();
-					isDone = true;			
-				}
-			} catch(Exception e) {e.printStackTrace();}
+			} catch(Exception e) {e.printStackTrace(); isDone = true;}
 		}
 
 	}

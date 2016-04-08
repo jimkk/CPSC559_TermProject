@@ -1,6 +1,7 @@
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import com.google.gson.*;
 
 /**
  * The class from the server that will set up a connection to a backup server
@@ -72,25 +73,42 @@ public class GameServer {
 			}
 
 			while(!isDone){
+				try{
 				if(in.ready()){
 					String message = IOUtilities.read(in);
-					String [] messageParts = message.split(" ");
-					int gameID = Integer.parseInt(messageParts[0]);
-					System.out.printf("Received message for game %d: ", gameID);
-					if(messageInboxes.containsKey(gameID)){
-						messageInboxes.put(gameID, IOUtilities.rebuildString(messageParts, 1, messageParts.length));
+					if(message.split(" ")[0].equals("restoregame")){
+						System.out.println("Restoring from backup");
+						String [] messageParts = message.split(" ");
+						int gameID = Integer.parseInt(messageParts[1]);
+						Gson gson = new GsonBuilder().create();
+						String startContents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
+						GameManager game = gson.fromJson(startContents, GameManager.class);
+						messageInboxes.put(gameID, new String(""));
+						new Thread(new GameThread(serverManagerSocket, gameID, messageInboxes, game)).start();
 					} else {
-						System.out.printf("ERROR: Received message for a game that this server do not handle (ID = %d)\n", gameID);
+						String [] messageParts = message.split(" ");
+						int gameID = Integer.parseInt(messageParts[0]);
+						System.out.printf("Received message for game %d: ", gameID);
+						if(messageInboxes.containsKey(gameID)){
+							messageInboxes.put(gameID, IOUtilities.rebuildString(messageParts, 1, messageParts.length));
+						} else {
+							System.out.printf("ERROR: Received message for a game that this server do not handle (ID = %d)\n", gameID);
+						}
+						System.out.printf("%s\n", messageInboxes.get(gameID));
 					}
-					System.out.printf("%s\n", messageInboxes.get(gameID));
 				}
 				if(new Date().getTime() - timeSincePing > 3000){
 					out.write("ping\n");
 					out.flush();
 					timeSincePing = new Date().getTime();
 				}
+				Thread.sleep(10);
+				} catch (SocketException sockete){
+					reconnect();
+				}
+
 			}
-		} catch (Exception e){e.printStackTrace();}
+		} catch (Exception e){e.printStackTrace(); isDone = true;}
 	}
 	
 	private void reconnect(){
