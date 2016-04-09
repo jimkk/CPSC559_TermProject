@@ -107,21 +107,25 @@ public class Server implements Runnable{
 					String message = IOUtilities.read(in);
 					int numGames = Integer.parseInt(message.split(" ")[1]);
 					System.out.printf("There are currently %d backups to be restored\n", backups.size());
+					out.flush();
+					out.write("gameid " + nextGameID + "\n");
+					out.flush();
+					for(int i = 0; i < numGames; i++){
+						servers.put(nextGameID++, clientSocket);
+					}
 					if(backups.size() > 0){
-						System.out.println("New server is being repurposed as crashed server");
-						int gameID = backupIDs.remove(0);
-						System.out.printf("Game ID: %d\n", gameID);
-						servers.put(gameID, clientSocket);
-						out.write("gameid " + gameID + " " + backups.remove(gameID) + "\n");
-
-						out.flush();
-					} else {
-						out.write("gameid " + nextGameID + "\n");
-						out.flush();
-						for(int i = 0; i < numGames; i++){
-							servers.put(nextGameID++, clientSocket);
+						System.out.println("New server is being used to restore lost games");
+						for(int i = 0; i < backups.size(); i++){
+							int gameID = backupIDs.get(i);
+							System.out.printf("Game ID: %d\n", gameID);
+							out.write("restoregame " + gameID + " " + backups.get(gameID) + "\n");
+							//If restore is successful
+							backupIDs.remove(i);
+							servers.put(gameID, clientSocket);
+							backups.remove(gameID);
 						}
 					}
+
 				} else if (type == CLIENT){
 					clients.put(nextClientID, clientSocket);
 					new Thread(new ServerThread(clientSocket, nextClientID++, this)).start();
@@ -150,20 +154,16 @@ public class Server implements Runnable{
 								backupOut.write("backup_request " + gameID + "\n");
 								backupOut.flush();
 
-								while(!backupIn.ready());
-
 								String backupMessage = IOUtilities.read(backupIn);
 								String [] messageParts = backupMessage.split(" ");
 								int receivedGameID = Integer.parseInt(messageParts[1]);
 								String contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
 								if(gameID == receivedGameID){
-									System.out.printf("Received backup for game %d: \"%s\"\n", gameID, contents);
+									System.out.printf("Received backup for game %d\n", gameID);
+									it.remove();
 									backupIDs.add(gameID);
 									backups.put(gameID, contents);	
-									servers.remove(key);
 								}
-
-
 							} catch (Exception e2){e2.printStackTrace();}
 						} else {
 							System.out.println("Sadly there are no backup servers right now :(");
@@ -172,6 +172,21 @@ public class Server implements Runnable{
 
 						changesMade = true;
 					}
+				}
+				if(servers.size() > 0 && backups.size() > 0){
+					try{
+						Socket serverSocket = servers.values().iterator().next();
+						BufferedOutputStream serverBufOut = new BufferedOutputStream(serverSocket.getOutputStream());
+						OutputStreamWriter serverOut = new OutputStreamWriter(serverBufOut);
+						for(int i = 0; i < backupIDs.size(); i++){
+							int gameID = backupIDs.get(i);	
+							serverOut.write("restoregame " + gameID + " " + backups.get(gameID) + "\n");
+							serverOut.flush();
+							servers.put(gameID, serverSocket);
+							backups.remove(gameID);
+							backupIDs.remove(i);
+						}
+					} catch (Exception e2) {e2.printStackTrace();}
 				}
 			} catch (Exception e){
 				if(type == SERVER){
@@ -185,7 +200,7 @@ public class Server implements Runnable{
 				Thread.sleep(10);
 			} catch (Exception e) {e.printStackTrace();}
 		}
-	};
+	}
 
 	/**
 	 * Recieved backups from a main server and then takes over for it in cases where
@@ -193,55 +208,55 @@ public class Server implements Runnable{
 	 * @param serverIP The IP address of the main server
 	 */
 	@SuppressWarnings("unchecked")
-	private void backupRun(String serverIP){
-		boolean mainServerDown = false;
-		Server server = null;
-		String message = "";
-		Gson gson = new GsonBuilder().serializeNulls()
-			.excludeFieldsWithModifiers(Modifier.TRANSIENT)
-			.registerTypeAdapter(Socket.class, new SocketDeserializer())
-			.create();
+		private void backupRun(String serverIP){
+			boolean mainServerDown = false;
+			Server server = null;
+			String message = "";
+			Gson gson = new GsonBuilder().serializeNulls()
+				.excludeFieldsWithModifiers(Modifier.TRANSIENT)
+				.registerTypeAdapter(Socket.class, new SocketDeserializer())
+				.create();
 
-		try{
-			Socket syncSocket = new Socket(serverIP, SYNCPORT);
-			BufferedInputStream bufIn = new BufferedInputStream(syncSocket.getInputStream());
-			InputStreamReader in = new InputStreamReader(bufIn);
-			BufferedOutputStream bufOut = new BufferedOutputStream(syncSocket.getOutputStream());
-			OutputStreamWriter out = new OutputStreamWriter(bufOut);
-			System.out.println("Connected to main server!");
+			try{
+				Socket syncSocket = new Socket(serverIP, SYNCPORT);
+				BufferedInputStream bufIn = new BufferedInputStream(syncSocket.getInputStream());
+				InputStreamReader in = new InputStreamReader(bufIn);
+				BufferedOutputStream bufOut = new BufferedOutputStream(syncSocket.getOutputStream());
+				OutputStreamWriter out = new OutputStreamWriter(bufOut);
+				System.out.println("Connected to main server!");
 
-			while(!mainServerDown){
-				if(in.ready()){
-					message = IOUtilities.read(in);	
-					System.out.printf("%s: Backup Received\n", new Date());
-				}else{
-					try{
-						out.write("ping\n");
-						out.flush();
-						Thread.sleep(1000);
-					} catch(Exception e){
-						System.err.println("Server is down. Taking over...");
-						mainServerDown = true;
+				while(!mainServerDown){
+					if(in.ready()){
+						message = IOUtilities.read(in);	
+						System.out.printf("%s: Backup Received\n", new Date());
+					}else{
+						try{
+							out.write("ping\n");
+							out.flush();
+							Thread.sleep(1000);
+						} catch(Exception e){
+							System.err.println("Server is down. Taking over...");
+							mainServerDown = true;
+						}
 					}
+					Thread.sleep(100);
 				}
-				Thread.sleep(100);
+				Thread.sleep(2000);
+			} catch (SocketException se){
+				System.err.println("Unable to connect to main server");
+			} catch (Exception e){e.printStackTrace();}
+			if(!message.equals("")){
+				new Thread(new Server(CLIENTPORT, Server.CLIENT)).start();
+				new Thread(new Server(BACKUPPORT, Server.BACKUP)).start();
+				new Thread(new ServerSync(server)).start();
+				server = gson.fromJson(message, Server.class);
+				server.run();
+			} else {
+				System.out.println("ERROR: Did not receive any backups from server before it went down.");
+				System.out.println("Exiting...");
+				System.exit(0);
 			}
-			Thread.sleep(2000);
-		} catch (SocketException se){
-			System.err.println("Unable to connect to main server");
-		} catch (Exception e){e.printStackTrace();}
-		if(!message.equals("")){
-			new Thread(new Server(CLIENTPORT, Server.CLIENT)).start();
-			new Thread(new Server(BACKUPPORT, Server.BACKUP)).start();
-			new Thread(new ServerSync(server)).start();
-			server = gson.fromJson(message, Server.class);
-			server.run();
-		} else {
-			System.out.println("ERROR: Did not receive any backups from server before it went down.");
-			System.out.println("Exiting...");
-			System.exit(0);
 		}
-	}
 
 	/**
 	 * Gets the servers

@@ -75,6 +75,7 @@ public class BackupServer {
 					managerOut.flush();
 					System.out.println("Sent backup!");
 				}
+				Thread.sleep(100);
 			}
 		} catch(NullPointerException e){
 			System.out.println("--------------------------");
@@ -84,6 +85,10 @@ public class BackupServer {
 		catch (Exception e) {e.printStackTrace();}
 	}
 
+	/**
+	*Restore a backup.
+	*@param gameID Integer representating the gameID.
+	*/
 	public String restoreBackup(int gameID){
 		StringBuffer restoredMessage = new StringBuffer();
 		try{

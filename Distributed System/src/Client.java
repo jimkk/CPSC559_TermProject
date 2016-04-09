@@ -10,7 +10,7 @@ import java.io.*;
 public class Client{
 
 	private String address;
-	private int port;
+	private int port = Server.CLIENTPORT;
 	private int desiredGame = 1;
 	private Socket socket;
 	private boolean isDone = false;
@@ -24,7 +24,6 @@ public class Client{
 	 */
 	public void run(){
 		try{
-			//message("gameRequest " + desiredGame + '\n');
 			socket = new Socket(address, port);
 			System.out.printf("Connected to %s on port %d\n", socket.getInetAddress(), socket.getPort());
 			System.out.println("Attempting to join game " + desiredGame  + "...");
@@ -32,13 +31,10 @@ public class Client{
 			InputStreamReader in = new InputStreamReader(bufIn);
 			BufferedOutputStream bufOut = new BufferedOutputStream(socket.getOutputStream());
 			OutputStreamWriter out = new OutputStreamWriter(bufOut);
-			//Scanner userIn = new Scanner(System.in);
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-			//message("desiredGame ");
-			System.out.println("At write...");
-			out.write("message " + desiredGame + '\n');
-			//out.flush();	
+			out.write("desiredgame " + desiredGame + '\n');
+			out.flush();
 
 			String buffer = "";
 
@@ -208,14 +204,7 @@ public class Client{
 		else if(args.length == 2){
 			Client client = new Client();
 			client.address = args[0];
-			client.port = Integer.parseInt(args[1]);
-			client.run();
-		}
-		else if(args.length == 3){
-			Client client = new Client();
-			client.address = args[0];
-			client.port = Integer.parseInt(args[1]);
-			client.desiredGame = Integer.parseInt(args[2]);
+			client.desiredGame = Integer.parseInt(args[1]);
 			client.run();
 		}
 	}

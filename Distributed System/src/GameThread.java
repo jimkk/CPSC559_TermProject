@@ -2,7 +2,6 @@ import java.net.*;
 import java.lang.*;
 import java.io.*;
 import java.util.*;
-import com.google.gson.*;
 
 /**
  * The main processing thread on the server side for communications with a
@@ -44,13 +43,20 @@ public class GameThread implements Runnable{
 		this.socket = socket;
 		this.gameID = gameID;
 		this.inboxes = inboxes;
+		game = new GameManager();
 	}
 
+	public GameThread(Socket socket, int gameID, HashMap<Integer, String> inboxes, GameManager game){
+		this.socket = socket;
+		this.gameID = gameID;
+		this.inboxes = inboxes;
+		this.game = game; 
+	}
 	/**
 	 * The main function that runs in a loop and and will manage communications for the client and GameManager.
 	 */
 	public void run(){
-		game = new GameManager();
+		setUpBackup();
 		System.out.println("Number of players: " + game.getPlayerCount());
 		game.setGameID(gameID);
 		System.out.printf("Game ID: %d\n", gameID);
@@ -58,15 +64,6 @@ public class GameThread implements Runnable{
 			bufOut = new BufferedOutputStream(socket.getOutputStream());
 			out = new OutputStreamWriter(bufOut);
 		} catch (Exception e){e.printStackTrace();}
-		//TODO Fix this.
-		/*
-		   if(startMessageParts.length > 2){
-		   System.out.println("Restoring from backup");
-		   Gson gson = new GsonBuilder().create();
-		   String startContents = IOUtilities.rebuildString(startMessageParts, 2, startMessageParts.length);
-		   game = gson.fromJson(startContents, GameManager.class);
-		   }
-		   */
 
 		while(!isDone){
 			try{			
@@ -122,25 +119,16 @@ public class GameThread implements Runnable{
 					//new Thread(game).start();
 				}
 				readMessage();
-				if(new Date().getTime() - timeSincePing > 3000){
-					out.write("ping\n");
-					out.flush();
-					timeSincePing = new Date().getTime();
-				}
 				Thread.sleep(10);
-			} catch(SocketException e) {
-				System.err.println("Lost connection to server. Reconnecting...");
-				try{
-					reconnect();
-				} catch (Exception reconnecte) {
-					reconnecte.printStackTrace();
-					isDone = true;			
-				}
-			} catch(Exception e) {e.printStackTrace();}
+			} catch(Exception e) {e.printStackTrace(); isDone = true;}
 		}
 
 	}
 
+	/**
+	*Build community cards.
+	*@return String - comCards The community cards.
+	*/
 	public String buildCommunityCards(){
 		Card [] communityCards = game.getCommunityCards();
 		String comCards = "";
@@ -152,7 +140,9 @@ public class GameThread implements Runnable{
 
 		return comCards;
 	}
-
+	/**
+	*Send community cards.
+	*/
 	public void sendCommunityCards(){
 		System.out.println("Displaying community cards to players");
 		for(int i = 0; i < game.getPlayerCount(); i++){
@@ -163,6 +153,9 @@ public class GameThread implements Runnable{
 		}
 	}
 
+	/**
+	*Send cards to players.
+	*/
 	public void sendCards(){
 		if(game.isGameOn() && !handSent && game.getHandDealt()){
 			System.out.println("Round has started; dealing cards to players");
@@ -351,7 +344,9 @@ public class GameThread implements Runnable{
 			}
 		}
 	}
-
+	/**
+	*Show player their hand.
+	*/
 	private void seeHand(int playerID){
 		PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
 		Card[] hand = player.getHand();
@@ -386,6 +381,10 @@ public class GameThread implements Runnable{
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
+	/**
+	*Check if it's current player's turn.
+	*@param playerID Integer representing current player.
+	*/
 	private void checkTurn(int playerID){
 		try{
 			if (game.checkTurn(playerID) == false) {
@@ -398,6 +397,10 @@ public class GameThread implements Runnable{
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
+	/**
+	*Check current player's stack.
+	*@param playerID Integer representating current player.
+	*/
 	private void checkStack(int playerID){
 		try{
 			PlayerNode player = game.getPlayerList().findPlayerByIndex(playerID);
@@ -407,6 +410,10 @@ public class GameThread implements Runnable{
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
+	/**
+	*Current player calls.
+	*@param playerID Integer representating current player.
+	*/
 	private void call(int playerID){
 		try{
 			if (game.checkTurn(playerID) == false) {
@@ -417,6 +424,10 @@ public class GameThread implements Runnable{
 		} catch (IOException e){e.printStackTrace();}
 	}
 
+	/**
+	*Fold current player.
+	*@param playerID Integer representating current player.
+	*/
 	private void fold(int playerID){
 		try{
 			if (game.checkTurn(playerID) == false) {
@@ -435,6 +446,12 @@ public class GameThread implements Runnable{
 		} catch (IOException e){e.printStackTrace();}
 	}
 
+	/**
+	*Send message to current player.
+	*@param out OutputStreamWriter object.
+	*@param playerID Integer representating current player. 
+	*@param message String representing the message.
+	*/
 	private void sendMessage(OutputStreamWriter out, int playerID, String message){
 		try{
 			out.write(playerID + " message " + message + "\n");
@@ -447,6 +464,9 @@ public class GameThread implements Runnable{
 		}
 	}
 
+	/**
+	*Reconnect.
+	*/
 	private void reconnect(){
 		try{
 			socket.close();
