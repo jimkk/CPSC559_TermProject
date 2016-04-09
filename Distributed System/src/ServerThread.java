@@ -47,7 +47,7 @@ public class ServerThread implements Runnable{
 		gameServerChosen = false;
 		message = "";
 	}
-
+	
 	/**
 	 * @param socket The client's socket
 	 * @param clientID The client's ID
@@ -67,7 +67,7 @@ public class ServerThread implements Runnable{
 
 	public void run(){
 
-
+		
 
 		try{
 
@@ -81,18 +81,13 @@ public class ServerThread implements Runnable{
 
 			out.write("clientID " + clientID + "\n");
 			out.flush();
-			String gameIndexString = IOUtilities.read(in);
-			gameIndex = Integer.parseInt(gameIndexString.split(" ")[1]);
-
-			System.out.println("Current gameIndex: " + gameIndex);
-			if(servers.containsKey(gameIndex)){
-				gameServerSocket = servers.get(gameIndex);
-				gameServerChosen = true;
-				gameIndex++;
-			} else {
-				System.out.println("Game index not found. Joining first available game");
-				gameIndex = 0;
+/*
+			while(in.ready()){
+				System.out.println("Input ready");
+				gameIndex = in.read();
 			}
+*/
+
 
 			while(!gameServerChosen){
 				if(servers.size() == 0){
@@ -107,6 +102,22 @@ public class ServerThread implements Runnable{
 					Thread.sleep(5000);
 					continue;
 				}
+				//TODO Ask which game server to join
+				//For now, it's the first one
+				//gameIndex = 1;
+				try{
+					//if(in.ready()){
+						System.out.println("--Reached ready--");
+						String gameIndexString = IOUtilities.read(in);
+						gameIndex = Integer.parseInt(gameIndexString);
+				//}
+				} catch(Exception e){e.printStackTrace();}
+	
+				System.out.println("Current gameIndex: " + gameIndex);
+				//Scanner scanner = new Scanner(System.in);
+				//System.out.print("Which game number would you like to join?: ");
+				//gameIndex = scanner.nextInt();
+
 
 				do{
 					gameServerSocket = servers.get(gameIndex);
