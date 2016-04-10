@@ -1,5 +1,7 @@
 import java.net.*;
 import java.io.*;
+import java.util.*;
+import com.google.gson.*;
 
 /**
  * The class from the server that will set up a connection to a backup server
@@ -16,10 +18,25 @@ public class GameServer {
 	private Socket serverManagerSocket;
 	private String serverManagerAddress;
 	private int serverManagerPort;
+	private long timeSincePing = 0;
+
+	private BufferedInputStream bufIn;
+	private InputStreamReader in;
+	private BufferedOutputStream bufOut;
+	private OutputStreamWriter out;
+
+	private int numGames = 1;
+	private static volatile HashMap<Integer, String> messageInboxes = new HashMap<Integer, String>();
 
 	public GameServer(String address, int port){
 		serverManagerAddress = address;
 		serverManagerPort = port;
+	}
+	
+	public GameServer(String address, int port, int numGames){
+		serverManagerAddress = address;
+		serverManagerPort = port;
+		this.numGames = numGames;
 	}
 
 	/**
@@ -33,17 +50,78 @@ public class GameServer {
 			System.err.println("ERROR: Failed to connect to server manager");
 			System.exit(-1);
 		}
-		
-		//TODO Thread this. And therefore move message receiving into this class with the threads
-		//reading a string variable containing messages that may pertain to them (processing and
-		//remove the messages if they do) similar to ServerThread.
-		//new GameThread(serverManagerSocket, game).run();
-		new Thread(new GameThread(serverManagerSocket)).start();
+	
+		try{	
+			bufIn = new BufferedInputStream(serverManagerSocket.getInputStream());
+			in = new InputStreamReader(bufIn);
+			bufOut = new BufferedOutputStream(serverManagerSocket.getOutputStream());
+			out = new OutputStreamWriter(bufOut);
 
-		//TODO Create a stream reader that will process the messages and pass them to their 
-		//respective GameThreads. It's either that or have the GameThreads process the stream
-		//and then share the data between themselves
+			out.write("addGameServer " + numGames + "\n");
+			out.flush();
 
+			while(!in.ready()){
+				Thread.sleep(100);
+			}
+			String firstMessage = IOUtilities.read(in);
+			String [] firstMessageParts = firstMessage.split(" ");
+			int gameIDs = Integer.parseInt(firstMessageParts[1]);
+			for(int i = 0; i < numGames; i++){
+				messageInboxes.put(gameIDs, new String(""));
+				new Thread(new GameThread(serverManagerSocket, gameIDs, messageInboxes)).start();
+				gameIDs++;
+			}
+
+			while(!isDone){
+				try{
+				if(in.ready()){
+					String message = IOUtilities.read(in);
+					if(message.split(" ")[0].equals("restoregame")){
+						System.out.println("Restoring from backup");
+						String [] messageParts = message.split(" ");
+						int gameID = Integer.parseInt(messageParts[1]);
+						Gson gson = new GsonBuilder().create();
+						String startContents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
+						GameManager game = gson.fromJson(startContents, GameManager.class);
+						messageInboxes.put(gameID, new String(""));
+						new Thread(new GameThread(serverManagerSocket, gameID, messageInboxes, game)).start();
+					} else {
+						String [] messageParts = message.split(" ");
+						int gameID = Integer.parseInt(messageParts[0]);
+						System.out.printf("Received message for game %d: ", gameID);
+						if(messageInboxes.containsKey(gameID)){
+							messageInboxes.put(gameID, IOUtilities.rebuildString(messageParts, 1, messageParts.length));
+						} else {
+							System.out.printf("ERROR: Received message for a game that this server do not handle (ID = %d)\n", gameID);
+						}
+						System.out.printf("%s\n", messageInboxes.get(gameID));
+					}
+				}
+				if(new Date().getTime() - timeSincePing > 3000){
+					out.write("ping\n");
+					out.flush();
+					timeSincePing = new Date().getTime();
+				}
+				Thread.sleep(10);
+				} catch (SocketException sockete){
+					reconnect();
+				}
+
+			}
+		} catch (Exception e){e.printStackTrace(); isDone = true;}
+	}
+	
+	private void reconnect(){
+		try{
+			serverManagerSocket.close();
+			ServerSocket reconnectSocket = new ServerSocket(serverManagerSocket.getLocalPort());
+			serverManagerSocket = reconnectSocket.accept();
+			reconnectSocket.close();
+			bufIn = new BufferedInputStream(serverManagerSocket.getInputStream());
+			in = new InputStreamReader(bufIn);
+			bufOut = new BufferedOutputStream(serverManagerSocket.getOutputStream());
+			out = new OutputStreamWriter(bufOut);
+		} catch (Exception e) {e.printStackTrace();}
 	}
 
 	public static void main(String[] args) {	
@@ -54,8 +132,9 @@ public class GameServer {
 		}
 		if(args.length == 2){
 			String address = args[0];
-			int port = Integer.parseInt(args[1]);
-			new GameServer(address, port).run();
+			int port = Server.SERVERPORT;
+			int numGames = Integer.parseInt(args[1]);
+			new GameServer(address, port, numGames).run();
 		}
 	}
 

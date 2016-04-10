@@ -10,7 +10,8 @@ import java.io.*;
 public class Client{
 
 	private String address;
-	private int port;
+	private int port = Server.CLIENTPORT;
+	private int desiredGame = 1;
 	private Socket socket;
 	private boolean isDone = false;
 	private boolean isTurn = false;
@@ -25,12 +26,15 @@ public class Client{
 		try{
 			socket = new Socket(address, port);
 			System.out.printf("Connected to %s on port %d\n", socket.getInetAddress(), socket.getPort());
+			System.out.println("Attempting to join game " + desiredGame  + "...");
 			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
 			InputStreamReader in = new InputStreamReader(bufIn);
 			BufferedOutputStream bufOut = new BufferedOutputStream(socket.getOutputStream());
 			OutputStreamWriter out = new OutputStreamWriter(bufOut);
-			//Scanner userIn = new Scanner(System.in);
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+			out.write("desiredgame " + desiredGame + '\n');
+			out.flush();
 
 			String buffer = "";
 
@@ -48,6 +52,9 @@ public class Client{
 						}
 
 						switch(messageType){
+							//case("desiredGame"):
+								//desiredGame = Integer.parseInt(buffer.substring(buffer.indexOf(" ") + 1, buffer.length()));
+								//break;
 							case("message"):
 								message(buffer);
 								break;
@@ -132,6 +139,10 @@ public class Client{
 								out.write("displayGame\n");
 								out.flush();
 								break;
+							case("desiredGame"):
+								out.write("desiredGame\n");
+								out.flush();
+								break;
 							default:
 								System.out.println("ERROR: Unknown Message Type");
 								break;
@@ -210,7 +221,7 @@ public class Client{
 		else if(args.length == 2){
 			Client client = new Client();
 			client.address = args[0];
-			client.port = Integer.parseInt(args[1]);
+			client.desiredGame = Integer.parseInt(args[1]);
 			client.run();
 		}
 	}

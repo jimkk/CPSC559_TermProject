@@ -67,6 +67,8 @@ public class ServerThread implements Runnable{
 
 	public void run(){
 
+		
+
 		try{
 
 			bufIn = new BufferedInputStream(clientSocket.getInputStream());
@@ -93,29 +95,33 @@ public class ServerThread implements Runnable{
 					Thread.sleep(5000);
 					continue;
 				}
-				//TODO Ask which game server to join
-				//For now, it's the first one
-				gameIndex = 1;
-				//Scanner scanner = new Scanner(System.in);
-				//System.out.print("Which game number would you like to join?: ");
-				//gameIndex = scanner.nextInt();
-
-
-				do{
+				try{
+					String gameIndexString = IOUtilities.read(in);
+					gameIndex = Integer.parseInt(gameIndexString.split(" ")[1]);
+				} catch(Exception e){e.printStackTrace();}
+	
+				if(servers.containsKey(gameIndex)){
+					System.out.printf("Client %d is joining game %d\n", clientID, gameIndex);
 					gameServerSocket = servers.get(gameIndex);
-					gameIndex++;
-					if(gameIndex > 100){
-						System.err.println("Can't find a valid game server");
+					gameServerChosen = true;
+				} else {
+
+					do{
+						gameServerSocket = servers.get(gameIndex);
+						gameIndex++;
+						if(gameIndex > 100){
+							System.err.println("Can't find a valid game server");
+							System.exit(-1);
+						}
+					} while (gameServerSocket == null);
+					gameServerChosen = true;
+					if(gameServerSocket == null){
+						System.err.println("Something went wrong, the GameServer chosen does not exist");
 						System.exit(-1);
 					}
-				} while (gameServerSocket == null);
-				gameServerChosen = true;
-				if(gameServerSocket == null){
-					System.err.println("Something went wrong, the GameServer chosen does not exist");
-					System.exit(-1);
+					gameIndex--;
 				}
 			}
-			gameIndex--;
 
 			bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
 			gameIn = new InputStreamReader(bufGameIn);
@@ -135,7 +141,7 @@ public class ServerThread implements Runnable{
 					}
 				}
 			} else {
-				gameOut.write(clientID + " addplayer " + stack + "\n");
+				gameOut.write(gameIndex + " " + clientID + " addplayer " + stack + "\n");
 				gameOut.flush();
 				System.out.printf("Client %d added to game %d\n", clientID, gameIndex);
 			}
@@ -157,7 +163,7 @@ public class ServerThread implements Runnable{
 							}
 						} else {
 							System.out.printf("Message from %d: %s\n", clientID, messageIn);
-							gameOut.write(clientID + " " + messageIn + "\n");
+							gameOut.write(gameIndex + " " + clientID + " " + messageIn + "\n");
 							gameOut.flush();
 							if(messageIn.equals("close")){
 								System.out.printf("Closing thread for client %d\n", clientID);
@@ -167,33 +173,24 @@ public class ServerThread implements Runnable{
 					}
 					if(gameIn.ready()){
 						while(readingStream){
-							System.out.println("Waiting for reading stream access");
 							Thread.sleep(10);
 						}
 						readingStream = true;
 						if(!gameIn.ready()){
 							readingStream = false;
 						} else {
-							System.out.printf("(%d)Read...", clientID);
 							String newMessage = IOUtilities.read(gameIn);
-							System.out.printf("(%d)Done.\n", clientID);
 							readingStream = false;
 							if(!newMessage.equals("ping")){
 
-								System.out.println(newMessage);
-
 								while(!message.equals("")){
-									System.out.printf("Waiting for \"%s\" to be removed\n", message);
 									Thread.sleep(100);
 								}
 								message = newMessage;
 								System.out.printf("Message from game server: \"%s\"\n", message);
-								System.out.println(message.substring(message.indexOf(" ")+1) + "\n");
 								int ID = Integer.parseInt(message.split(" ")[0]);
-								System.out.printf("ID = %d, clientID = %d\n", ID, clientID);
 								if(ID == clientID){
 									try{
-										System.out.printf("Notifying Client (ID = %d, clientID = %d\n", ID, clientID);
 										out.write(message.substring(message.indexOf(" ")+1) + "\n");
 										out.flush();
 									} catch (SocketException se) {
@@ -215,7 +212,7 @@ public class ServerThread implements Runnable{
 							// set ID to -1 because if this is caught we know that another thread has
 							// emptied the message before this thread computed !message.equals("")...
 							ID = -1;
-						}
+						}				
 						if(ID == clientID){			
 							try{
 								out.write(message.substring(message.indexOf(" ")+1) + "\n");
@@ -231,12 +228,19 @@ public class ServerThread implements Runnable{
 				} catch(SocketException e){
 					Socket socket = servers.remove(gameIndex);
 					servers.put(-gameIndex, socket);
-					while(servers.get(gameIndex) == null);
+					while(servers.get(gameIndex) == null){
+						Thread.sleep(1000);
+					}
 					gameServerSocket = servers.get(gameIndex);
+					bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
+					gameIn = new InputStreamReader(bufGameIn);
+					bufGameOut = new BufferedOutputStream(gameServerSocket.getOutputStream());
+					gameOut = new OutputStreamWriter(bufGameOut);
 				} catch(Exception e){e.printStackTrace(); isDone = true;}
 
 				Thread.sleep(100);
 			}
+			System.out.println("Closing thread");
 
 		} catch (Exception e) {e.printStackTrace();}
 

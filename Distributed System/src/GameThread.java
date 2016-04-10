@@ -2,7 +2,6 @@ import java.net.*;
 import java.lang.*;
 import java.io.*;
 import java.util.*;
-import com.google.gson.*;
 
 /**
  * The main processing thread on the server side for communications with a
@@ -23,6 +22,9 @@ public class GameThread implements Runnable{
 
 	private static boolean debug = true;
 
+	private int gameID;
+	private HashMap<Integer, String> inboxes;
+
 	// Instance variables
 	private Socket socket;
 	Random rand = new Random();
@@ -34,41 +36,34 @@ public class GameThread implements Runnable{
 	private String backupServerAddress = "localhost";
 	private int backupServerPort = 5432;
 
-	BufferedInputStream bufIn;
-	InputStreamReader in;
 	BufferedOutputStream bufOut;
 	OutputStreamWriter out;
 
-	public GameThread(Socket socket){
+	public GameThread(Socket socket, int gameID, HashMap<Integer, String> inboxes){
 		this.socket = socket;
+		this.gameID = gameID;
+		this.inboxes = inboxes;
+		game = new GameManager();
 	}
 
+	public GameThread(Socket socket, int gameID, HashMap<Integer, String> inboxes, GameManager game){
+		this.socket = socket;
+		this.gameID = gameID;
+		this.inboxes = inboxes;
+		this.game = game; 
+	}
 	/**
 	 * The main function that runs in a loop and and will manage communications for the client and GameManager.
 	 */
 	public void run(){
-		game = new GameManager();
+		setUpBackup();
 		System.out.println("Number of players: " + game.getPlayerCount());
+		game.setGameID(gameID);
+		System.out.printf("Game ID: %d\n", gameID);
 		try{
-			bufIn = new BufferedInputStream(socket.getInputStream());
-			in = new InputStreamReader(bufIn);
 			bufOut = new BufferedOutputStream(socket.getOutputStream());
 			out = new OutputStreamWriter(bufOut);
-
-			String startMessage = IOUtilities.read(in);
-			String [] startMessageParts = startMessage.split(" ");
-			int gameID = Integer.parseInt(startMessageParts[1]);
-			game.setGameID(gameID);
-			System.out.printf("Game ID: %d\n", gameID);
-
-			if(startMessageParts.length > 2){
-				System.out.println("Restoring from backup");
-				Gson gson = new GsonBuilder().create();
-				String startContents = IOUtilities.rebuildString(startMessageParts, 2, startMessageParts.length);
-				game = gson.fromJson(startContents, GameManager.class);
-			}
-
-		} catch (Exception e) {e.printStackTrace();}
+		} catch (Exception e){e.printStackTrace();}
 
 		while(!isDone){
 			try{
@@ -153,28 +148,15 @@ public class GameThread implements Runnable{
 					//new Thread(game).start();
 				}
 				readMessage();
-				if(new Date().getTime() - timeSincePing > 3000){
-					out.write("ping\n");
-					out.flush();
-					timeSincePing = new Date().getTime();
-				}
 				Thread.sleep(10);
-			} catch(SocketException e) {
-				System.err.println("Lost connection to server. Reconnecting...");
-				try{
-					reconnect();
-				} catch (Exception reconnecte) {
-					reconnecte.printStackTrace();
-					isDone = true;			
-				}
-			} catch(Exception e) {e.printStackTrace();}
+			} catch(Exception e) {e.printStackTrace(); isDone = true;}
 		}
 
 	}
 
 	/**
 	 * Helper method to build the Community Cards (comCards) list as a String
-	 * @return comCards
+	 * @return String - comCards The community cards.
 	 */
 	public String buildCommunityCards(){
 		Card [] communityCards = game.getCommunityCards();
@@ -206,7 +188,7 @@ public class GameThread implements Runnable{
 
 	/**
 	 * Sends the cards to their respective players
-	 * @return None
+	 * @return None	 
 	 */
 	public void sendCards(){
 		if(game.isGameOn() && !handSent && game.getHandDealt()){
@@ -303,105 +285,110 @@ public class GameThread implements Runnable{
 	}
 	/**
 	 * Read inputs from the Clients and branch according to the messageType
-	 * Note: those player's who make a request reqruiring it to be their turn
+	 * Note: those player's who make a request requiring it to be their turn
 	 *       and it's not their turn, are refused by the GameServer 
 	 */
 	private void readMessage(){
 		String buffer = "";
 		String messageType = "";
+		
+		if(!inboxes.get(gameID).equals("")){
+			int playerID;
+			String [] messageParts;
+			String contents;
 
-		try{
-			if(in.ready()){
-				int playerID;
-				String [] messageParts;
-				String contents;
+			buffer = inboxes.get(gameID);
+			inboxes.put(gameID, "");
 
-				buffer = IOUtilities.read(in);
+			messageParts = buffer.toString().split(" ");
+			playerID = Integer.parseInt(messageParts[0]);
+			messageType = messageParts[1];
+			contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
 
-				messageParts = buffer.toString().split(" ");
-				playerID = Integer.parseInt(messageParts[0]);
-				messageType = messageParts[1];
-				contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
-
-				// Check if it is that player's turn; if not reply accordingly
-				// Note: only check if the player has requested something that cannot
-				// be done if it is not his or her turn; i.e. betting, folding, calling
+			// Check if it is that player's turn; if not reply accordingly
+			// Note: only check if the player has requested something that cannot
+			// be done if it is not his or her turn; i.e. betting, folding, calling
 
 
-				switch(messageType){
-					case("addplayer"):
-						int stack = Integer.parseInt(messageParts[2]);
-						System.out.println("New player added");
-						game.addPlayerToGame(stack, playerID);
-						System.out.printf("There are %d players currently in the game\n", game.getPlayerCount());
+			switch(messageType){
+				case("addplayer"):
+					int stack = Integer.parseInt(messageParts[2]);
+					System.out.println("New player added");
+					game.addPlayerToGame(stack, playerID);
+					System.out.printf("There are %d players currently in the game\n", game.getPlayerCount());
+					break;
+				case("checkTurn"):
+					checkTurn(playerID);
+					break;
+				case("checkStack"):
+					checkStack(playerID);
+					break;
+				case("seeHand"):
+					seeHand(playerID);
+					break;
+				case("communityCards"):
+					String cardList = buildCommunityCards();
+					sendMessage(out, playerID, "Community Cards: " + cardList);
+					break;
+				case("bet"):
+					int betAmount = Integer.parseInt(contents);
+					bet(betAmount, playerID);
+					break;
+				case("call"):
+					call(playerID);
+					break;
+				case("check"):
+					System.out.println("Player: " + playerID + "checks");
+					bet(0, playerID);
+					break;
+				case("fold"):
+					fold(playerID);
+					break;
+				case("vote"):
+					if (game.getStartVoting() == false){
+						sendMessage(out, playerID, "You cannot place your votes for the winner yet; the game is still going");
 						break;
-					case("checkTurn"):
-						checkTurn(playerID);
-						break;
-					case("checkStack"):
-						checkStack(playerID);
-						break;
-					case("seeHand"):
-						seeHand(playerID);
-						break;
-					case("communityCards"):
-						String cardList = buildCommunityCards();
-						sendMessage(out, playerID, "Community Cards: " + cardList);
-						break;
-					case("bet"):
-						int betAmount = Integer.parseInt(contents);
-						bet(betAmount, playerID);
-						break;
-					case("call"):
-						call(playerID);
-						break;
-					case("check"):
-						System.out.println("Player: " + playerID + "checks");
-						bet(0, playerID);
-						break;
-					case("fold"):
-						fold(playerID);
-						break;
-					case("vote"):
-						if (game.getStartVoting() == false){
-							sendMessage(out, playerID, "You cannot place your votes for the winner yet; the game is still going");
-							break;
+					}
+					int votedPlayer = Integer.parseInt(contents);
+					game.setVotes(playerID, votedPlayer);
+					System.out.printf("Player: " + playerID + "'s vote: " + votedPlayer + "\n");
+					break;
+				case("seePot"):
+					sendMessage(out, playerID, "The current pot amount is: $" + game.getPot());
+					break;
+				case("message"):
+					System.out.printf("Message from %s: %s\n", playerID, contents);
+					break;
+				case("displayGame"):
+					game.getPlayerList().displayGameState();
+					break;
+				case("close"):
+	
+					System.out.printf("Player %d has left the game\n", playerID);
+					// return the playerID
+					game.removePlayerFromGame(playerID);
+					break;
+				case("destroy"):
+					System.out.println("Server shut down at client's request");
+					//TODO
+					break;
+				case(""):
+					break;
+				default:
+					System.out.println("ERROR: Unknown Message Type");
+					System.out.println("\t" + buffer);
+					System.exit(-1);
+					break;
+	/*
+					case("gameRequest"):
+						int desiredGame = Integer.parseInt(contents);
+						try{
+	
+						} catch(IOException e) {e.printStackTrace();}
 						}
-						int votedPlayer = Integer.parseInt(contents);
-						game.setVotes(playerID, votedPlayer);
-						System.out.printf("Player: " + playerID + "'s vote: " + votedPlayer + "\n");
 						break;
-					case("seePot"):
-						sendMessage(out, playerID, "The current pot amount is: $" + game.getPot());
-						break;
-					case("message"):
-						System.out.printf("Message from %s: %s\n", playerID, contents);
-						break;
-					case("displayGame"):
-						game.getPlayerList().displayGameState();
-						break;
-					case("close"):
-
-						System.out.printf("Player %d has left the game\n", playerID);
-						// return the playerID
-						game.removePlayerFromGame(playerID);
-						break;
-					case("destroy"):
-						System.out.println("Server shut down at client's request");
-						//TODO
-						break;
-					case(""):
-						break;
-					default:
-						System.out.println("ERROR: Unknown Message Type");
-						System.out.println("\t" + buffer);
-						System.exit(-1);
-						break;
-				}
+	*/
 			}
-		}
-		catch (IOException e){
-			e.printStackTrace();
 		}
 	}
 
@@ -534,7 +521,7 @@ public class GameThread implements Runnable{
 	}
 	/**
 	 * Checks to see if it is the requesting player's turn
-	 * @param playerID
+	 * @param playerID Integer representing current player.
 	 */
 	private void checkTurn(int playerID){
 		try{
@@ -550,7 +537,7 @@ public class GameThread implements Runnable{
 
 	/**
 	 * Allows the player to view their stack
-	 * @param playerID
+	 * @param playerID Integer representing current player.
 	 */
 	private void checkStack(int playerID){
 		try{
@@ -563,7 +550,7 @@ public class GameThread implements Runnable{
 
 	/**
 	 * Method executed when a player has indicated they wish to call a previous bet
-	 * @param playerID
+	 * @param playerID Integer representing current player.
 	 */
 	private void call(int playerID){
 		try{
@@ -577,7 +564,7 @@ public class GameThread implements Runnable{
 
 	/**
 	 * Fold this player's hand
-	 * @param playerID
+	 * @param playerID Integer representing current player.
 	 */
 	private void fold(int playerID){
 		try{
@@ -600,10 +587,10 @@ public class GameThread implements Runnable{
 	/**
 	 * Sends a message through the GameServer to the Main Server, where the Main Server will route that message
 	 * to the corresponding player
-	 * @param out
-	 * @param playerID
-	 * @param message
-	 */
+	 * @param out OutputStreamWriter object.
+	 * @param playerID Integer representing current player. 
+	 * @param message String representing the message.
+	*/
 	private void sendMessage(OutputStreamWriter out, int playerID, String message){
 		try{
 			out.write(playerID + " message " + message + "\n");
@@ -616,16 +603,17 @@ public class GameThread implements Runnable{
 		}
 	}
 
+	/**
+	*Reconnect.
+	*/
 	private void reconnect(){
 		try{
-		socket.close();
-		ServerSocket reconnectSocket = new ServerSocket(socket.getLocalPort());
-		socket = reconnectSocket.accept();
-		reconnectSocket.close();
-		bufIn = new BufferedInputStream(socket.getInputStream());
-		in = new InputStreamReader(bufIn);
-		bufOut = new BufferedOutputStream(socket.getOutputStream());
-		out = new OutputStreamWriter(bufOut);
+			socket.close();
+			ServerSocket reconnectSocket = new ServerSocket(socket.getLocalPort());
+			socket = reconnectSocket.accept();
+			reconnectSocket.close();
+			bufOut = new BufferedOutputStream(socket.getOutputStream());
+			out = new OutputStreamWriter(bufOut);
 		} catch (Exception e) {e.printStackTrace();}
 	}
 
