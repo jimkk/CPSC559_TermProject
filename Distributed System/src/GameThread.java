@@ -71,8 +71,9 @@ public class GameThread implements Runnable{
 		} catch (Exception e) {e.printStackTrace();}
 
 		while(!isDone){
-			try{			
+			try{
 				if(game.getPlayerCount() > 2 && !game.isGameOn()){
+					System.out.println(game.isGameOn());
 					// Start game
 					game.setGameOn(true);
 					game.initializeCommunityCards();
@@ -88,7 +89,13 @@ public class GameThread implements Runnable{
 					System.out.println("Starting round 1");
 					beginRound();
 					// Check if all folded
+					if (game.checkAllFolded())
+					{
+						System.out.println("Evaluating winner...");
+						//call reset game
+					}
 					// Check if all player bets are equal
+					checkEqualBets();
 
 
 					// Round 2
@@ -98,7 +105,13 @@ public class GameThread implements Runnable{
 					sendCommunityCards();
 					beginRound();
 					// Check if all folded
+					if (game.checkAllFolded())
+					{
+						System.out.println("Evaluating winner...");
+						//call reset game
+					}
 					// Check if all player bets are equal
+					checkEqualBets();
 
 					System.out.println("===============================================");
 					System.out.println("Starting round 3");
@@ -107,7 +120,13 @@ public class GameThread implements Runnable{
 					sendCommunityCards();
 					beginRound();
 					// Check if all folded
+					if (game.checkAllFolded())
+					{
+						System.out.println("Evaluating winner...");
+						//call reset game
+					}					
 					// Check if all player bets are equal
+					checkEqualBets();
 
 					System.out.println("===============================================");
 					System.out.println("Starting round 4");
@@ -116,10 +135,20 @@ public class GameThread implements Runnable{
 					sendCommunityCards();
 					beginRound();
 					// Check if all folded
+					if (game.checkAllFolded())
+					{
+						System.out.println("Evaluating winner...");
+						//call reset game
+					}
 					// Check if all player bets are equal
+					checkEqualBets();
 
-					// Resolve winner 
+					// Resolve winner
+					winner();
+					
 					// Reset game
+					handSent = false;
+					game.resetGame();
 
 					//new Thread(game).start();
 				}
@@ -143,11 +172,16 @@ public class GameThread implements Runnable{
 
 	}
 
+	/**
+	 * Helper method to build the Community Cards (comCards) list as a String
+	 * @return comCards
+	 */
 	public String buildCommunityCards(){
 		Card [] communityCards = game.getCommunityCards();
 		String comCards = "";
 		int x = 0;
-		while (communityCards[x] != null && x < communityCards.length) {
+		while (x < communityCards.length) {
+			if (communityCards[x] == null) break;
 			comCards += communityCards[x] + " ";
 			x++;
 		}
@@ -155,8 +189,13 @@ public class GameThread implements Runnable{
 		return comCards;
 	}
 
+	/**
+	 * Sends Community Cards to all players
+	 * @return None
+	 */
 	public void sendCommunityCards(){
 		System.out.println("Displaying community cards to players");
+		System.out.println(game.getPlayerCount());
 		for(int i = 0; i < game.getPlayerCount(); i++){
 			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
 			int playerID = player.getPlayerID();
@@ -165,6 +204,10 @@ public class GameThread implements Runnable{
 		}
 	}
 
+	/**
+	 * Sends the cards to their respective players
+	 * @return None
+	 */
 	public void sendCards(){
 		if(game.isGameOn() && !handSent && game.getHandDealt()){
 			System.out.println("Round has started; dealing cards to players");
@@ -189,7 +232,7 @@ public class GameThread implements Runnable{
 		// Loop through all players, and on each player, keep looping until their turn is
 		// confirmed done, reading all inputs/messages from other players
 		for(int i = 0; i < game.getPlayerCount(); i++){
-			readMessage();
+			//readMessage();
 			// Step 1:
 			// Find the current player's turn 
 			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
@@ -214,7 +257,7 @@ public class GameThread implements Runnable{
 			// Wait on that player's response/move for their turn
 			// all the while, processing other player's messages
 			while (game.getCurrentPlayerDoneTurn() == false && game.getCurrentPlayerTurn() == true){
-				readMessage();
+				//readMessage();
 				game.setCurrentPlayerBeginTurn(true);
 
 				// Notify the player that it is their turn
@@ -250,9 +293,9 @@ public class GameThread implements Runnable{
 					player.setTurn(false);
 					player.nextPlayer.setTurn(true);
 				}
-				readMessage();
+				//readMessage();
 			}
-			readMessage();
+			//readMessage();
 
 			System.out.println("\nEnd Turn State:");
 			game.getPlayerList().displayGameState();
@@ -319,6 +362,18 @@ public class GameThread implements Runnable{
 					case("fold"):
 						fold(playerID);
 						break;
+					case("vote"):
+						if (game.getStartVoting() == false){
+							sendMessage(out, playerID, "You cannot place your votes for the winner yet; the game is still going");
+							break;
+						}
+						int votedPlayer = Integer.parseInt(contents);
+						game.setVotes(playerID, votedPlayer);
+						System.out.printf("Player: " + playerID + "'s vote: " + votedPlayer + "\n");
+						break;
+					case("seePot"):
+						sendMessage(out, playerID, "The current pot amount is: $" + game.getPot());
+						break;
 					case("message"):
 						System.out.printf("Message from %s: %s\n", playerID, contents);
 						break;
@@ -350,6 +405,10 @@ public class GameThread implements Runnable{
 		}
 	}
 
+	/**
+	 * Does a lookup on the player's hand based on their playerID
+	 * @param playerID
+	 */
 	private void seeHand(int playerID){
 		PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
 		Card[] hand = player.getHand();
@@ -358,6 +417,96 @@ public class GameThread implements Runnable{
 		} else {
 			sendMessage(out, playerID, "Hand: " + hand[0] + " " + hand[1]);
 		}
+	}
+	
+	/**
+	 * Check to make sure that every player's bet amount is equivalent to the highest bet amount
+	 */
+	private void checkEqualBets()
+	{
+		List<Integer> sendTo = new ArrayList<>();
+		PlayerNode player;
+		// Build the list of players who's current bet amount does not match the current call amount on the table
+		for(int i = 0; i < game.getPlayerCount(); i++){
+			player = game.getPlayerList().findPlayerByIndex(i);
+			if (player.currentBetAmount < game.getCurrentBetCall()) sendTo.add(player.getPlayerID());
+		}
+		for(int i = 0; i < sendTo.size(); i++){
+			int playerID = sendTo.get(i);
+			sendMessage(out, playerID, "Your current bet amount is less than the call amount on the table. Please call or fold.");
+			
+			// loop on the player in question until they have matched the current call amount or folded their hand
+			while(game.getPlayerList().findPlayerByID(playerID).getCurrentBetAmount() < game.getCurrentBetCall() 
+					&& game.getPlayerList().findPlayerByID(playerID).getFolded() == false) {
+				readMessage();
+			}
+		}
+		// check to make sure all players in the original list of unequal bet amounts, now have an equal amount
+		// if not, call checkEqualBets()
+		for(int i = 0; i < game.getPlayerCount(); i++){
+			PlayerNode playerCheck = game.getPlayerList().findPlayerByID(i);
+			if (playerCheck.currentBetAmount < game.getCurrentBetCall()
+			    && game.getPlayerList().findPlayerByID(i).getFolded() == false) checkEqualBets(); 
+		}
+			
+	}
+	
+	private boolean doneVoting()
+	{
+		for(int i = 0; i < game.getPlayerCount(); i++){
+			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
+			System.out.printf("Vote: " + player.getVote());
+			if (player.getVote() == -1) return false;
+		}
+		return true;
+	}
+	
+	private boolean checkVotes()
+	{
+		PlayerNode prevPlayer = game.getPlayerList().findPlayerByIndex(0);
+		int previousVote = prevPlayer.getVote();
+		for(int i = 1; i < game.getPlayerCount(); i++){
+			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
+			if (player.getVote() != previousVote && player.getVote() != -1) return false;
+		}
+		return true;
+	}
+	
+	private void winner()
+	{
+		game.setStartVoting(true);
+		do{
+			for(int i = 0; i < game.getPlayerCount(); i++){
+				PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
+				String msg = "GAME HAS COMPLETED!; commencing unanimous vote for the winner (not all votes may have been equal the first time)";
+				sendMessage(out, player.getPlayerID(), msg);
+			}
+			sendCommunityCards();
+			for (int i = 0; i < game.getPlayerCount(); i++) {
+				PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
+				int playerIDSend = player.getPlayerID();
+				for (int j = 0; j < game.getPlayerCount(); j++) {
+					PlayerNode otherPlayer = game.getPlayerList().findPlayerByIndex(j);
+					Card [] hand = otherPlayer.getHand();
+					int playerID = otherPlayer.getPlayerID();
+					
+					System.out.println("PlayerID: " + playerID + " Hand: " + hand[0] + " " + hand[1]);
+					sendMessage(out, playerIDSend, "Player: " + playerID + "'s" + "Hand: " + hand[0] + " " + hand[1]);
+				}
+			}
+			
+			// Continuously check if we are done voting on the winner
+			while (doneVoting() == false){
+				readMessage();
+			}
+			game.getPlayerList().displayGameState();
+			// When completed the voting, we check to make sure all votes equal
+		}while(checkVotes() == false);	
+		
+		// Now, since all votes are unanimous, we can just take the first player's vote and use that to assign the winner
+		PlayerNode player = game.getPlayerList().findPlayerByIndex(0);
+		game.assignWinnings(player.getVote());
+		sendMessage(out, player.getVote(), "You have WON! Your winnings are: $" + game.getPot());
 	}
 
 	//message switch methods
@@ -383,7 +532,10 @@ public class GameThread implements Runnable{
 			}
 		} catch (IOException e) {e.printStackTrace();}
 	}
-
+	/**
+	 * Checks to see if it is the requesting player's turn
+	 * @param playerID
+	 */
 	private void checkTurn(int playerID){
 		try{
 			if (game.checkTurn(playerID) == false) {
@@ -396,6 +548,10 @@ public class GameThread implements Runnable{
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
+	/**
+	 * Allows the player to view their stack
+	 * @param playerID
+	 */
 	private void checkStack(int playerID){
 		try{
 			PlayerNode player = game.getPlayerList().findPlayerByIndex(playerID);
@@ -405,6 +561,10 @@ public class GameThread implements Runnable{
 		} catch (IOException e) {e.printStackTrace();}
 	}
 
+	/**
+	 * Method executed when a player has indicated they wish to call a previous bet
+	 * @param playerID
+	 */
 	private void call(int playerID){
 		try{
 			if (game.checkTurn(playerID) == false) {
@@ -415,6 +575,10 @@ public class GameThread implements Runnable{
 		} catch (IOException e){e.printStackTrace();}
 	}
 
+	/**
+	 * Fold this player's hand
+	 * @param playerID
+	 */
 	private void fold(int playerID){
 		try{
 			if (game.checkTurn(playerID) == false) {
@@ -433,6 +597,13 @@ public class GameThread implements Runnable{
 		} catch (IOException e){e.printStackTrace();}
 	}
 
+	/**
+	 * Sends a message through the GameServer to the Main Server, where the Main Server will route that message
+	 * to the corresponding player
+	 * @param out
+	 * @param playerID
+	 * @param message
+	 */
 	private void sendMessage(OutputStreamWriter out, int playerID, String message){
 		try{
 			out.write(playerID + " message " + message + "\n");

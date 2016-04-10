@@ -206,9 +206,16 @@ public class ServerThread implements Runnable{
 						}
 					}
 					if(!message.equals("")){
-						if (clientID == 1) System.out.printf("***** Thread %d *****\n\n", clientID);
-						int ID = Integer.parseInt(message.split(" ")[0]);
-						System.out.printf("ID = %d, clientID = %d (type2)\n", ID, clientID);
+						System.out.println(message);
+						int ID;
+						try {
+							ID = Integer.parseInt(message.split(" ")[0]);
+							System.out.printf("ID = %d, clientID = %d (type2)\n", ID, clientID);
+						}catch(NumberFormatException e3){
+							// set ID to -1 because if this is caught we know that another thread has
+							// emptied the message before this thread computed !message.equals("")...
+							ID = -1;
+						}
 						if(ID == clientID){			
 							try{
 								out.write(message.substring(message.indexOf(" ")+1) + "\n");

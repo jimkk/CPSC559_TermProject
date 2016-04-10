@@ -93,6 +93,10 @@ public class Client{
 								String betAmount = br.readLine();
 								out.write("bet " + betAmount + '\n');
 								break;
+							case("call"):
+								System.out.println("Calling the current bet amount on the table...");
+								out.write("call " + '\n');
+								break;
 							case("fold"):
 								System.out.println("You have chosen to fold...");
 								out.write("fold " + '\n');
@@ -100,6 +104,19 @@ public class Client{
 							case("check"):
 								System.out.println("You have chosen to check; i.e. bet 0");
 								out.write("check " + '\n');
+								break;
+							case("vote"):
+								System.out.print("Enter your vote for winner: ");
+								String voted = br.readLine();
+								out.write("vote " + voted + "\n");
+								break;
+							case("seePot"):
+								System.out.println("Looking at current pot amount...");
+							    out.write("seePot " + '\n');
+								break;
+							case("currentBet"):
+								System.out.println("Looking at current bet amount...");
+								out.write("currentBet " + '\n');
 								break;
 							case("message"):
 								System.out.print("Enter message: ");

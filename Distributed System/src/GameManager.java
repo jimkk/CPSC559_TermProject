@@ -5,7 +5,7 @@ import java.util.*;
  * This class maintains the game state as well as containing the logic for most of the actions possible in a game.
  */
 
-public class GameManager implements Runnable {
+public class GameManager {
 	
 	private volatile int gameID;
 	private volatile int pot = 0;
@@ -23,6 +23,7 @@ public class GameManager implements Runnable {
 	private volatile boolean gameOn = false;
 	private volatile boolean gameStart = true;
 	private volatile boolean handDealt = false;
+	private volatile boolean startVoting = false;
 	private volatile boolean currentPlayerBeginTurn = false;
 	private volatile boolean currentPlayerDoneTurn = false;
 	private volatile boolean currentPlayerTurn = false;
@@ -34,86 +35,6 @@ public class GameManager implements Runnable {
 	private volatile Card[] communityCards = new Card[5];
 	private volatile LinkedPlayerList playerList = new LinkedPlayerList();
 
-
-
-	// When all players have joined, the game manager will deal the cards and assign the first
-	// player in the player linked list, the turn. Big and small blinds will also be assigned at
-	// this point
-
-
-	/**
-	 * Triggers the beginning of a round. The blinds are collected and the players are dealt their cards.
-	 */
-	public void beginRound(){
-		/**
-		 * Need to have a state-machine to manage the turns required of each player 
-		 */
-		//rotatePlayers();		 
-		// Set the blinds and the turns
-		setBlinds();
-
-		// Deal the cards
-		deal();
-		handDealt = true;
-		
-
-		// Subtract the big and small blind values from their respective player's stacks
-		// and add them to the pot
-		subtractBlinds();
-
-		// Traverse through player list, prompting each player for their turns
-		for(int i = 0; i < playerCount; i++){
-			PlayerNode player = getPlayerList().findPlayerByIndex(i);
-			
-			setCurrentPlayerIDTurn(player.playerID);
-			setCurrentPlayerTurn(true);
-			setCurrentPlayerDoneTurn(false);
-			setTurnSent(false);
-			
-			System.out.println("Current player's turn " + player.playerNumber);
-			System.out.println("Turn: " + currentPlayerTurn);
-			System.out.println("DoneTurn: " + currentPlayerDoneTurn);
-			System.out.println("sentTurn: " + turnSent);
-			
-			System.out.println("Begin Turn State:");
-			this.getPlayerList().displayGameState();
-			while (getCurrentPlayerDoneTurn() == false && getCurrentPlayerTurn() == true ){
-				
-				// Now we need to notify the player that it is their turn
-				// Setting the flag below, lets the serverthread know that it's now
-				// that player's turn, and the serverthread will notify them accordingly
-				setCurrentPlayerBeginTurn(true);
-				
-				
-				if (getCurrentPlayerBetFlag() == true && getCurrentPlayerBeginTurn() == true) {
-					setCurrentPlayerBeginTurn(false);
-					System.out.println("Player: " + getCurrentPlayerIDTurn() + " has chosed to bet: " + getCurrentPlayerBetAmount());
-					bet(getCurrentPlayerIDTurn(), getCurrentPlayerBetAmount());
-					setCurrentPlayerBetFlag(false);
-					System.out.println("CurrentPlayerBetFlag set to: " + getCurrentPlayerBetFlag());
-					System.out.println("CurrentPlayerBetFlag set to: " + currentPlayerBetFlag);
-					setCurrentPlayerDoneTurn(true);
-					System.out.println("CurrentPlayerDoneTurn set to: " + currentPlayerDoneTurn);
-				}
-				
-				if(getCurrentPlayerDoneTurn() == true && player.getTurn() == true) {
-					// Set the next player's turn to true
-					setCurrentPlayerTurn(false);
-					player.setTurn(false);
-					player.nextPlayer.setTurn(true);
-				}
-				
-			}
-			
-			System.out.println("\nEnd Turn State:");
-			this.getPlayerList().displayGameState();
-			
-		}
-
-		//set various flags 
-
-	}
-
 	/**
 	 * Sets the flags for which players just bet the large and small blinds.
 	 */
@@ -121,8 +42,9 @@ public class GameManager implements Runnable {
 		/**
 		 * Set Big and small blinds for each round
 		 */
-		
+		boolean blindsSet = false;
 		for(int i = 0; i < playerCount; i++){
+			if (blindsSet = true) break;
 			// pass in i+1 so that the index matches up with the player number
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
 			if(player.playerNumber == 1 && player.folded == false && gameStart == true){
@@ -131,12 +53,14 @@ public class GameManager implements Runnable {
 				player.turn = true;
 				player.nextPlayer.smallBlind = true;
 				gameStart = false;
+				blindsSet = true;
 			}
 			else if (player.bigBlind == true){
 				player.bigBlind = false;
 				player.nextPlayer.bigBlind = true;
 				player.nextPlayer.turn = true;
 				player.nextPlayer.nextPlayer.smallBlind = true;
+				blindsSet = true;
 			}
 		}
 	} 
@@ -312,19 +236,47 @@ public class GameManager implements Runnable {
 		player.setFolded(true);
 		
 	}
+	
+	/**
+	 * Check to see if all players have folded
+	 */
+	public boolean checkAllFolded()
+	{
+		for(int i = 0; i < getPlayerCount(); i++){
+			PlayerNode player = getPlayerList().findPlayerByIndex(i);
+			if (player.folded == false) return false; 
+		}
+		
+		return true;
+	}
 
 	/**
 	 * Resolve the winner of the game and assign the current pot value to += that player's stack
 	 */
-	private void resolveWinner(){
-		
+	public void assignWinnings(int winningPlayer){
+		PlayerNode player = getPlayerList().findPlayerByID(winningPlayer);
+		int newStackAmt = player.getStack() + this.pot;
+		player.setStack(newStackAmt);
 	}
 
 	/**
 	 * Reset the game to its starting points
 	 */
-	private void resetGame(){
+	public void resetGame(){
+		// Reset the pot amount
+		pot = 0;
+		currentBetCall = 0;
+		handDealt = false;
 		
+		deck = new Deck();
+		gameOn = false;
+		
+		
+	}
+	
+	public void setVotes(int playerID, int votedPlayer){
+		PlayerNode player = getPlayerList().findPlayerByID(playerID);
+		player.setVote(votedPlayer);
 	}
 	
 	/**
@@ -383,10 +335,6 @@ public class GameManager implements Runnable {
 		this.playerCount += i;
 	}
 
-	public void run() {
-		beginRound();
-	}
-	
 	public void setGameID(int ID){
 		gameID = ID;
 	}
@@ -461,6 +409,19 @@ public class GameManager implements Runnable {
 	
 	public Card[] getCommunityCards(){
 		return communityCards;
+	}
+	
+	public int getCurrentBetCall()
+	{
+		return currentBetCall;
+	}
+	
+	public void setStartVoting(boolean b){
+		startVoting = b;
+	}
+	
+	public boolean getStartVoting(){
+		return startVoting;
 	}
 	
 }
