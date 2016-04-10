@@ -73,9 +73,11 @@ public class Server implements Runnable{
 			}
 		}
 
-		try{
-			serverSocket.setSoTimeout(1000);
-		} catch (Exception e){e.printStackTrace();}
+		if(type == SERVER){
+			try{
+				serverSocket.setSoTimeout(1000);
+			} catch (Exception e){e.printStackTrace();}
+		}
 
 		changesMade = true;
 
