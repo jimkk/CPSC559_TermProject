@@ -1,6 +1,6 @@
 import java.io.*;
 import java.net.*;
-import java.util.Date;
+import java.util.*;
 import com.google.gson.*;
 
 /**
@@ -53,7 +53,15 @@ public class BackupManager implements Runnable{
 					if(list.getCount() > 0){
 						list.findPlayerByIndex(list.getCount()-1).nextPlayer = null;
 					}
-					message = gson.toJson(game);
+					while(true){
+						try{
+							message = gson.toJson(game);
+							break;
+						} catch (ConcurrentModificationException cme){
+							System.out.println("GSON concurrency issue");
+							Thread.sleep(100);
+						}
+					}
 					if(list.getCount() > 0){
 						list.findPlayerByIndex(list.getCount()-1).nextPlayer = 
 							list.findPlayerByIndex(0);
