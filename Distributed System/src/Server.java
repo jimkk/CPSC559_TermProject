@@ -63,8 +63,6 @@ public class Server implements Runnable{
 		while(serverSocket == null){
 			try{
 				serverSocket = new ServerSocket(port);
-				//System.out.println("Server created");
-				//System.out.printf("The IP is %s\n", serverSocket.getLocalSocketAddress());
 			} catch (Exception e){
 				System.out.println("Failed to initialize server socket...");
 				try{
