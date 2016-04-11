@@ -250,7 +250,10 @@ public class GameThread implements Runnable{
 		}
 		currentPlayer = startingPlayer;
 		do{
-			if (currentPlayer.getFolded() == true) continue;
+			if (currentPlayer.getFolded() == true) {
+				currentPlayer = currentPlayer.nextPlayer;
+				continue;
+			}
 		//for(int i = 0; i < game.getPlayerCount(); i++){
 			//readMessage();
 			// Step 1:
@@ -313,7 +316,15 @@ public class GameThread implements Runnable{
 					// Set the next player's turn to true
 					game.setCurrentPlayerTurn(false);
 					currentPlayer.setTurn(false);
-					currentPlayer.nextPlayer.setTurn(true);
+					
+					PlayerNode potentialNextPlayer = currentPlayer.nextPlayer;
+					do{
+						if (potentialNextPlayer.getFolded() == false){
+							potentialNextPlayer.setTurn(true);
+							break;
+						}
+						potentialNextPlayer = potentialNextPlayer.nextPlayer;
+					}while (potentialNextPlayer != currentPlayer);					
 				}
 				//readMessage();
 			}
@@ -499,7 +510,7 @@ public class GameThread implements Runnable{
 	{
 		for(int i = 0; i < game.getPlayerCount(); i++){
 			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
-			System.out.printf("Vote: " + player.getVote());
+			//System.out.printf("Vote: " + player.getVote());
 			if (player.getVote() == -1) return false;
 		}
 		return true;
@@ -553,7 +564,26 @@ public class GameThread implements Runnable{
 		sendMessage(out, player.getVote(), "You have WON! Your winnings are: $" + game.getPot());
 	}
 
-	//message switch methods
+	/**
+	 * Broadcast bets to all players who were not that player who made the bet
+	 * @param bettingPlayerID
+	 * @param betAmount
+	 */
+	private void sendBets(int bettingPlayerID, int betAmount){
+		for (int i = 0; i < game.getPlayerCount(); i++){
+			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
+			if (player.getPlayerID() == bettingPlayerID) continue;
+			else {
+				sendMessage(out, player.getPlayerID(), "Player: " + bettingPlayerID + " has bet: $" + betAmount);
+			}
+		}
+	}
+	
+	/**
+	 * Process a player's bet amount
+	 * @param betAmount
+	 * @param playerID
+	 */
 	private void bet(int betAmount, int playerID){
 
 		try{
@@ -573,6 +603,7 @@ public class GameThread implements Runnable{
 				System.out.println("This player's new stack total: " + stack);
 				game.setCurrentPlayerDoneTurn(true);
 				System.out.println("No longer this players turn. Confirmation: " + game.getCurrentPlayerDoneTurn());
+				sendBets(playerID, betAmount);
 			}
 		} catch (IOException e) {e.printStackTrace();}
 	}
