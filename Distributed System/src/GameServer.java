@@ -31,6 +31,7 @@ public class GameServer {
 
 	private static String backupAddress = "localhost";
 	private static int backupPort = 5432;
+	private static boolean backupExists = false;
 
 	public GameServer(String address, int port){
 		serverManagerAddress = address;
@@ -72,7 +73,12 @@ public class GameServer {
 			int gameIDs = Integer.parseInt(firstMessageParts[1]);
 			for(int i = 0; i < numGames; i++){
 				messageInboxes.put(gameIDs, new String(""));
-				GameThread gt = new GameThread(serverManagerSocket, new Socket(backupAddress, backupPort), gameIDs, messageInboxes);
+				GameThread gt;
+				if(backupExists){
+					gt = new GameThread(serverManagerSocket, new Socket(backupAddress, backupPort), gameIDs, messageInboxes);
+				} else {
+					gt = new GameThread(serverManagerSocket, gameIDs, messageInboxes);
+				}
 				games.add(gt);
 				new Thread(gt).start();
 				gameIDs++;
@@ -90,7 +96,12 @@ public class GameServer {
 							String startContents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
 							GameManager game = gson.fromJson(startContents, GameManager.class);
 							messageInboxes.put(gameID, new String(""));
-							new Thread(new GameThread(serverManagerSocket, new Socket(backupAddress, backupPort), gameID, messageInboxes, game)).start();
+							if(backupExists){
+								new Thread(new GameThread(serverManagerSocket, new Socket(backupAddress, backupPort), gameID, messageInboxes, game)).start();
+							} else {
+								new Thread(new GameThread(serverManagerSocket, gameID, messageInboxes, game)).start();
+							}
+
 						} else {
 							String [] messageParts = message.split(" ");
 							int gameID = Integer.parseInt(messageParts[0]);
@@ -136,7 +147,6 @@ public class GameServer {
 			in = new InputStreamReader(bufIn);
 			bufOut = new BufferedOutputStream(serverManagerSocket.getOutputStream());
 			out = new OutputStreamWriter(bufOut);
-			System.out.printf("GameServer: New socket is: %s\n", serverManagerSocket);
 			for(GameThread game : games){
 				game.setSocket(serverManagerSocket);
 			}
@@ -147,12 +157,24 @@ public class GameServer {
 		if(args.length == 1){
 			String address = args[0];
 			int port = Server.SERVERPORT;
+			try{
+				new Socket(GameServer.backupAddress, GameServer.backupPort).close();
+				GameServer.backupExists = true;
+			} catch (Exception e){
+				System.out.println("WARNING: No backup server");
+			}
 			new GameServer(address, port).run();
 		}
 		if(args.length == 2){
 			String address = args[0];
 			int port = Server.SERVERPORT;
 			int numGames = Integer.parseInt(args[1]);
+			try{
+				new Socket(GameServer.backupAddress, GameServer.backupPort).close();
+				GameServer.backupExists = true;
+			} catch (Exception e){
+				System.out.println("WARNING: No backup server");
+			}
 			new GameServer(address, port, numGames).run();
 		}
 		if(args.length == 3){
@@ -160,6 +182,12 @@ public class GameServer {
 			int port = Server.SERVERPORT;
 			int numGames = Integer.parseInt(args[1]);
 			GameServer.backupAddress = args[2];
+			try{
+				new Socket(GameServer.backupAddress, GameServer.backupPort).close();
+				GameServer.backupExists = true;
+			} catch (Exception e){
+				System.out.println("WARNING: No backup server");
+			}
 			new GameServer(address, port, numGames).run();
 		}
 	}

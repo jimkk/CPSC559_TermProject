@@ -38,12 +38,28 @@ public class GameThread implements Runnable{
 	BufferedOutputStream bufOut;
 	OutputStreamWriter out;
 
+	public GameThread(Socket socket, int gameID, HashMap<Integer, String> inboxes){
+		this.socket = socket;
+		this.backupServer = backupServer;
+		this.gameID = gameID;
+		this.inboxes = inboxes;
+		game = new GameManager();
+	}
+
 	public GameThread(Socket socket, Socket backupServer, int gameID, HashMap<Integer, String> inboxes){
 		this.socket = socket;
 		this.backupServer = backupServer;
 		this.gameID = gameID;
 		this.inboxes = inboxes;
 		game = new GameManager();
+	}
+
+	public GameThread(Socket socket, int gameID, HashMap<Integer, String> inboxes, GameManager game){
+		this.socket = socket;
+		this.backupServer = backupServer;
+		this.gameID = gameID;
+		this.inboxes = inboxes;
+		this.game = game; 
 	}
 
 	public GameThread(Socket socket, Socket backupServer, int gameID, HashMap<Integer, String> inboxes, GameManager game){
