@@ -618,8 +618,10 @@ public class GameThread implements Runnable{
 				sendMessage(out, playerID, "It's not your turn");
 				//out.flush();
 			}
-			else
-				System.out.println("It is your turn.");
+			else{
+				System.out.println("It is this players turn.");
+				sendMessage(out, playerID, "It's your turn!");	
+			}
 		//} catch (IOException e) {e.printStackTrace();}
 	}
 
