@@ -73,11 +73,16 @@ public class GameThread implements Runnable{
 					game.setGameOn(true);
 					game.initializeCommunityCards();
 					// Set blinds
+					
+					game.getPlayerList().displayGameState();
 					game.setBlinds();
+					game.getPlayerList().displayGameState();
 					game.subtractBlinds();
+					
 					// Deal cards and send them to their respective players
 					game.deal();
 					sendCards();
+					sendBlindsNotification();
 
 					// Round 1
 					System.out.println("===============================================");
@@ -186,6 +191,21 @@ public class GameThread implements Runnable{
 		}
 	}
 
+	public void sendBlindsNotification(){
+		for(int i = 0; i < game.getPlayerCount(); i++){
+			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
+			int playerID = player.getPlayerID();
+			if (player.getBigBlind() == true)
+			{
+				sendMessage(out, playerID, "You are the Big Blind for this game. Current amount subtracted from your stack: $" + game.getBigBlindAmount());
+			}
+			if (player.getSmallBlind() == true)
+			{
+				sendMessage(out, playerID, "You are the Small Blind for this game. Current amount subtracted from your stack: $" + game.getSmallBlindAmount());
+			}
+		}
+	}
+	
 	/**
 	 * Sends the cards to their respective players
 	 * @return None	 
@@ -213,21 +233,38 @@ public class GameThread implements Runnable{
 		// Begin the game loop
 		// Loop through all players, and on each player, keep looping until their turn is
 		// confirmed done, reading all inputs/messages from other players
-		for(int i = 0; i < game.getPlayerCount(); i++){
+		LinkedPlayerList playerList = game.getPlayerList();
+		
+		// We have to initialize the startingPlayer to something or else the 
+		// compiler gets all mad...
+		PlayerNode startingPlayer = game.getPlayerList().rootPlayer;
+		PlayerNode currentPlayer;
+		for (int i = 0; i < game.getPlayerCount(); i++){
+			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
+			if (player.getBigBlind() == true){
+				// When we find a player who is currently holding the Big Blind, we assign that player to be the
+				// starting player
+				startingPlayer = player;
+				break;
+			}
+		}
+		currentPlayer = startingPlayer;
+		do{
+		//for(int i = 0; i < game.getPlayerCount(); i++){
 			//readMessage();
 			// Step 1:
 			// Find the current player's turn 
-			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
+			//PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
 
 
 			// Note that we skip players who have folded
 
-			game.setCurrentPlayerIDTurn(player.playerID);
+			game.setCurrentPlayerIDTurn(currentPlayer.playerID);
 			game.setCurrentPlayerTurn(true);
 			game.setCurrentPlayerDoneTurn(false);
 			game.setTurnSent(false);
 
-			System.out.println("Current player's turn " + player.playerNumber);
+			System.out.println("Current player's turn " + currentPlayer.playerNumber);
 			System.out.println("Turn: " + game.getCurrentPlayerTurn());
 			System.out.println("DoneTurn: " + game.getCurrentPlayerDoneTurn());
 			System.out.println("sentTurn: " + turnSent);
@@ -269,11 +306,11 @@ public class GameThread implements Runnable{
 					System.out.println("CurrentPlayerDoneTurn set to: " + game.getCurrentPlayerDoneTurn());
 				}
 
-				if(game.getCurrentPlayerDoneTurn() == true && player.getTurn() == true) {
+				if(game.getCurrentPlayerDoneTurn() == true && currentPlayer.getTurn() == true) {
 					// Set the next player's turn to true
 					game.setCurrentPlayerTurn(false);
-					player.setTurn(false);
-					player.nextPlayer.setTurn(true);
+					currentPlayer.setTurn(false);
+					currentPlayer.nextPlayer.setTurn(true);
 				}
 				//readMessage();
 			}
@@ -281,7 +318,9 @@ public class GameThread implements Runnable{
 
 			System.out.println("\nEnd Turn State:");
 			game.getPlayerList().displayGameState();
-		}
+			
+			currentPlayer = currentPlayer.nextPlayer;
+		}while(currentPlayer != startingPlayer);
 	}
 	/**
 	 * Read inputs from the Clients and branch according to the messageType

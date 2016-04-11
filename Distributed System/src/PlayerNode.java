@@ -57,6 +57,14 @@ public class PlayerNode {
 	public void setSmallBlind(boolean b){
 		smallBlind = b;
 	}
+	
+	public boolean getBigBlind(){
+		return bigBlind;
+	}
+	
+	public boolean getSmallBlind(){
+		return smallBlind;
+	}
 
 	public Card[] getHand(){
 		return hand;
@@ -119,5 +127,6 @@ public class PlayerNode {
 	public void setStack(int i){
 		stack = i;
 	}
+	
 	
 }

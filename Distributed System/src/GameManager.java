@@ -44,7 +44,7 @@ public class GameManager {
 		 */
 		boolean blindsSet = false;
 		for(int i = 0; i < playerCount; i++){
-			if (blindsSet = true) break;
+			if (blindsSet == true) break;
 			// pass in i+1 so that the index matches up with the player number
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
 			if(player.playerNumber == 1 && player.folded == false && gameStart == true){
@@ -57,7 +57,15 @@ public class GameManager {
 			}
 			else if (player.bigBlind == true){
 				player.bigBlind = false;
+				if (player.turn == true)
+				{
+					player.turn = false;
+				}
 				player.nextPlayer.bigBlind = true;
+				if (player.nextPlayer.smallBlind == true)
+				{
+					player.nextPlayer.smallBlind = false;
+				}
 				player.nextPlayer.turn = true;
 				player.nextPlayer.nextPlayer.smallBlind = true;
 				blindsSet = true;
@@ -76,10 +84,12 @@ public class GameManager {
 			PlayerNode player = getPlayerList().findPlayerByIndex(i);
 			if(player.bigBlind == true){
 				player.stack -= bigBlindAmount;
+				pot += bigBlindAmount;
 				// notify the player of the changes using the player's port to send the message
 			}
 			if(player.smallBlind == true){
 				player.stack -= smallBlindAmount;
+				pot += smallBlindAmount;
 				// notify the player of the changes using the player's port to send the message
 			}
 			//else, we do nothing...
@@ -278,6 +288,11 @@ public class GameManager {
 		deck = new Deck();
 		gameOn = false;
 		
+		// Reset all player votes
+		for (int i = 0; i < getPlayerCount(); i++){
+			PlayerNode player = getPlayerList().findPlayerByIndex(i);
+			player.setVote(-1);
+		}
 		
 	}
 	
@@ -497,6 +512,14 @@ public class GameManager {
 	
 	public boolean getStartVoting(){
 		return startVoting;
+	}
+	
+	public int getBigBlindAmount(){
+		return bigBlindAmount;
+	}
+	
+	public int getSmallBlindAmount(){
+		return smallBlindAmount;
 	}
 	
 }
