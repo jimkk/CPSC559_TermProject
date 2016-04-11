@@ -47,7 +47,7 @@ public class ServerThread implements Runnable{
 		gameServerChosen = false;
 		message = "";
 	}
-	
+
 	/**
 	 * @param socket The client's socket
 	 * @param clientID The client's ID
@@ -66,9 +66,6 @@ public class ServerThread implements Runnable{
 
 
 	public void run(){
-
-		
-
 		try{
 
 			bufIn = new BufferedInputStream(clientSocket.getInputStream());
@@ -95,33 +92,47 @@ public class ServerThread implements Runnable{
 					Thread.sleep(5000);
 					continue;
 				}
+				String gameIndexString = "";
 				try{
-					String gameIndexString = IOUtilities.read(in);
-					gameIndex = Integer.parseInt(gameIndexString.split(" ")[1]);
-				} catch(Exception e){e.printStackTrace();}
-	
-				if(servers.containsKey(gameIndex)){
-					System.out.printf("Client %d is joining game %d\n", clientID, gameIndex);
-					gameServerSocket = servers.get(gameIndex);
-					gameServerChosen = true;
-				} else {
-
-					do{
-						gameServerSocket = servers.get(gameIndex);
-						gameIndex++;
-						if(gameIndex > 100){
-							System.err.println("Can't find a valid game server");
-							System.exit(-1);
+					gameIndexString = IOUtilities.read(in);
+					if(gameIndexString.split(" ")[0].equals("clientReconnect")){
+						int clientID = Integer.parseInt(gameIndexString.split(" ")[1]);
+						int gameID = Integer.parseInt(gameIndexString.split(" ")[2]);
+						System.out.printf("Client %d has reconnected\n", clientID);
+						server.getClientsInfo().remove(clientID);
+						server.getClientsInfo().put(clientID, clientSocket); 
+						gameServerChosen = true;
+						while(servers.get(gameID) == null){
+							System.out.printf("Waiting for game server %d to reconnect\n", gameID);
 						}
-					} while (gameServerSocket == null);
-					gameServerChosen = true;
-					if(gameServerSocket == null){
-						System.err.println("Something went wrong, the GameServer chosen does not exist");
-						System.exit(-1);
+						gameServerSocket = servers.get(gameIndex);
+					} else {
+						gameIndex = Integer.parseInt(gameIndexString.split(" ")[1]);
+
+						if(servers.containsKey(gameIndex)){
+							System.out.printf("Client %d is joining game %d\n", clientID, gameIndex);
+							gameServerSocket = servers.get(gameIndex);
+							gameServerChosen = true;
+						} else {
+
+							do{
+								gameServerSocket = servers.get(gameIndex);
+								gameIndex++;
+								if(gameIndex > 100){
+									System.err.println("Can't find a valid game server");
+									System.exit(-1);
+								}
+							} while (gameServerSocket == null);
+							gameServerChosen = true;
+							if(gameServerSocket == null){
+								System.err.println("Something went wrong, the GameServer chosen does not exist");
+								System.exit(-1);
+							}
+							gameIndex--;
+						}
 					}
-					gameIndex--;
-				}
-			}
+				}catch (Exception e) {e.printStackTrace();}
+			} 
 
 			bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
 			gameIn = new InputStreamReader(bufGameIn);
@@ -132,7 +143,7 @@ public class ServerThread implements Runnable{
 			if(isRecovery){
 				while(true){
 					String message = IOUtilities.read(in);
-					if (message.split(" ")[0].equals("changeClientID")){
+					if(message.split(" ")[0].equals("changeClientID")){
 						int newID = Integer.parseInt(message.split(" ")[1]);
 						System.out.printf("Client %d has reconnected\n");
 						server.getClientsInfo().remove(newID);
