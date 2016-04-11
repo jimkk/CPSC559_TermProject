@@ -10,6 +10,7 @@ public class PlayerNode {
 	int stack;
 	int currentBetAmount;
 	int betPerTurn;
+	int vote;
 	boolean turn = false;
 	boolean folded = false;
 	boolean bigBlind = false;
@@ -27,6 +28,7 @@ public class PlayerNode {
 		this.stack = stack;
 		this.currentBetAmount = 0;
 		this.betPerTurn = 0;
+		this.vote = -1;
 		this.turn = false;
 		this.folded = false;
 		this.bigBlind = false;
@@ -54,6 +56,14 @@ public class PlayerNode {
 
 	public void setSmallBlind(boolean b){
 		smallBlind = b;
+	}
+	
+	public boolean getBigBlind(){
+		return bigBlind;
+	}
+	
+	public boolean getSmallBlind(){
+		return smallBlind;
 	}
 
 	public Card[] getHand(){
@@ -101,5 +111,22 @@ public class PlayerNode {
 	public boolean getFolded(){
 		return folded;
 	}
+	
+	public int getCurrentBetAmount(){
+		return currentBetAmount;
+	}
+	
+	public void setVote(int i){
+		vote = i;
+	}
+	
+	public int getVote(){
+		return vote;
+	}
+	
+	public void setStack(int i){
+		stack = i;
+	}
+	
 	
 }

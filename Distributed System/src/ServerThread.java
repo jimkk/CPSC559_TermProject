@@ -183,14 +183,11 @@ public class ServerThread implements Runnable{
 							readingStream = false;
 							if(!newMessage.equals("ping")){
 
-								System.out.println(newMessage);
-
 								while(!message.equals("")){
 									Thread.sleep(100);
 								}
 								message = newMessage;
 								System.out.printf("Message from game server: \"%s\"\n", message);
-								System.out.println(message.substring(message.indexOf(" ")+1) + "\n");
 								int ID = Integer.parseInt(message.split(" ")[0]);
 								if(ID == clientID){
 									try{
@@ -206,7 +203,16 @@ public class ServerThread implements Runnable{
 						}
 					}
 					if(!message.equals("")){
-						int ID = Integer.parseInt(message.split(" ")[0]);
+						System.out.println(message);
+						int ID;
+						try {
+							ID = Integer.parseInt(message.split(" ")[0]);
+							System.out.printf("ID = %d, clientID = %d (type2)\n", ID, clientID);
+						}catch(NumberFormatException e3){
+							// set ID to -1 because if this is caught we know that another thread has
+							// emptied the message before this thread computed !message.equals("")...
+							ID = -1;
+						}				
 						if(ID == clientID){			
 							try{
 								out.write(message.substring(message.indexOf(" ")+1) + "\n");
@@ -220,11 +226,16 @@ public class ServerThread implements Runnable{
 					}
 
 				} catch(SocketException e){
-					System.out.println("ServerThread found crashed server");
 					Socket socket = servers.remove(gameIndex);
 					servers.put(-gameIndex, socket);
-					while(servers.get(gameIndex) == null);
+					while(servers.get(gameIndex) == null){
+						Thread.sleep(1000);
+					}
 					gameServerSocket = servers.get(gameIndex);
+					bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
+					gameIn = new InputStreamReader(bufGameIn);
+					bufGameOut = new BufferedOutputStream(gameServerSocket.getOutputStream());
+					gameOut = new OutputStreamWriter(bufGameOut);
 				} catch(Exception e){e.printStackTrace(); isDone = true;}
 
 				Thread.sleep(100);
