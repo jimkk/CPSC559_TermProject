@@ -168,7 +168,10 @@ public class LinkedPlayerList {
 			}
 			currentPlayer = currentPlayer.nextPlayer;
 		}while(currentPlayer != rootPlayer);
-
+		
+		if(currentPlayer.playerID != playerID){
+			return null;
+		}
 		return currentPlayer;
 	}
 
