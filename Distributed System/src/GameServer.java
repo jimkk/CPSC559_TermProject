@@ -13,7 +13,7 @@ public class GameServer {
 	private boolean isDone = false;
 	private int port = 7777;
 	private ServerSocket serverSocket;
-	
+
 	//Server Manager stuff
 	private Socket serverManagerSocket;
 	private String serverManagerAddress;
@@ -32,7 +32,7 @@ public class GameServer {
 		serverManagerAddress = address;
 		serverManagerPort = port;
 	}
-	
+
 	public GameServer(String address, int port, int numGames){
 		serverManagerAddress = address;
 		serverManagerPort = port;
@@ -50,7 +50,7 @@ public class GameServer {
 			System.err.println("ERROR: Failed to connect to server manager");
 			System.exit(-1);
 		}
-	
+
 		try{	
 			bufIn = new BufferedInputStream(serverManagerSocket.getInputStream());
 			in = new InputStreamReader(bufIn);
@@ -74,54 +74,63 @@ public class GameServer {
 
 			while(!isDone){
 				try{
-				if(in.ready()){
-					String message = IOUtilities.read(in);
-					if(message.split(" ")[0].equals("restoregame")){
-						System.out.println("Restoring from backup");
-						String [] messageParts = message.split(" ");
-						int gameID = Integer.parseInt(messageParts[1]);
-						Gson gson = new GsonBuilder().create();
-						String startContents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
-						GameManager game = gson.fromJson(startContents, GameManager.class);
-						messageInboxes.put(gameID, new String(""));
-						new Thread(new GameThread(serverManagerSocket, gameID, messageInboxes, game)).start();
-					} else {
-						String [] messageParts = message.split(" ");
-						int gameID = Integer.parseInt(messageParts[0]);
-						System.out.printf("Received message for game %d: ", gameID);
-						if(messageInboxes.containsKey(gameID)){
-							messageInboxes.put(gameID, IOUtilities.rebuildString(messageParts, 1, messageParts.length));
+					if(in.ready()){
+						String message = IOUtilities.read(in);
+						if(message.split(" ")[0].equals("restoregame")){
+							System.out.println("Restoring from backup");
+							String [] messageParts = message.split(" ");
+							int gameID = Integer.parseInt(messageParts[1]);
+							Gson gson = new GsonBuilder().create();
+							String startContents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
+							GameManager game = gson.fromJson(startContents, GameManager.class);
+							messageInboxes.put(gameID, new String(""));
+							new Thread(new GameThread(serverManagerSocket, gameID, messageInboxes, game)).start();
 						} else {
-							System.out.printf("ERROR: Received message for a game that this server do not handle (ID = %d)\n", gameID);
+							String [] messageParts = message.split(" ");
+							int gameID = Integer.parseInt(messageParts[0]);
+							System.out.printf("Received message for game %d: ", gameID);
+							if(messageInboxes.containsKey(gameID)){
+								messageInboxes.put(gameID, IOUtilities.rebuildString(messageParts, 1, messageParts.length));
+							} else {
+								System.out.printf("ERROR: Received message for a game that this server do not handle (ID = %d)\n", gameID);
+							}
+							System.out.printf("%s\n", messageInboxes.get(gameID));
 						}
-						System.out.printf("%s\n", messageInboxes.get(gameID));
 					}
-				}
-				if(new Date().getTime() - timeSincePing > 3000){
-					out.write("ping\n");
-					out.flush();
-					timeSincePing = new Date().getTime();
-				}
-				Thread.sleep(10);
+					if(new Date().getTime() - timeSincePing > 3000){
+						out.write("ping\n");
+						out.flush();
+						timeSincePing = new Date().getTime();
+					}
+					Thread.sleep(10);
 				} catch (SocketException sockete){
+					System.out.print("Server down...Attempting to reconnect...");
 					reconnect();
+					out.write("recoverGame " + (gameIDs - numGames) + " " + numGames + "\n");
+					out.flush();
+					System.out.println("DONE");
 				}
-
 			}
 		} catch (Exception e){e.printStackTrace(); isDone = true;}
 	}
-	
+
 	private void reconnect(){
 		try{
 			serverManagerSocket.close();
-			ServerSocket reconnectSocket = new ServerSocket(serverManagerSocket.getLocalPort());
-			serverManagerSocket = reconnectSocket.accept();
-			reconnectSocket.close();
+			while(true){
+				try{
+					serverManagerSocket = new Socket(serverManagerAddress, serverManagerPort);
+					break;
+				} catch (ConnectException conEx){
+					System.out.print(".");
+					Thread.sleep(2000);
+				}
+			}
 			bufIn = new BufferedInputStream(serverManagerSocket.getInputStream());
 			in = new InputStreamReader(bufIn);
 			bufOut = new BufferedOutputStream(serverManagerSocket.getOutputStream());
 			out = new OutputStreamWriter(bufOut);
-		} catch (Exception e) {e.printStackTrace();}
+		} catch (Exception e) {e.printStackTrace(); System.exit(-1);}
 	}
 
 	public static void main(String[] args) {	

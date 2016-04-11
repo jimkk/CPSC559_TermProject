@@ -61,7 +61,7 @@ public class ServerSync implements Runnable{
 	private void sendServerInfo(){
 		try{
 			Gson gson = new GsonBuilder().serializeNulls()
-				.excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.FINAL)
+			//	.excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.FINAL)
 				.registerTypeAdapter(Socket.class, new SocketSerializer())	
 				.create();
 			//gson.toJson(server.getBackupsInfo());

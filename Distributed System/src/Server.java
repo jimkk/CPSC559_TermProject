@@ -29,25 +29,28 @@ public class Server implements Runnable{
 	private int type;
 	private transient ServerSocket serverSocket;
 
-	//Backup stuff
-	private String backupServerAddress = "localhost";
-	private int backupServerPort = 5432;
-
 	private static HashMap<Integer, Socket> servers;
-	private static ArrayList<Socket> backupServers;
+	private HashMap<Integer, String> serverList;
 	private volatile int nextGameID = 1;
 
 	private static HashMap<Integer, Socket> clients;
+	private HashMap<Integer, String> clientList;
 	private volatile int nextClientID = 1;
 
-	private static ArrayList<Integer> backupIDs;
-	private static HashMap<Integer, String> backups;
+	//Backup stuff
+	private String backupServerAddress = "localhost";
+	private int backupServerPort = 5432;
+	private ArrayList<Socket> backupServers;
+	private ArrayList<Integer> backupIDs;
+	private HashMap<Integer, String> backups;
 
 	public Server(int port, int type){
 		this.port = port;
 		this.type = type;
 		servers = new HashMap<Integer, Socket>();
+		serverList = new HashMap<Integer, String>();
 		clients = new HashMap<Integer, Socket>();
+		clientList = new HashMap<Integer, String>();
 		backupServers = new ArrayList<Socket>();
 		backupIDs = new ArrayList<Integer>();
 		backups = new HashMap<Integer, String>();
@@ -105,30 +108,51 @@ public class Server implements Runnable{
 						Thread.sleep(100);
 					}
 					String message = IOUtilities.read(in);
-					int numGames = Integer.parseInt(message.split(" ")[1]);
-					System.out.printf("There are currently %d backups to be restored\n", backups.size());
-					out.flush();
-					out.write("gameid " + nextGameID + "\n");
-					out.flush();
-					for(int i = 0; i < numGames; i++){
-						servers.put(nextGameID++, clientSocket);
-					}
-					if(backups.size() > 0){
-						System.out.println("New server is being used to restore lost games");
-						for(int i = 0; i < backups.size(); i++){
-							int gameID = backupIDs.get(i);
-							System.out.printf("Game ID: %d\n", gameID);
-							out.write("restoregame " + gameID + " " + backups.get(gameID) + "\n");
-							//If restore is successful
-							backupIDs.remove(i);
-							servers.put(gameID, clientSocket);
-							backups.remove(gameID);
+					String connectType = message.split(" ")[0];
+					if(connectType.equals("addGameServer")){
+						int numGames = Integer.parseInt(message.split(" ")[1]);
+						System.out.printf("There are currently %d backups to be restored\n", backups.size());
+						out.flush();
+						out.write("gameid " + nextGameID + "\n");
+						out.flush();
+						for(int i = 0; i < numGames; i++){
+							//servers.put(nextGameID++, clientSocket);
+							addServer(nextGameID++, clientSocket);
+						}
+						if(backups.size() > 0){
+							System.out.println("New server is being used to restore lost games");
+							for(int i = 0; i < backups.size(); i++){
+								int gameID = backupIDs.get(i);
+								System.out.printf("Game ID: %d\n", gameID);
+								out.write("restoregame " + gameID + " " + backups.get(gameID) + "\n");
+								//If restore is successful
+								backupIDs.remove(i);
+								//servers.put(gameID, clientSocket);
+								addServer(gameID, clientSocket);
+								backups.remove(gameID);
+							}
+						}
+					} else {
+						int firstID = Integer.parseInt(message.split(" ")[1]);
+						int numGames = Integer.parseInt(message.split(" ")[2]);
+						System.out.printf("Recovered game server that managed %d games starting at ID = %d\n", numGames, firstID);
+						for(int i = firstID; i < (firstID + numGames); i++){
+							addServer(i, clientSocket);
 						}
 					}
 
 				} else if (type == CLIENT){
-					clients.put(nextClientID, clientSocket);
-					new Thread(new ServerThread(clientSocket, nextClientID++, this)).start();
+					//clients.put(nextClientID, clientSocket);
+					int duplicate = clientExists(clientSocket);
+					if(duplicate == 0){	
+						addClient(nextClientID, clientSocket);
+						new Thread(new ServerThread(clientSocket, nextClientID++, this)).start();
+					} else {
+						System.out.printf("Found duplicate client %d\n", duplicate);
+						addClient(duplicate, clientSocket);
+						new Thread(new ServerThread(clientSocket, duplicate, this, true)).start();		
+					}
+
 				} else if (type == BACKUP){
 					backupServers.add(clientSocket);
 					System.out.println("Backup server added to list");
@@ -182,7 +206,8 @@ public class Server implements Runnable{
 							int gameID = backupIDs.get(i);	
 							serverOut.write("restoregame " + gameID + " " + backups.get(gameID) + "\n");
 							serverOut.flush();
-							servers.put(gameID, serverSocket);
+							//servers.put(gameID, serverSocket);
+							addServer(gameID, serverSocket);
 							backups.remove(gameID);
 							backupIDs.remove(i);
 						}
@@ -213,7 +238,7 @@ public class Server implements Runnable{
 			Server server = null;
 			String message = "";
 			Gson gson = new GsonBuilder().serializeNulls()
-				.excludeFieldsWithModifiers(Modifier.TRANSIENT)
+			//	.excludeFieldsWithModifiers(Modifier.TRANSIENT)
 				.registerTypeAdapter(Socket.class, new SocketDeserializer())
 				.create();
 
@@ -235,7 +260,7 @@ public class Server implements Runnable{
 							out.flush();
 							Thread.sleep(1000);
 						} catch(Exception e){
-							System.err.println("Server is down. Taking over...");
+							System.err.print("Server is down. Taking over...");
 							mainServerDown = true;
 						}
 					}
@@ -246,8 +271,10 @@ public class Server implements Runnable{
 				System.err.println("Unable to connect to main server");
 			} catch (Exception e){e.printStackTrace();}
 			if(!message.equals("")){
+				System.out.println("DONE");
 				new Thread(new Server(CLIENTPORT, Server.CLIENT)).start();
 				new Thread(new Server(BACKUPPORT, Server.BACKUP)).start();
+				server = new Server(SERVERPORT, Server.SERVER);
 				new Thread(new ServerSync(server)).start();
 				server = gson.fromJson(message, Server.class);
 				server.run();
@@ -257,6 +284,52 @@ public class Server implements Runnable{
 				System.exit(0);
 			}
 		}
+
+	private void addServer(int gameID, Socket socket){
+		servers.put(gameID, socket);
+		String ip = socket.getInetAddress().toString();
+		int port = socket.getPort();
+		serverList.put(gameID, ip + ":" + port);
+	}
+
+	private void addClient(int clientID, Socket socket){
+		clients.put(clientID, socket);
+		String ip = socket.getInetAddress().toString();
+		int port = socket.getPort();
+		clientList.put(clientID, ip + ":" + port);
+	}
+
+	private ArrayList<Integer> serverExists(Socket socket){
+		ArrayList<Integer> duplicates = new ArrayList<Integer>();
+		Iterator it = serverList.keySet().iterator();
+		while(it.hasNext()){
+			int key = (int) it.next();
+			String entry = serverList.get(key);
+			String ip = entry.split(":")[0];
+			int port = Integer.parseInt(entry.split(":")[1]);
+			System.out.printf("%s == %s?\n%d == %d?\n\n",
+				socket.getInetAddress(), ip,
+				socket.getPort(), port);
+			if(socket.getInetAddress().equals(ip) && socket.getPort() == port){
+				duplicates.add(key);
+			}
+		}
+		return duplicates;
+	}
+	
+	private int clientExists(Socket socket){
+		Iterator it = clientList.keySet().iterator();
+		while(it.hasNext()){
+			int key = (int) it.next();
+			String entry = clientList.get(key);
+			String ip = entry.split(":")[0];
+			int port = Integer.parseInt(entry.split(":")[1]);
+			if(socket.getInetAddress().equals(ip) && socket.getPort() == port){
+				return key;
+			}
+		}
+		return 0;
+	}
 
 	/**
 	 * Gets the servers
