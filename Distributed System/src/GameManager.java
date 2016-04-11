@@ -521,5 +521,10 @@ public class GameManager {
 	public int getSmallBlindAmount(){
 		return smallBlindAmount;
 	}
+
+	@Override
+	public String toString(){
+		return "\n--Current player turn: " + getCurrentPlayerTurn();
+	}
 	
 }
