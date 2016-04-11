@@ -148,7 +148,6 @@ public class ServerThread implements Runnable{
 
 			while(!isDone){
 				try{
-					System.out.print(".");
 					if(in.ready()){
 						String messageIn = IOUtilities.read(in);
 						if(messageIn.equals("ping")){
