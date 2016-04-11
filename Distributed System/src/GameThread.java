@@ -250,6 +250,7 @@ public class GameThread implements Runnable{
 		}
 		currentPlayer = startingPlayer;
 		do{
+			if (currentPlayer.getFolded() == true) continue;
 		//for(int i = 0; i < game.getPlayerCount(); i++){
 			//readMessage();
 			// Step 1:
@@ -292,9 +293,11 @@ public class GameThread implements Runnable{
 				// process all incoming messages from all clients.
 				// Only the client, whose current turn it is, can actually
 				// complete a turn. 
+				
 				readMessage();
-
+				
 				if (game.getCurrentPlayerBetFlag() == true && game.getCurrentPlayerBeginTurn() == true) {
+					System.out.println("CurrentPlayerBetFlag set to: " + game.getCurrentPlayerBetFlag());
 					game.setCurrentPlayerBeginTurn(false);
 					System.out.println("Player: " + game.getCurrentPlayerIDTurn() + " has chosen to bet: " + game.getCurrentPlayerBetAmount());
 					// I believe this is already called in the 'bet' switch case
@@ -452,21 +455,36 @@ public class GameThread implements Runnable{
 	{
 		List<Integer> sendTo = new ArrayList<>();
 		PlayerNode player;
+		int currentPlayerTurn = 0; 
 		// Build the list of players who's current bet amount does not match the current call amount on the table
 		for(int i = 0; i < game.getPlayerCount(); i++){
 			player = game.getPlayerList().findPlayerByIndex(i);
 			if (player.currentBetAmount < game.getCurrentBetCall()) sendTo.add(player.getPlayerID());
+			if (player.getTurn() == true) {
+				currentPlayerTurn = player.getPlayerID();
+			}
 		}
-		for(int i = 0; i < sendTo.size(); i++){
+		for(int i = 0; i < sendTo.size(); i++){		
 			int playerID = sendTo.get(i);
 			sendMessage(out, playerID, "Your current bet amount is less than the call amount on the table. Please call or fold.");
+			player = game.getPlayerList().findPlayerByID(playerID);
 			
+			player.setTurn(true);
 			// loop on the player in question until they have matched the current call amount or folded their hand
 			while(game.getPlayerList().findPlayerByID(playerID).getCurrentBetAmount() < game.getCurrentBetCall() 
 					&& game.getPlayerList().findPlayerByID(playerID).getFolded() == false) {
 				readMessage();
 			}
+			player.setTurn(false);
+			
 		}
+		player = game.getPlayerList().findPlayerByID(currentPlayerTurn);
+		player.setTurn(true);
+		
+		// We set the currenPlayerBetFlag to false because if we don't, the game
+		// logic, once we get out of this checkEqualBets function, would skip that player
+		// and we don't want that to happen.
+		game.setCurrentPlayerBetFlag(false);
 		// check to make sure all players in the original list of unequal bet amounts, now have an equal amount
 		// if not, call checkEqualBets()
 		for(int i = 0; i < game.getPlayerCount(); i++){
