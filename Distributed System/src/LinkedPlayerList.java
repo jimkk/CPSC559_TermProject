@@ -158,6 +158,9 @@ public class LinkedPlayerList {
 	*/
 
 	public PlayerNode findPlayerByID(int playerID){
+		if(rootPlayer == null){
+			return null;
+		}
 		PlayerNode currentPlayer = rootPlayer;
 		do{
 			if (currentPlayer.playerID == playerID){
