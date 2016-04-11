@@ -647,6 +647,9 @@ public class GameThread implements Runnable{
 				sendMessage(out, playerID, "It's not your turn, you cannot call another player's bet yet");
 				out.flush();
 			}
+			else {
+				bet(game.getCurrentBetCall(), playerID);
+			}
 		} catch (IOException e){e.printStackTrace();}
 	}
 
