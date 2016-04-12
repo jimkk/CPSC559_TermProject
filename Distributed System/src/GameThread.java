@@ -433,10 +433,15 @@ public class GameThread implements Runnable{
 					break;
 				case("displayGame"):
 					game.getPlayerList().displayGameState();
-					sendMessage(out, playerID, "         Current game ID: " + game.getGameID());
-					sendMessage(out, playerID, "            Player count: " + game.getPlayerCount());
-					sendMessage(out, playerID, "        Current bet call: " + game.getCurrentBetCall());
-					sendMessage(out, playerID, "Current player ID's turn: " + game.getCurrentPlayerIDTurn());
+					sendMessage(out, playerID, "          Current game ID: " + game.getGameID());
+					sendMessage(out, playerID, "             Player count: " + game.getPlayerCount());
+					sendMessage(out, playerID, "         Current bet call: " + game.getCurrentBetCall());
+					sendMessage(out, playerID, " Current player ID's turn: " + game.getCurrentPlayerIDTurn());
+					sendMessage(out, playerID, "Current player bet amount: " + game.getCurrentPlayerBetAmount());
+					sendMessage(out, playerID, "             Current turn: " + game.getTurn());
+					sendMessage(out, playerID, "              Current pot: " + game.getPot());
+					sendMessage(out, playerID, "           Is the game on? " + game.isGameOn());
+					sendMessage(out, playerID, "          Community cards: " + buildCommunityCards());
 					break;
 				case("close"):
 	
