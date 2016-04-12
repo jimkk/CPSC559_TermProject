@@ -200,20 +200,24 @@ public class Server implements Runnable{
 					}
 				}
 				if(servers.size() > 0 && backups.size() > 0){
-					try{
-						Socket serverSocket = servers.values().iterator().next();
-						BufferedOutputStream serverBufOut = new BufferedOutputStream(serverSocket.getOutputStream());
-						OutputStreamWriter serverOut = new OutputStreamWriter(serverBufOut);
-						for(int i = 0; i < backupIDs.size(); i++){
-							int gameID = backupIDs.get(i);	
-							serverOut.write("restoregame " + gameID + " " + backups.get(gameID) + "\n");
-							serverOut.flush();
-							//servers.put(gameID, serverSocket);
-							addServer(gameID, serverSocket);
-							backups.remove(gameID);
-							backupIDs.remove(i);
-						}
-					} catch (Exception e2) {e2.printStackTrace();}
+					Iterator<Socket> it = servers.values().iterator();
+					while(it.hasNext()){
+						try{
+							Socket serverSocket = it.next();
+							BufferedOutputStream serverBufOut = new BufferedOutputStream(serverSocket.getOutputStream());
+							OutputStreamWriter serverOut = new OutputStreamWriter(serverBufOut);
+							for(int i = 0; i < backupIDs.size(); i++){
+								int gameID = backupIDs.get(i);	
+								serverOut.write("restoregame " + gameID + " " + backups.get(gameID) + "\n");
+								serverOut.flush();
+								//servers.put(gameID, serverSocket);
+								addServer(gameID, serverSocket);
+								backups.remove(gameID);
+								backupIDs.remove(i);
+							}
+							break;
+						} catch (Exception e2){;}
+					}
 				}
 			} catch (Exception e){
 				if(type == SERVER){
