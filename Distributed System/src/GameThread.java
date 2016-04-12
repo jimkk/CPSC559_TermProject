@@ -40,7 +40,6 @@ public class GameThread implements Runnable{
 
 	public GameThread(Socket socket, int gameID, HashMap<Integer, String> inboxes){
 		this.socket = socket;
-		this.backupServer = backupServer;
 		this.gameID = gameID;
 		this.inboxes = inboxes;
 		game = new GameManager();
@@ -56,7 +55,6 @@ public class GameThread implements Runnable{
 
 	public GameThread(Socket socket, int gameID, HashMap<Integer, String> inboxes, GameManager game){
 		this.socket = socket;
-		this.backupServer = backupServer;
 		this.gameID = gameID;
 		this.inboxes = inboxes;
 		this.game = game; 
@@ -385,6 +383,7 @@ public class GameThread implements Runnable{
 					int stack = Integer.parseInt(messageParts[2]);
 					System.out.printf("New player added (ID = %d)\n", playerID);
 					PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
+					System.out.println(player);
 					if(player == null){
 						game.addPlayerToGame(stack, playerID);
 					}
