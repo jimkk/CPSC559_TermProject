@@ -206,8 +206,15 @@ public class ServerThread implements Runnable{
 										out.flush();
 									} catch (SocketException se) {
 										System.err.println("Client disconnected.");
+										server.getClientsInfo().remove(clientID);
+										gameOut.write(gameIndex + " " + clientID + " close\n");
+										gameOut.flush();
 										isDone = true;
 									}
+									message = "";
+								}
+								if(!server.getClientsInfo().containsKey(ID)){
+									System.out.println("Removed message for lost client");
 									message = "";
 								}
 							}
@@ -230,6 +237,9 @@ public class ServerThread implements Runnable{
 								out.flush();
 							} catch (SocketException se) {
 								System.err.println("Client disconnected.");
+								server.getClientsInfo().remove(clientID);
+								gameOut.write(gameIndex + " " + clientID + " close\n");
+								gameOut.flush();
 								isDone = true;
 							}
 							message = "";
