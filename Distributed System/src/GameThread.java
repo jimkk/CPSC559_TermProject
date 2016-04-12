@@ -519,9 +519,9 @@ public class GameThread implements Runnable{
 		// check to make sure all players in the original list of unequal bet amounts, now have an equal amount
 		// if not, call checkEqualBets()
 		for(int i = 0; i < game.getPlayerCount(); i++){
-			PlayerNode playerCheck = game.getPlayerList().findPlayerByID(i);
+			PlayerNode playerCheck = game.getPlayerList().findPlayerByIndex(i);
 			if (playerCheck.currentBetAmount < game.getCurrentBetCall()
-			    && game.getPlayerList().findPlayerByID(i).getFolded() == false) checkEqualBets(); 
+			    && game.getPlayerList().findPlayerByIndex(i).getFolded() == false) checkEqualBets(); 
 		}
 			
 	}
