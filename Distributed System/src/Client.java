@@ -185,7 +185,7 @@ public class Client{
 						out = new OutputStreamWriter(bufOut);
 						br = new BufferedReader(new InputStreamReader(System.in));
 
-						out.write("changeClientID " + clientID + "\n");
+						out.write("clientReconnect " + clientID + " " + desiredGame + "\n");
 						out.flush();
 					} catch (Exception reconnecte) {
 						reconnecte.printStackTrace();

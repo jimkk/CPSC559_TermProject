@@ -105,7 +105,8 @@ public class ServerThread implements Runnable{
 						while(servers.get(gameID) == null){
 							System.out.printf("Waiting for game server %d to reconnect\n", gameID);
 						}
-						gameServerSocket = servers.get(gameIndex);
+						gameServerSocket = servers.get(gameID);
+						gameIndex = gameID;
 					} else {
 						gameIndex = Integer.parseInt(gameIndexString.split(" ")[1]);
 
@@ -206,8 +207,15 @@ public class ServerThread implements Runnable{
 										out.flush();
 									} catch (SocketException se) {
 										System.err.println("Client disconnected.");
+										server.getClientsInfo().remove(clientID);
+										gameOut.write(gameIndex + " " + clientID + " close\n");
+										gameOut.flush();
 										isDone = true;
 									}
+									message = "";
+								}
+								if(!server.getClientsInfo().containsKey(ID)){
+									System.out.println("Removed message for lost client");
 									message = "";
 								}
 							}
@@ -230,6 +238,9 @@ public class ServerThread implements Runnable{
 								out.flush();
 							} catch (SocketException se) {
 								System.err.println("Client disconnected.");
+								server.getClientsInfo().remove(clientID);
+								gameOut.write(gameIndex + " " + clientID + " close\n");
+								gameOut.flush();
 								isDone = true;
 							}
 							message = "";
@@ -237,10 +248,12 @@ public class ServerThread implements Runnable{
 					}
 
 				} catch(SocketException e){
-					Socket socket = servers.remove(gameIndex);
-					servers.put(-gameIndex, socket);
-					while(servers.get(gameIndex) == null){
-						Thread.sleep(1000);
+					if(servers.get(gameIndex).toString().equals(gameServerSocket.toString())){
+						Socket socket = servers.remove(gameIndex);
+						servers.put(-gameIndex, socket);
+						while(servers.get(gameIndex) == null){
+							Thread.sleep(1000);
+						}
 					}
 					gameServerSocket = servers.get(gameIndex);
 					bufGameIn = new BufferedInputStream(gameServerSocket.getInputStream());
