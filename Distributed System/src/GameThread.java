@@ -33,8 +33,7 @@ public class GameThread implements Runnable{
 	long timeSincePing = new Date().getTime();
 
 	//Backup
-	private String backupServerAddress = "localhost";
-	private int backupServerPort = 5432;
+	private Socket backupServer;
 
 	BufferedOutputStream bufOut;
 	OutputStreamWriter out;
@@ -46,8 +45,24 @@ public class GameThread implements Runnable{
 		game = new GameManager();
 	}
 
+	public GameThread(Socket socket, Socket backupServer, int gameID, HashMap<Integer, String> inboxes){
+		this.socket = socket;
+		this.backupServer = backupServer;
+		this.gameID = gameID;
+		this.inboxes = inboxes;
+		game = new GameManager();
+	}
+
 	public GameThread(Socket socket, int gameID, HashMap<Integer, String> inboxes, GameManager game){
 		this.socket = socket;
+		this.gameID = gameID;
+		this.inboxes = inboxes;
+		this.game = game; 
+	}
+
+	public GameThread(Socket socket, Socket backupServer, int gameID, HashMap<Integer, String> inboxes, GameManager game){
+		this.socket = socket;
+		this.backupServer = backupServer;
 		this.gameID = gameID;
 		this.inboxes = inboxes;
 		this.game = game; 
@@ -366,8 +381,12 @@ public class GameThread implements Runnable{
 			switch(messageType){
 				case("addplayer"):
 					int stack = Integer.parseInt(messageParts[2]);
-					System.out.println("New player added");
-					game.addPlayerToGame(stack, playerID);
+					System.out.printf("New player added (ID = %d)\n", playerID);
+					PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
+					System.out.println(player);
+					if(player == null){
+						game.addPlayerToGame(stack, playerID);
+					}
 					System.out.printf("There are %d players currently in the game\n", game.getPlayerCount());
 					break;
 				case("checkTurn"):
@@ -414,6 +433,7 @@ public class GameThread implements Runnable{
 					break;
 				case("displayGame"):
 					game.getPlayerList().displayGameState();
+					sendMessage(out, playerID, "This is the game state:");//game.displayGameState());
 					break;
 				case("close"):
 	
@@ -618,8 +638,10 @@ public class GameThread implements Runnable{
 				sendMessage(out, playerID, "It's not your turn");
 				//out.flush();
 			}
-			else
-				System.out.println("It is your turn.");
+			else{
+				System.out.println("It is this players turn.");
+				sendMessage(out, playerID, "It's your turn!");	
+			}
 		//} catch (IOException e) {e.printStackTrace();}
 	}
 
@@ -699,12 +721,13 @@ public class GameThread implements Runnable{
 	*/
 	private void reconnect(){
 		try{
-			socket.close();
-			ServerSocket reconnectSocket = new ServerSocket(socket.getLocalPort());
-			socket = reconnectSocket.accept();
-			reconnectSocket.close();
-			bufOut = new BufferedOutputStream(socket.getOutputStream());
-			out = new OutputStreamWriter(bufOut);
+			while(true){
+				try{
+					bufOut = new BufferedOutputStream(socket.getOutputStream());
+					out = new OutputStreamWriter(bufOut);
+					break;
+				} catch (SocketException socketE) {Thread.sleep(2000);}
+			}
 		} catch (Exception e) {e.printStackTrace();}
 	}
 
@@ -713,13 +736,16 @@ public class GameThread implements Runnable{
 	 */
 	private void setUpBackup(){
 		try{
-			Socket backupServer = new Socket(backupServerAddress, backupServerPort);
 			BufferedOutputStream bufOut = new BufferedOutputStream(backupServer.getOutputStream());
 			OutputStreamWriter out = new OutputStreamWriter(bufOut);
 			new Thread(new BackupManager(out, game)).start();
 		} catch (Exception e){
 			System.out.println("WARNING: Unable to connect to backup server");
 		}
+	}
+
+	public void setSocket(Socket socket){
+		this.socket = socket;
 	}
 
 }

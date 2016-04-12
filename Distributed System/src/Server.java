@@ -29,20 +29,20 @@ public class Server implements Runnable{
 	private int type;
 	private transient ServerSocket serverSocket;
 
-	private static HashMap<Integer, Socket> servers;
+	private transient static HashMap<Integer, Socket> servers;
 	private HashMap<Integer, String> serverList;
 	private volatile int nextGameID = 1;
 
-	private static HashMap<Integer, Socket> clients;
+	private transient static HashMap<Integer, Socket> clients;
 	private HashMap<Integer, String> clientList;
 	private volatile int nextClientID = 1;
 
 	//Backup stuff
 	private String backupServerAddress = "localhost";
 	private int backupServerPort = 5432;
-	private ArrayList<Socket> backupServers;
-	private ArrayList<Integer> backupIDs;
-	private HashMap<Integer, String> backups;
+	private transient static ArrayList<Socket> backupServers;
+	private static ArrayList<Integer> backupIDs;
+	private static HashMap<Integer, String> backups;
 
 	public Server(int port, int type){
 		this.port = port;
@@ -161,40 +161,42 @@ public class Server implements Runnable{
 				changesMade = true;
 
 			} catch (SocketTimeoutException e){
-				Iterator it = servers.keySet().iterator();
-				while(it.hasNext()){
-					int key = (int) it.next();
-					if(key < 0){
-						System.out.println("Found crashed server!");
-						int gameID = -key;
-						if(backupServers.size() > 0){
-							Socket backupSocket = backupServers.get(0);
-							try{
-								BufferedOutputStream bufBackupOut = new BufferedOutputStream(backupSocket.getOutputStream());
-								OutputStreamWriter backupOut = new OutputStreamWriter(bufBackupOut);
-								BufferedInputStream bufBackupIn = new BufferedInputStream(backupSocket.getInputStream());
-								InputStreamReader backupIn = new InputStreamReader(bufBackupIn);
+				if(type == SERVER){
+					Iterator it = servers.keySet().iterator();
+					while(it.hasNext()){
+						int key = (int) it.next();
+						if(key < 0){
+							System.out.println("Found crashed server!");
+							int gameID = -key;
+							if(backupServers.size() > 0){
+								Socket backupSocket = backupServers.get(0);
+								try{
+									BufferedOutputStream bufBackupOut = new BufferedOutputStream(backupSocket.getOutputStream());
+									OutputStreamWriter backupOut = new OutputStreamWriter(bufBackupOut);
+									BufferedInputStream bufBackupIn = new BufferedInputStream(backupSocket.getInputStream());
+									InputStreamReader backupIn = new InputStreamReader(bufBackupIn);
 
-								backupOut.write("backup_request " + gameID + "\n");
-								backupOut.flush();
+									backupOut.write("backup_request " + gameID + "\n");
+									backupOut.flush();
 
-								String backupMessage = IOUtilities.read(backupIn);
-								String [] messageParts = backupMessage.split(" ");
-								int receivedGameID = Integer.parseInt(messageParts[1]);
-								String contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
-								if(gameID == receivedGameID){
-									System.out.printf("Received backup for game %d\n", gameID);
-									it.remove();
-									backupIDs.add(gameID);
-									backups.put(gameID, contents);	
-								}
-							} catch (Exception e2){e2.printStackTrace();}
-						} else {
-							System.out.println("Sadly there are no backup servers right now :(");
-							servers.remove(key);
+									String backupMessage = IOUtilities.read(backupIn);
+									String [] messageParts = backupMessage.split(" ");
+									int receivedGameID = Integer.parseInt(messageParts[1]);
+									String contents = IOUtilities.rebuildString(messageParts, 2, messageParts.length);
+									if(gameID == receivedGameID){
+										System.out.printf("Received backup for game %d\n", gameID);
+										it.remove();
+										backupIDs.add(gameID);
+										backups.put(gameID, contents);	
+									}
+								} catch (Exception e2){e2.printStackTrace();}
+							} else {
+								System.out.println("Sadly there are no backup servers right now :(");
+								servers.remove(key);
+							}
+
+							changesMade = true;
 						}
-
-						changesMade = true;
 					}
 				}
 				if(servers.size() > 0 && backups.size() > 0){
@@ -238,7 +240,7 @@ public class Server implements Runnable{
 			Server server = null;
 			String message = "";
 			Gson gson = new GsonBuilder().serializeNulls()
-			//	.excludeFieldsWithModifiers(Modifier.TRANSIENT)
+				.excludeFieldsWithModifiers(Modifier.TRANSIENT)
 				.registerTypeAdapter(Socket.class, new SocketDeserializer())
 				.create();
 

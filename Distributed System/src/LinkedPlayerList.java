@@ -158,6 +158,9 @@ public class LinkedPlayerList {
 	*/
 
 	public PlayerNode findPlayerByID(int playerID){
+		if(rootPlayer == null){
+			return null;
+		}
 		PlayerNode currentPlayer = rootPlayer;
 		do{
 			if (currentPlayer.playerID == playerID){
@@ -165,7 +168,10 @@ public class LinkedPlayerList {
 			}
 			currentPlayer = currentPlayer.nextPlayer;
 		}while(currentPlayer != rootPlayer);
-
+		
+		if(currentPlayer.playerID != playerID){
+			return null;
+		}
 		return currentPlayer;
 	}
 
@@ -245,7 +251,6 @@ public class LinkedPlayerList {
 	public int getCount(){
 		return count;
 	}
-
 
 	public static void main(String[] args){
 

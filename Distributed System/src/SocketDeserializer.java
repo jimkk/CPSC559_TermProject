@@ -18,6 +18,7 @@ public class SocketDeserializer implements JsonDeserializer<Socket>{
 			String combined = json.getAsJsonObject().get("Socket").getAsString();
 			String address = combined.split("/")[1];
 			int port = Integer.parseInt(combined.split("/")[2]);
+			System.out.println(address + port);
 			try{
 				return new Socket(address, port);
 			} catch (Exception e){e.printStackTrace();}

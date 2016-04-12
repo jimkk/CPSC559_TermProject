@@ -65,7 +65,7 @@ public class BackupServer implements Runnable{
 					String restoredString = restoreBackup(gameID);
 					managerOut.write("backup_response " + gameID + " " + restoredString + "\n");
 					managerOut.flush();
-					System.out.println("Sent backup!");
+					System.out.printf("%s: Sent backup!", new Date());
 				}
 				Thread.sleep(10);
 			}
@@ -113,7 +113,6 @@ public class BackupServer implements Runnable{
 	public String restoreBackup(int gameID){
 		StringBuffer restoredMessage = new StringBuffer();
 		try{
-			System.out.println("In restoreBackup()");
 			int c;
 			FileReader fr = new FileReader("backup" + gameID +".bck");
 
