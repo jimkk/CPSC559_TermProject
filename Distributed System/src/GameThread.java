@@ -433,7 +433,10 @@ public class GameThread implements Runnable{
 					break;
 				case("displayGame"):
 					game.getPlayerList().displayGameState();
-					sendMessage(out, playerID, "This is the game state:" + game.toString());
+					sendMessage(out, playerID, "         Current game ID: " + game.getGameID());
+					sendMessage(out, playerID, "            Player count: " + game.getPlayerCount());
+					sendMessage(out, playerID, "        Current bet call: " + game.getCurrentBetCall());
+					sendMessage(out, playerID, "Current player ID's turn: " + game.getCurrentPlayerIDTurn());
 					break;
 				case("close"):
 	
@@ -651,7 +654,7 @@ public class GameThread implements Runnable{
 	 */
 	private void checkStack(int playerID){
 		//try{
-			PlayerNode player = game.getPlayerList().findPlayerByIndex(playerID);
+			PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
 			System.out.println("This players current stack: " + player.getStack());
 			sendMessage(out, playerID, "This players current stack: " + player.getStack());
 			//out.flush();
