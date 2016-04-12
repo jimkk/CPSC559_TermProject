@@ -651,7 +651,7 @@ public class GameThread implements Runnable{
 	 */
 	private void checkStack(int playerID){
 		//try{
-			PlayerNode player = game.getPlayerList().findPlayerByIndex(playerID);
+			PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
 			System.out.println("This players current stack: " + player.getStack());
 			sendMessage(out, playerID, "This players current stack: " + player.getStack());
 			//out.flush();
