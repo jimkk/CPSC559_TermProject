@@ -105,7 +105,8 @@ public class ServerThread implements Runnable{
 						while(servers.get(gameID) == null){
 							System.out.printf("Waiting for game server %d to reconnect\n", gameID);
 						}
-						gameServerSocket = servers.get(gameIndex);
+						gameServerSocket = servers.get(gameID);
+						gameIndex = gameID;
 					} else {
 						gameIndex = Integer.parseInt(gameIndexString.split(" ")[1]);
 

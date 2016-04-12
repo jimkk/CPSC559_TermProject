@@ -61,7 +61,6 @@ public class Server implements Runnable{
 	 * The main function that will loop while checking for clients attempting to connect and create ServerThreads for them.
 	 */
 	public void run(){
-
 		//Socket Initialization
 		while(serverSocket == null){
 			try{
@@ -84,7 +83,7 @@ public class Server implements Runnable{
 
 		if(type == CLIENT){
 			try{
-				Thread.sleep(1000);
+				Thread.sleep(10000);
 			} catch (Exception etc) {etc.printStackTrace();}
 			if(clients.size() > 0){
 				Iterator<Map.Entry<Integer, Socket>> clientIterator = clients.entrySet().iterator();
@@ -112,7 +111,6 @@ public class Server implements Runnable{
 					if(connectType.equals("addGameServer")){
 						int numGames = Integer.parseInt(message.split(" ")[1]);
 						System.out.printf("There are currently %d backups to be restored\n", backups.size());
-						out.flush();
 						out.write("gameid " + nextGameID + "\n");
 						out.flush();
 						for(int i = 0; i < numGames; i++){
@@ -125,6 +123,7 @@ public class Server implements Runnable{
 								int gameID = backupIDs.get(i);
 								System.out.printf("Game ID: %d\n", gameID);
 								out.write("restoregame " + gameID + " " + backups.get(gameID) + "\n");
+								out.flush();
 								//If restore is successful
 								backupIDs.remove(i);
 								//servers.put(gameID, clientSocket);
@@ -280,9 +279,8 @@ public class Server implements Runnable{
 				System.out.println("DONE");
 				new Thread(new Server(CLIENTPORT, Server.CLIENT)).start();
 				new Thread(new Server(BACKUPPORT, Server.BACKUP)).start();
-				server = new Server(SERVERPORT, Server.SERVER);
-				new Thread(new ServerSync(server)).start();
 				server = gson.fromJson(message, Server.class);
+				new Thread(new ServerSync(server)).start();
 				server.run();
 			} else {
 				System.out.println("ERROR: Did not receive any backups from server before it went down.");
