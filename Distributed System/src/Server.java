@@ -192,7 +192,7 @@ public class Server implements Runnable{
 								} catch (Exception e2){e2.printStackTrace();}
 							} else {
 								System.out.println("Sadly there are no backup servers right now :(");
-								servers.remove(key);
+								it.remove();
 							}
 
 							changesMade = true;
