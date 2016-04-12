@@ -434,7 +434,7 @@ public class GameThread implements Runnable{
 					break;
 				case("displayGame"):
 					game.getPlayerList().displayGameState();
-					sendMessage(out, playerID, "This is the game state:" + game.toString());
+					sendMessage(out, playerID, "This is the game state:");//game.displayGameState());
 					break;
 				case("close"):
 	

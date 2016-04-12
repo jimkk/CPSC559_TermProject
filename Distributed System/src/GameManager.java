@@ -522,9 +522,9 @@ public class GameManager {
 		return smallBlindAmount;
 	}
 
-	@Override
-	public String toString(){
-		return "\n--Current player turn: " + getCurrentPlayerTurn();
+	//this string has to be one line, otherwise sendMessage breaks I believe.
+	public String displayGameState(){
+		return "<<Current player turn: " + getCurrentPlayerTurn() + ">> <<Player count: " + getPlayerCount() + ">> <<Current player bet amount: " + getCurrentPlayerBetAmount() + ">> <<Game ID: " + getGameID() + ">>";
 	}
 	
 }
