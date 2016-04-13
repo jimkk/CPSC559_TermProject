@@ -440,8 +440,12 @@ public class GameThread implements Runnable{
 					sendMessage(out, playerID, "Current player bet amount: " + game.getCurrentPlayerBetAmount());
 					sendMessage(out, playerID, "             Current turn: " + game.getTurn());
 					sendMessage(out, playerID, "              Current pot: " + game.getPot());
-					sendMessage(out, playerID, "           Is the game on? " + game.isGameOn());
+					sendMessage(out, playerID, "          Is the game on?: " + game.isGameOn());
 					sendMessage(out, playerID, "          Community cards: " + buildCommunityCards());
+					sendMessage(out, playerID, "                Your hand:");
+					seeHand(playerID);
+					sendMessage(out, playerID, "  Have all player folded?: " + game.checkAllFolded());
+					sendMessage(out, playerID, "           Is it my turn?: " + game.checkTurn(playerID));
 					break;
 				case("close"):
 	
