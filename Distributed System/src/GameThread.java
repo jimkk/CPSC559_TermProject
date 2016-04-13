@@ -206,6 +206,9 @@ public class GameThread implements Runnable{
 		}
 	}
 
+	/**
+	 * Notify the players that they have been set as the small or big blinds
+	 */
 	public void sendBlindsNotification(){
 		for(int i = 0; i < game.getPlayerCount(); i++){
 			PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
@@ -269,13 +272,9 @@ public class GameThread implements Runnable{
 				currentPlayer = currentPlayer.nextPlayer;
 				continue;
 			}
-		//for(int i = 0; i < game.getPlayerCount(); i++){
-			//readMessage();
+		
 			// Step 1:
 			// Find the current player's turn 
-			//PlayerNode player = game.getPlayerList().findPlayerByIndex(i);
-
-
 			// Note that we skip players who have folded
 
 			game.setCurrentPlayerIDTurn(currentPlayer.playerID);
@@ -294,15 +293,13 @@ public class GameThread implements Runnable{
 			// Step 2:
 			// Wait on that player's response/move for their turn
 			// all the while, processing other player's messages
-			while (game.getCurrentPlayerDoneTurn() == false && game.getCurrentPlayerTurn() == true){
-				//readMessage();
+			while (game.getCurrentPlayerDoneTurn() == false && game.getCurrentPlayerTurn() == true){				
 				game.setCurrentPlayerBeginTurn(true);
 
 				// Notify the player that it is their turn
 				if (game.getCurrentPlayerBeginTurn() == true && game.getTurnSent() == false) {
 					sendMessage(out, game.getCurrentPlayerIDTurn(), "It's now your turn...");
-					sendMessage(out, game.getCurrentPlayerIDTurn(), "You can either bet, call, check, or fold");
-					//game.setCurrentPlayerBeginTurn(false);
+					sendMessage(out, game.getCurrentPlayerIDTurn(), "You can either bet, call, check, or fold");					
 					game.setTurnSent(true);
 
 				}
@@ -317,9 +314,7 @@ public class GameThread implements Runnable{
 				if (game.getCurrentPlayerBetFlag() == true && game.getCurrentPlayerBeginTurn() == true) {
 					System.out.println("CurrentPlayerBetFlag set to: " + game.getCurrentPlayerBetFlag());
 					game.setCurrentPlayerBeginTurn(false);
-					System.out.println("Player: " + game.getCurrentPlayerIDTurn() + " has chosen to bet: " + game.getCurrentPlayerBetAmount());
-					// I believe this is already called in the 'bet' switch case
-					//bet(game.getCurrentPlayerIDTurn(), game.getCurrentPlayerBetAmount());
+					System.out.println("Player: " + game.getCurrentPlayerIDTurn() + " has chosen to bet: " + game.getCurrentPlayerBetAmount());		
 					game.setCurrentPlayerBetFlag(false);
 					System.out.println("CurrentPlayerBetFlag set to: " + game.getCurrentPlayerBetFlag());
 					System.out.println("CurrentPlayerBetFlag set to: " + game.getCurrentPlayerBetFlag());
@@ -341,9 +336,8 @@ public class GameThread implements Runnable{
 						potentialNextPlayer = potentialNextPlayer.nextPlayer;
 					}while (potentialNextPlayer != currentPlayer);					
 				}
-				//readMessage();
-			}
-			//readMessage();
+				
+			}			
 
 			System.out.println("\nEnd Turn State:");
 			game.getPlayerList().displayGameState();
@@ -464,15 +458,6 @@ public class GameThread implements Runnable{
 					System.out.println("\t" + buffer);
 					System.exit(-1);
 					break;
-	/*
-					case("gameRequest"):
-						int desiredGame = Integer.parseInt(contents);
-						try{
-	
-						} catch(IOException e) {e.printStackTrace();}
-						}
-						break;
-	*/
 			}
 		}
 	}
@@ -538,6 +523,10 @@ public class GameThread implements Runnable{
 			
 	}
 	
+	/**
+	 * Checks if we have finished the voting phase for the winner
+	 * @return
+	 */
 	private boolean doneVoting()
 	{
 		for(int i = 0; i < game.getPlayerCount(); i++){
@@ -548,6 +537,10 @@ public class GameThread implements Runnable{
 		return true;
 	}
 	
+	/**
+	 * Check all votes to make sure all players have voted a winner
+	 * @return True if pass, False if failed
+	 */
 	private boolean checkVotes()
 	{
 		PlayerNode prevPlayer = game.getPlayerList().findPlayerByIndex(0);
@@ -559,6 +552,9 @@ public class GameThread implements Runnable{
 		return true;
 	}
 	
+	/**
+	 * Compute the winner
+	 */
 	private void winner()
 	{
 		game.setStartVoting(true);
@@ -617,57 +613,47 @@ public class GameThread implements Runnable{
 	 * @param playerID
 	 */
 	private void bet(int betAmount, int playerID){
+		if (game.checkTurn(playerID) == false) {
+			System.out.println("Currently not this player's turn; cannot place bet yet");
 
-		//try{
-			if (game.checkTurn(playerID) == false) {
-				System.out.println("Currently not this player's turn; cannot place bet yet");
-
-				sendMessage(out, playerID, "It's not your turn, you cannot place a bet yet.");
-				//out.flush();
-			}
-			else {
-				System.out.printf("Bet amount from %d: %s\n", playerID, betAmount);
-				game.setCurrentPlayerBetFlag(true);
-				game.setCurrentPlayerBetAmount(betAmount);
-				game.bet(playerID, betAmount);
-				PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
-				int stack = player.getStack();
-				System.out.println("This player's new stack total: " + stack);
-				game.setCurrentPlayerDoneTurn(true);
-				System.out.println("No longer this players turn. Confirmation: " + game.getCurrentPlayerDoneTurn());
-				sendBets(playerID, betAmount);
-			}
-		//} catch (IOException e) {e.printStackTrace();}
+			sendMessage(out, playerID, "It's not your turn, you cannot place a bet yet.");
+		}
+		else {
+			System.out.printf("Bet amount from %d: %s\n", playerID, betAmount);
+			game.setCurrentPlayerBetFlag(true);
+			game.setCurrentPlayerBetAmount(betAmount);
+			game.bet(playerID, betAmount);
+			PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
+			int stack = player.getStack();
+			System.out.println("This player's new stack total: " + stack);
+			game.setCurrentPlayerDoneTurn(true);
+			System.out.println("No longer this players turn. Confirmation: " + game.getCurrentPlayerDoneTurn());
+			sendBets(playerID, betAmount);
+		}
 	}
 	/**
 	 * Checks to see if it is the requesting player's turn
 	 * @param playerID Integer representing current player.
 	 */
 	private void checkTurn(int playerID){
-		//try{
-			if (game.checkTurn(playerID) == false) {
-				System.out.println("Currently not this player's turn.");
-				sendMessage(out, playerID, "It's not your turn");
-				//out.flush();
-			}
-			else{
-				System.out.println("It is this players turn.");
-				sendMessage(out, playerID, "It's your turn!");	
-			}
-		//} catch (IOException e) {e.printStackTrace();}
+		if (game.checkTurn(playerID) == false) {
+			System.out.println("Currently not this player's turn.");
+			sendMessage(out, playerID, "It's not your turn");				
+		}
+		else{
+			System.out.println("It is this players turn.");
+			sendMessage(out, playerID, "It's your turn!");	
+		}
 	}
 
 	/**
 	 * Allows the player to view their stack
 	 * @param playerID Integer representing current player.
 	 */
-	private void checkStack(int playerID){
-		//try{
-			PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
-			System.out.println("This players current stack: " + player.getStack());
-			sendMessage(out, playerID, "This players current stack: " + player.getStack());
-			//out.flush();
-		//} catch (IOException e) {e.printStackTrace();}
+	private void checkStack(int playerID){		
+		PlayerNode player = game.getPlayerList().findPlayerByID(playerID);
+		System.out.println("This players current stack: " + player.getStack());
+		sendMessage(out, playerID, "This players current stack: " + player.getStack());
 	}
 
 	/**
@@ -675,16 +661,13 @@ public class GameThread implements Runnable{
 	 * @param playerID Integer representing current player.
 	 */
 	private void call(int playerID){
-		//try{
-			if (game.checkTurn(playerID) == false) {
-				System.out.println("Currently not this player's turn; cannot call another player's bet");
-				sendMessage(out, playerID, "It's not your turn, you cannot call another player's bet yet");
-				//out.flush();
-			}
-			else {
-				bet(game.getCurrentBetCall(), playerID);
-			}
-		//} catch (IOException e){e.printStackTrace();}
+		if (game.checkTurn(playerID) == false) {
+			System.out.println("Currently not this player's turn; cannot call another player's bet");
+			sendMessage(out, playerID, "It's not your turn, you cannot call another player's bet yet");
+		}
+		else {
+			bet(game.getCurrentBetCall(), playerID);
+		}		
 	}
 
 	/**
@@ -692,21 +675,18 @@ public class GameThread implements Runnable{
 	 * @param playerID Integer representing current player.
 	 */
 	private void fold(int playerID){
-		//try{
-			if (game.checkTurn(playerID) == false) {
-				System.out.println("Currently not this player's turn; cannot fold until it is");
-				sendMessage(out, playerID, "It's not your turn, you cannot fold until it is");
-				//out.flush();
-			}
-			else {
-				System.out.println("Player: " + playerID + "has chosen to fold his/her hand...");
-				game.fold(playerID);
-				PlayerNode player = game.getPlayerList().findPlayerByIndex(playerID);
-				System.out.println("Player: " + playerID + "folded = " +  player.getFolded());
-				game.setCurrentPlayerDoneTurn(true);
-				sendMessage(out, playerID, "You have chosen to fold your hand for this round");
-			}
-		//} catch (IOException e){e.printStackTrace();}
+		if (game.checkTurn(playerID) == false) {
+			System.out.println("Currently not this player's turn; cannot fold until it is");
+			sendMessage(out, playerID, "It's not your turn, you cannot fold until it is");
+		}
+		else {
+			System.out.println("Player: " + playerID + "has chosen to fold his/her hand...");
+			game.fold(playerID);
+			PlayerNode player = game.getPlayerList().findPlayerByIndex(playerID);
+			System.out.println("Player: " + playerID + "folded = " +  player.getFolded());
+			game.setCurrentPlayerDoneTurn(true);
+			sendMessage(out, playerID, "You have chosen to fold your hand for this round");
+		}		
 	}
 
 	/**

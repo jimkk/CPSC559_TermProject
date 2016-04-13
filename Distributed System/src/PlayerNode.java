@@ -1,10 +1,11 @@
 import java.util.LinkedList;
 import java.io.*;
-
+/**
+ * This is the PlayerNode class which represents each player in the linked list
+ * It contains various setters and getters for setting and retrieving various data about each player
+ *
+ */
 public class PlayerNode {
-
-	//int numberOfPlayers = 0;
-
 	int playerNumber;
 	int playerID;
 	int stack;

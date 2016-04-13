@@ -296,6 +296,11 @@ public class GameManager {
 		
 	}
 	
+	/**
+	 * Sets the voted winner for a particular player 
+	 * @param playerID
+	 * @param votedPlayer
+	 */
 	public void setVotes(int playerID, int votedPlayer){
 		PlayerNode player = getPlayerList().findPlayerByID(playerID);
 		player.setVote(votedPlayer);
@@ -501,23 +506,44 @@ public class GameManager {
 		return communityCards;
 	}
 	
+	/**
+	 * Gets the current highest bet amount on the table
+	 * @return
+	 */
 	public int getCurrentBetCall()
 	{
 		return currentBetCall;
 	}
 	
+	/**
+	 * Sets the startVoting flag
+	 * @param b
+	 */
 	public void setStartVoting(boolean b){
 		startVoting = b;
 	}
 	
+	
+	/**
+	 * Gets the startVoting flag
+	 * @return
+	 */
 	public boolean getStartVoting(){
 		return startVoting;
 	}
 	
+	/**
+	 * Gets the Big Blind Amount
+	 * @return
+	 */
 	public int getBigBlindAmount(){
 		return bigBlindAmount;
 	}
 	
+	/**
+	 * Gets the Small Blind Amount
+	 * @return
+	 */
 	public int getSmallBlindAmount(){
 		return smallBlindAmount;
 	}

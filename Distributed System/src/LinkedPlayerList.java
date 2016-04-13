@@ -2,6 +2,10 @@ import java.util.LinkedList;
 import java.io.*;
 
 
+/**
+ * This is the Linked List class that contains the various linked list operations we use in our game
+ *
+ */
 // Referenced the following videos on linked lists:
 // https://www.youtube.com/watch?v=pBaZl9B448g
 // https://www.youtube.com/watch?v=SMuL7ld3r5M
@@ -16,6 +20,12 @@ public class LinkedPlayerList {
 	private volatile boolean writeLock = false;
 	private volatile boolean readLock = false;
 
+	/**
+	 * Adds a new player to the linked list of players
+	 * @param playerNumber
+	 * @param playerID
+	 * @param stack
+	 */
 	public void addPlayers (int playerNumber, int playerID, int stack){
 		PlayerNode player = new PlayerNode(playerNumber, playerID, stack);
 		PlayerNode currentPlayer;
@@ -33,20 +43,14 @@ public class LinkedPlayerList {
 		if(rootPlayer == null){
 
 			rootPlayer = player;
-			// ** could have the line directly below if we wanted to set player 1's turn to true
-			// otherwise just do that when all player slots have been filled
-			//rootPlayer.turn = true;
-			//player.nextPlayer = null;
+
 			rootPlayer.nextPlayer = rootPlayer;
 
 		}
 		else{
 
 			currentPlayer = rootPlayer;
-			//while(currentPlayer.nextPlayer != null){
-			//	currentPlayer = currentPlayer.nextPlayer;
-
-			//}
+			
 			while (currentPlayer.nextPlayer != rootPlayer){
 
 				currentPlayer = currentPlayer.nextPlayer;
@@ -54,7 +58,7 @@ public class LinkedPlayerList {
 			}
 
 			currentPlayer.nextPlayer = player;
-			//player.nextPlayer = null;
+			
 			player.nextPlayer = rootPlayer;
 
 
@@ -62,7 +66,13 @@ public class LinkedPlayerList {
 		}
 		writeLock = false;
 	}
-
+	/**
+	 * Inserts a new player into the linked list of players; currently not used
+	 * @param playerNumber
+	 * @param playerID
+	 * @param stack
+	 * @param after
+	 */
 	public void insertPlayer (int     playerNumber,
 			int     playerID,
 			int	  stack,
@@ -87,6 +97,10 @@ public class LinkedPlayerList {
 
 	}
 
+	/**
+	 * Deletes a player from the linked list of players
+	 * @param playerToBeDeleted
+	 */
 	public void deletePlayer (int playerToBeDeleted) {
 
 		int ithPlayer = 1;
@@ -113,50 +127,15 @@ public class LinkedPlayerList {
 			currentPlayer.nextPlayer = currentPlayer.nextPlayer;
 		}
 
-		// Decrease number of players
-		//PlayerNode.numberOfPlayers--;
+		// Decrease number of players		
 		count--;
 	}
-	/*
-	public int findPlayerByPort(int playerPort, String returnType){	
-		PlayerNode currentPlayer = rootPlayer;
-		do{
-			if (currentPlayer.port == playerPort){
-				break;
-			}
-			currentPlayer = currentPlayer.nextPlayer;
-		}while(currentPlayer != rootPlayer);
-
-		int ret;
-
-		if (returnType == "Player Number") 
-			ret = currentPlayer.playerNumber;
-		if (returnType == "Player ID")
-			ret = currentPlayer.playerID;
-		if (returnType == "Bet Amount")
-			ret = currentPlayer.currentBetAmount;
-		else ret = -1;
-
-		return ret;
-	}
-
-
-	public PlayerNode findPlayerByPort(int playerPort){
-		PlayerNode currentPlayer = rootPlayer;
-		do{
-			if (currentPlayer.port == playerPort){
-				break;
-			}
-			currentPlayer = currentPlayer.nextPlayer;
-		}while(currentPlayer != rootPlayer);
-
-		if(currentPlayer.port != playerPort){
-			return null;
-		}
-		return currentPlayer;	
-	}
-	*/
-
+	
+	/**
+	 * Finds a particular player in the linked list by using that player's ID
+	 * @param playerID
+	 * @return currentPlayer
+	 */
 	public PlayerNode findPlayerByID(int playerID){
 		if(rootPlayer == null){
 			return null;
@@ -175,6 +154,12 @@ public class LinkedPlayerList {
 		return currentPlayer;
 	}
 
+	/**
+	 * Finds a particular player by the player's index in the linked list
+	 * (Player index differs from PlayerID)
+	 * @param index
+	 * @return currentPlayer
+	 */
 	public PlayerNode findPlayerByIndex(int index){
 		int ithplayer = 0;
 
@@ -188,14 +173,10 @@ public class LinkedPlayerList {
 		return currentPlayer;
 	}
 
-	//Is this method really needed?	
-	public void setPlayerBetAmount (int playerID, int betAmount){
-		PlayerNode player;
-
-		player = findPlayerByID(playerID);
-		player.currentBetAmount = betAmount;		
-	}
-
+	/**
+	 * Method to display the current Game State. We have used this for debugging purposes
+	 * and it is not actually called by a client in the game...
+	 */
 	public void displayGameState() {
 		// Print the game state on the Server side
 		PlayerNode currentPlayer = rootPlayer;
@@ -222,29 +203,6 @@ public class LinkedPlayerList {
 		}while(currentPlayer != rootPlayer);
 		System.out.println("---------------------------");
 		arrow = false;
-
-		/*
-		//Print ID
-		do{
-		System.out.print((arrow) ? " --> |" + currentPlayer.playerID + "\t|" : "|" + currentPlayer.playerID + "\t|");
-		arrow = true;
-
-		currentPlayer = currentPlayer.nextPlayer;
-
-		}while(currentPlayer != rootPlayer);
-		System.out.println();
-		arrow = false;
-		*/
-		/*
-		//print port
-		do{
-		System.out.print((arrow) ? " --> |" + currentPlayer.port + "\t|" : "|" + currentPlayer.port + "\t|");
-		arrow = true;
-
-		currentPlayer = currentPlayer.nextPlayer;
-
-		}while(currentPlayer != rootPlayer);
-		System.out.println();*/
 
 	}
 
