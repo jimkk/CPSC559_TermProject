@@ -724,9 +724,11 @@ public class GameThread implements Runnable{
 		}
 	}
 
-	/**
-	*Reconnect.
-	*/
+	/** 
+	 * Will try and reconnect to the same IP address and port that it was
+	 * originally connected to.  It will loop till it it able to successfully
+	 * reconnect.
+	 */
 	private void reconnect(){
 		try{
 			while(true){

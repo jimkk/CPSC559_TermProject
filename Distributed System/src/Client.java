@@ -52,9 +52,6 @@ public class Client{
 						}
 
 						switch(messageType){
-							//case("desiredGame"):
-								//desiredGame = Integer.parseInt(buffer.substring(buffer.indexOf(" ") + 1, buffer.length()));
-								//break;
 							case("message"):
 								message(buffer);
 								break;

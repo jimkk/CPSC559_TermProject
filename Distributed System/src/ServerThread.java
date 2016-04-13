@@ -64,7 +64,11 @@ public class ServerThread implements Runnable{
 		this.isRecovery = isRecovery;
 	}
 
-
+	/**
+	 * This is the method that will run when a new thread of this class is started.
+	 * It handles all of the setup and then the communications between the client
+	 * and the game server that they have joined.
+	 */
 	public void run(){
 		try{
 
@@ -140,7 +144,7 @@ public class ServerThread implements Runnable{
 			bufGameOut = new BufferedOutputStream(gameServerSocket.getOutputStream());
 			gameOut = new OutputStreamWriter(bufGameOut);
 
-			int stack = 1000; //TODO Custom stack
+			int stack = 1000; 
 			if(isRecovery){
 				while(true){
 					String message = IOUtilities.read(in);

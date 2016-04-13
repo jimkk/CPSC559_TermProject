@@ -130,6 +130,12 @@ public class GameServer {
 			}
 		} catch (Exception e){e.printStackTrace(); isDone = true;}
 	}
+	
+	/** 
+	 * Will try and reconnect to the same IP address and port that it was
+	 * originally connected to.  It will loop till it it able to successfully
+	 * reconnect.
+	 */
 
 	private void reconnect(){
 		try{

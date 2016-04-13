@@ -64,7 +64,6 @@ public class ServerSync implements Runnable{
 				.excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.FINAL)
 				.registerTypeAdapter(Socket.class, new SocketSerializer())	
 				.create();
-			//gson.toJson(server.getBackupsInfo());
 			gson.toJson(server, out);
 			out.write("\n");
 			out.flush();
@@ -88,7 +87,10 @@ public class ServerSync implements Runnable{
 	}
 
 	/**
-	 * Creats a string array representation of a HashMap with socket values object for printing.
+	 * Creates a string array representation of a HashMap with socket values object for printing.
+	 * @param HashMap<Integer,Socket> The HashMap to convert.
+	 * @return String[][] the array representation of the HashMap passed to the
+	 * method.
 	 */	
 	private String [][] toArrayFromSocket(HashMap<Integer, Socket> map){
 		String [][] mapArray = new String[map.size()][3];
@@ -107,6 +109,9 @@ public class ServerSync implements Runnable{
 
 	/**
 	 * Creates a string array representation of a HashMap with String values.
+	 * @param HashMap<Integer,String> The HashMap to convert.
+	 * @return String[][] the array representation of the HashMap passed to the
+	 * method.
 	 */
 	private String [][] toArrayFromString(HashMap<Integer, String> map){
 		String [][] mapArray = new String[map.size()][2];

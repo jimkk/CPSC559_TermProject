@@ -114,7 +114,6 @@ public class Server implements Runnable{
 						out.write("gameid " + nextGameID + "\n");
 						out.flush();
 						for(int i = 0; i < numGames; i++){
-							//servers.put(nextGameID++, clientSocket);
 							addServer(nextGameID++, clientSocket);
 						}
 						if(backups.size() > 0){
@@ -124,9 +123,7 @@ public class Server implements Runnable{
 								System.out.printf("Game ID: %d\n", gameID);
 								out.write("restoregame " + gameID + " " + backups.get(gameID) + "\n");
 								out.flush();
-								//If restore is successful
 								backupIDs.remove(i);
-								//servers.put(gameID, clientSocket);
 								addServer(gameID, clientSocket);
 								backups.remove(gameID);
 							}
@@ -141,7 +138,6 @@ public class Server implements Runnable{
 					}
 
 				} else if (type == CLIENT){
-					//clients.put(nextClientID, clientSocket);
 					int duplicate = clientExists(clientSocket);
 					if(duplicate == 0){	
 						addClient(nextClientID, clientSocket);
@@ -209,7 +205,6 @@ public class Server implements Runnable{
 								int gameID = backupIDs.get(i);	
 								serverOut.write("restoregame " + gameID + " " + backups.get(gameID) + "\n");
 								serverOut.flush();
-								//servers.put(gameID, serverSocket);
 								addServer(gameID, serverSocket);
 								backups.remove(gameID);
 								backupIDs.remove(i);
@@ -288,6 +283,13 @@ public class Server implements Runnable{
 				System.exit(0);
 			}
 		}
+	
+	/**
+	 * Stores the info for a server.
+	 * The gameID and socket are stored in a map as well as another
+	 * map that contains gameID and the string representation of the
+	 * socket (for use in recovery).
+	 */
 
 	private void addServer(int gameID, Socket socket){
 		servers.put(gameID, socket);
@@ -295,6 +297,13 @@ public class Server implements Runnable{
 		int port = socket.getPort();
 		serverList.put(gameID, ip + ":" + port);
 	}
+	
+	/**
+	 * Stores the info for a client.
+	 * The clientID and socket are stored in a map as well as another
+	 * map that contains clientID and the string representation of the
+	 * socket (for use in recovery).
+	 */
 
 	private void addClient(int clientID, Socket socket){
 		clients.put(clientID, socket);
@@ -303,23 +312,13 @@ public class Server implements Runnable{
 		clientList.put(clientID, ip + ":" + port);
 	}
 
-	private ArrayList<Integer> serverExists(Socket socket){
-		ArrayList<Integer> duplicates = new ArrayList<Integer>();
-		Iterator it = serverList.keySet().iterator();
-		while(it.hasNext()){
-			int key = (int) it.next();
-			String entry = serverList.get(key);
-			String ip = entry.split(":")[0];
-			int port = Integer.parseInt(entry.split(":")[1]);
-			System.out.printf("%s == %s?\n%d == %d?\n\n",
-				socket.getInetAddress(), ip,
-				socket.getPort(), port);
-			if(socket.getInetAddress().equals(ip) && socket.getPort() == port){
-				duplicates.add(key);
-			}
-		}
-		return duplicates;
-	}
+	/**
+	 * Checks if there exists already exists a client that matches
+	 * the socket passed.
+	 * @param socket The socket to check for existing sockets.
+	 * @return int - the clientID of the duplicate socket, or 0 if no
+	 * matches were found.
+	 */
 	
 	private int clientExists(Socket socket){
 		Iterator it = clientList.keySet().iterator();

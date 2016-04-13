@@ -26,6 +26,11 @@ public class BackupManager implements Runnable{
 		this.game = game;
 	}
 
+	/**
+	 * Method that is called when a new thread is started. It contains the loop
+	 * that runs, checking for game state changes and sending backups whenever it 
+	 * detects a change.
+	 */
 	public void run(){
 		int turn;
 		int pot;

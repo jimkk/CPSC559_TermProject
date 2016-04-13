@@ -48,6 +48,13 @@ public class BackupServer implements Runnable{
 		}
 	}
 
+	/**
+	 * This method is for communications with the main server.  It will listen
+	 * for any backup requests from the main server and if it receives any, it
+	 * will read the backup from the correct file into a string and send that
+	 * string back to the main server.
+	 */
+
 	private void mainServer(){
 		try{
 			socket = new Socket(serverManagerAddress, serverManagerPort);
@@ -72,7 +79,11 @@ public class BackupServer implements Runnable{
 		}
 		catch (Exception e) {e.printStackTrace();}
 	}
-
+	/**
+	 *	This method contains the loop for the communications with the game server.
+	 *	It will listen on a socket for any backup messages and it stores any backup it receives
+	 *	in a file called backup<gameID>.bck.
+	 */
 	private void gameServer(){
 		try{
 			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
